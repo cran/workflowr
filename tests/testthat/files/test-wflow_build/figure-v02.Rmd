@@ -1,0 +1,18 @@
+---
+title: "Untitled"
+author: "First Last"
+date: YYYY-MM-DD
+output: html_document
+---
+
+```{r named1}
+plot(1:10)
+```
+
+```{r named2}
+boxplot(1:10)
+```
+
+```{r named3}
+hist(1:10)
+```

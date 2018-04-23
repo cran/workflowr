@@ -1,0 +1,200 @@
+---
+title: "Frequently asked questions"
+subtitle: "workflowr version `r utils::packageVersion('workflowr')`"
+author: "John Blischak"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Frequently asked questions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Why isn't my website displaying online?
+
+Occasionally your website may not display (or recent updates will not
+immediately appear), and you may even receive an email from GitHub with the
+following message:
+
+> The page build failed for the `master` branch with the following error:
+>
+> unable to build page. Please try again later.
+>
+> For information on troubleshooting Jekyll see:
+>
+>   https://help.github.com/articles/troubleshooting-jekyll-builds
+>
+> If you have any questions you can contact us by replying to this email.
+
+If you've followed the setup instructions from the [Getting started
+vignette](wflow-01-getting-started.html), and especially if the website
+displayed in the past, it's _very unlikely_ that you caused the problem. The 
+hosting is provided by [GitHub Pages][gh-pages], and it sometimes is delayed or
+down. Overall for a free service, it is very reliable. If you wait 5 minutes (or
+30 minutes at most), your website will likely be back to normal.
+
+If you are anxious to know if there is a problem and when it will be resolved,
+you can check the status of the Twitter account [GitHub Status][gh-status] for
+the most up-to-date reports from GitHub. If you suspect that the problem may
+have been caused by your recent changes to your website (again, this is
+unlikely), you can view the GitHub help page [Troubleshooting GitHub Pages
+builds][gh-troubleshooting].
+
+## Can I make my workflowr website private?
+
+Short answer: No, not if you use the default setup that hosts the site on GitHub
+Pages. For an alternative setup, see the FAQ below that describes an [option for
+securely sharing your workflowr site][faq-beaker].
+
+[faq-beaker]: #can-i-share-workflowr-websites-directly-with-collaborators-in-a-secure-fashion
+
+Long answer: Even if you create a private GitHub repository, the website it
+creates is still public. If you're not ready to publish your results online, you
+can always wait and activate GitHub Pages later. In the meantime, you'll still
+have a version-controlled, organized set of results for your project. However,
+the risk that someone that doesn't have the link to your website is able to find
+it is very low. Search engines prioritize the results by how many other sites
+link to a site, so your website will not be high in the results even if you
+search for very specific terms. Thus if you only share the URL to your results
+with your close collaborators, and request that they not share it widely, your
+website is effectively private. That being said, being truly scooped in science
+is rare (at best) and openly sharing your work will help establish your
+expertise in the field (and furthermore establishes your priority), so you
+should consider keeping both your code and website public.
+
+## Can I include Shiny apps in my website?
+
+No, at least not in the standard setup. The website is hosted with GitHub pages,
+which only supports static web pages. Shiny apps are dynamic, i.e. a user can
+interact with them to change the content. The easiest way to share your Shiny
+app would be to host it at [shinyapps.io](http://www.shinyapps.io/) and add a
+link to your app on your workflowr website. Alternatively you could host your
+workflowr website on your own server, but that would require much more knowledge
+and resources to accomplish.
+
+## Can I change "X" on my website?
+
+Almost certainly yes, but some things are easier to customize than others. The
+vignette [Customize your research website](wflow-02-customization.html) provides
+some ideas that are simple to implement. Check out the documentation for
+[rmarkdown][] and [Twitter Bootstrap][Bootstrap] for inspiration.
+
+## Why am I not getting the same result with wflow_build() as with the RStudio Knit HTML button?
+
+`wflow_build()` is designed to have the same functionality as the Knit HTML
+button in RStudio, namely that it knits the HTML file in a separate R session to
+avoid any clashes with variables or pacakges in use in the current R session.
+However, the technical implementations are not identical, and thus informally we
+have noticed the behavior of the two options occassionally differs. At the
+moment, we believe that if the file results in an error when using
+`wflow_build()`, the file needs to be fixed, regardless of whether the file is
+able to be built with the RStudio button. If you have a use case that you think
+should be supported by `wflow_build()`, please open an [Issue][issues] and
+provide a small reproducible example.
+
+## Can I share workflowr websites directly with collaborators in a secure fashion?
+
+If your project contains senstive data that prevents you from publicly sharing
+the results, one alternative option is to self-host your workflowr website using
+[Beaker Browser][beaker]. This solution was contributed by [Josh
+Johnson][johnsonlab]. For more details, please read his [blog
+post][johnsonlab-blog] and the discussion in Issue [#59][].
+
+[Beaker Browser][beaker] allows website creation, cloning, modification, and
+publishing locally. After the site is ready, hitting "share" produces a unique
+[Dat project dat://][dat] hyperlink, for example:
+
+    dat://adef21aa8bbac5e93b0c20a97c6f57f93150cf4e7f5eb1eb522eb88e682309bc
+
+This dat:// link can then be shared and the site opened *all the while being
+hosted locally on the site producer's machine.* The particular example above is
+a site, produced in RStudio using workflowr, with placeholder content and R code
+chunks, compiled as usual.
+
+Security for your site is achieved with site encryption inherent in the Dat
+protocol (see "Security" on the [datproject docs page][dat-docs]), as well as
+the obscurity of the unique link. Beaker Browser saves your individual project
+sites in the folder `~/Sites`.
+
+To create a Beaker Browser version of your workflowr site:
+
+1. [Install][beaker-install] Beaker Browser and run it.
+1. Select "New Site" in the three-bar dropdown menu found to the right of the
+"omnibar" for web link entry, and enter its Title and (optional) a Description
+of the site. This creates a folder in the Beaker Browser `~/Sites` directory
+named for your Title, for example, "placeholder_workflowr", and populates the
+folder with a `dat.json` file.
+1. In the main Beaker Browser pane, use "Add Files" or "Open Folder" to copy the
+entire contents of the workflowr `docs/` folder to your new Beaker Browser site
+folder (see Symlink Synchronization, below).
+1. Once copied, the new site is ready to go. Pressing "Share" in the main Beaker
+Browser pane reveals the unique dat:// link generated for your Beaker Browser
+site. Sharing this link with anyone running Beaker Browser will allow them to
+access your workflowr HTML files...*directly from your computer*.
+
+Instead of having to manually copy your workflowr `docs/` directory to your
+Beaker Browser site directory, you can create a symlink from your workflowr
+`docs/` directory to the Beaker Browser site directory. The line below links the
+`docs/` directory of a hypothetical "workflowr-project" saved in `~/github/` to
+the hypothetical Beaker `placeholder_workflowr` subdirectory:
+
+    ln -s ~/github/workflowr-project/docs ~/Users/joshua/Sites/placeholder_workflowr
+
+The direct-sharing nature of the above workflow means that the host computer
+needs to be running for site access. Two alternative recommended by Beaker
+Browser developer [Paul Frazee][pfrazee] are [hashbase.io][] and the Beaker
+Browser subproject [dathttpd][]. While hosting Beaker Browser sites is outside
+of the scope of this direct sharing paradigm, each of these options has
+strengths. The former, hashbase.io (free account required), is a web-hosted
+central location for dat:// -linked content, removing the need for the host
+computer to be running. The latter dathttpd example is an additional
+server/self-hosting option that can be used if desired.
+
+## Can I create a single HTML or PDF file of one of my workflowr R Markdown files?
+
+Yes! If you'd like to create a single HTML or PDF file to distribute an isolated
+analysis from your project, you can directly run the [rmarkdown][] function
+`render`.
+
+```{r render-single-page, eval=FALSE}
+library("rmarkdown")
+# Create analysis/file.html
+render("analysis/file.Rmd", html_document())
+# Create analysis/file.pdf
+render("analysis/file.Rmd", pdf_document())
+```
+
+There are two main caveats to this:
+
+1. Internal links to other HTML pages in your workflowr site will be broken
+since they are not being distributed with the single file.
+1. An R Markdown file that can be converted to HTML is not guaranteed to be
+converted to PDF. You'll need to ensure that you have LaTeX installed on your
+computer and avoid complicated characters and/or syntax.
+
+## How should I pronounce and spell workflowr?
+
+You can say "workflowr + er" or "workflowr + R", whichever is more natural to
+you.
+
+Workflowr should be capitalized at the beginning of a sentence, but otherwise
+the lowercase workflowr should be the preferred option.
+
+[#59]: https://github.com/jdblischak/workflowr/issues/59
+[beaker]: https://beakerbrowser.com/
+[beaker-install]: https://beakerbrowser.com/docs/install/
+[Bootstrap]: http://getbootstrap.com/
+[dat]: https://datproject.org/
+[dat-docs]: https://docs.datproject.org/
+[dathttpd]: https://github.com/beakerbrowser/dathttpd
+[gh-pages]: https://pages.github.com/
+[gh-status]: https://twitter.com/githubstatus
+[gh-troubleshooting]: https://help.github.com/articles/troubleshooting-github-pages-builds/
+[hashbase.io]: https://hashbase.io
+[issues]: https://github.com/jdblischak/workflowr/issues
+[johnsonlab]: https://github.com/johnsonlab
+[johnsonlab-blog]: https://johnsonlab.github.io/blog-post-22/
+[pfrazee]: https://github.com/pfrazee
+[rmarkdown]: http://rmarkdown.rstudio.com/

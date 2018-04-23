@@ -1,0 +1,130 @@
+---
+title: "Migrating an existing project to use workflowr"
+subtitle: "workflowr version `r utils::packageVersion('workflowr')`"
+author: "John Blischak"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Migrating an existing project to use workflowr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r chunk-options, include=FALSE}
+library("knitr")
+opts_chunk$set(eval = FALSE)
+```
+
+## Introduction
+
+This vignette is for those users that already have an existing project and wish 
+to incorporate workflowr to create a research website. Migrating an existing 
+project to use workflowr varies from straightforward to difficult depending on 
+the scenario and your comfort level with Git. This vignette assumes that you
+have the background knowledge of workflowr explained in the [Getting started][vig-start]
+vignette. Even if you have no need for a new workflowr project, please run
+through that vignette first as an exercise to familiarize yourself with the
+workflowr philosophy and functions.
+
+```{r getting-started}
+vignette("wflow-01-getting-started", "workflowr")
+```
+
+[vig-start]: wflow-01-getting-started.html
+
+## Scenario: I have a collection of R Markdown files
+
+If you have a collection of R Markdown files, but no version control or other 
+files, the most straightforward solution would be to create a workflowr project 
+in a new directory and then move the R Markdown files to the `analysis/` 
+subdirectory. In the hypothetical example below, the original R Markdown files 
+are located in the directory `~/projects/misc/` and the workflowr project will
+be created in the new directory `~/projects/new-project/`.
+
+```{r}
+library("workflowr")
+# Create project directory and change working directory to this location
+wflow_start("~/projects/new-project")
+# Copy the files to the analysis subdirectory of the workflowr project
+file.copy(from = Sys.glob("~/projects/misc/*Rmd"), to = "analysis")
+```
+
+Next run `wflow_build()` to see if your files run without error. Lastly, build
+and commit the website using `wflow_publish()`:
+
+```{r}
+wflow_publish("analysis/*Rmd", "Publish analysis files")
+```
+
+## Scenario: I have a collection of R Markdown files and other project infrastructure
+
+If your project already has lots of infrastructure, it is most convenient to add
+the workflowr files directory to your already existing directory. This is
+controlled with the argument `existing`. In the hypothetical example below, the
+existing project is located at `~/projects/mature-project/`.
+
+```{r}
+library("workflowr")
+wflow_start("~/projects/mature-project", existing = TRUE)
+```
+
+The above command will add the workflowr files to your existing project and also
+commit them to version control (it will initialize a Git repo if it doesn't 
+already exist). If you'd prefer to not use version control for your project or
+you'd prefer to commit the workflowr files yourself manually, you can set `git =
+FALSE` (this is also useful if you want to first test to see what would happen
+without committing the results).
+
+By default `wflow_start()` will not overwrite your existing files (e.g. if
+you already have a `README.md`). If you'd prefer to overwrite your files with
+the default workflowr files, set `overwrite = TRUE`.
+
+To add your R Markdown files to the research website, you can move them to the 
+subdirectory `analysis/` (note you can do this before or after running 
+`wflow_start()`).
+
+Next run `wflow_build()` to see if your files run without error. Lastly, build
+and commit the website using `wflow_publish()`:
+
+```{r}
+wflow_publish("analysis/*Rmd", "Publish analysis files")
+```
+
+## Scenario: I have an R package
+
+If your project is organized as an R package, you can still add a website using
+workflowr. In the hypothetical example below, the
+existing package is located at `~/projects/my-package/`.
+
+```{r}
+library("workflowr")
+wflow_start("~/projects/my-package", existing = TRUE)
+```
+
+The above command will add the workflowr files to your existing project and also
+commit them to version control (it will initialize a Git repo if it doesn't 
+already exist). If you'd prefer to not use version control for your project or
+you'd prefer to commit the workflowr files yourself manually, you can set `git =
+FALSE` (this is also useful if you want to first test to see what would happen
+without committing the results).
+
+You'll want R to ignore the workflowr directories when building the R package.
+Thus add the following to the `.Rbuildignore` file:
+
+```
+^analysis$
+^docs$
+^data$
+^code$
+^output$
+```
+
+If your primary purpose for creating a website to accompany your package is to 
+share the package documentation, please check out the package [pkgdown][]. It 
+creates a website from the vignettes and function documentation files (i.e. the 
+Rd files in `man/`). In contrast, if the purpose of the website is to
+demonstrate results you obtained using the package, use workflowr.
+
+[pkgdown]: https://github.com/r-lib/pkgdown

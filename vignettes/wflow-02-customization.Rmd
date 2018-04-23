@@ -1,0 +1,143 @@
+---
+title: "Customize your research website"
+subtitle: "workflowr version `r utils::packageVersion('workflowr')`"
+author: "John Blischak"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Customize your research website}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r chunk-options, include=FALSE}
+library("knitr")
+opts_chunk$set(eval = FALSE)
+```
+
+There are many ways to customize your research website. Below are some common
+options.
+
+## Adding project details
+
+workflowr automatically creates many files when the project is first started. As
+a first step for customizing your site, add the following information:
+
+* Briefly describe your project in `analysis/index.Rmd`
+* Share details about yourself in `analysis/about.Rmd`
+* State a software license in `analysis/license.Rmd`. See [A Quick Guide to
+Software Licensing for the Scientist-Programmer][morin2012] by Morin et al.,
+2012 for advice. If you're ambivalent, the MIT license is a standard choice.
+
+[morin2012]: http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002598
+
+## Changing the theme
+
+The theme is defined in the file `analysis/_site.yml`. The default is cosmo, but
+the rmarkdown package accepts multiple Bootstrap themes. These are listed in the
+[rmarkdown documentation][rmd-themes]. Go to 
+[bootswatch.com](http://bootswatch.com/) to compare the bootstrap themes. When
+typing the theme, make sure it is all lowercase (e.g. spacelab, united, etc.).
+
+When experimenting with different themes, you'll want to build a fast-running
+file, e.g. likely `analysis/index.Rmd`, instead of rebuilding the entire site
+every time. Click the RStudio Knit button or run `wflow_build()` in the R
+console to preview each theme:
+
+```
+wflow_build("analysis/index.Rmd")
+```
+
+Once you have chosen a theme, update the website by running the following:
+
+```{r wflow-publish-theme}
+wflow_publish("analysis/_site.yml", "Change the theme", republish = TRUE)
+```
+
+This commits `analysis/_site.yml`, re-builds every previously published HTML
+file using the new theme, and commits all the republished HTML pages.
+
+[rmd-themes]: http://rmarkdown.rstudio.com/html_document_format.html#appearance_and_style
+
+## Customize the navigation bar
+
+The navigation bar appears on the top of each page. By default it includes links
+to `index.html` (Home), `about.html` (About), `license.html` (License), and the 
+workflowr repository (the GitHub icon). This is all specified in
+`analysis/_site.yml`. To start, replace the URL to the workflowr GitHub
+repository with the URL to your GitHub repository.
+
+If you have other important pages, you can add them as well. For example, to add
+the text "The main result" which links to `main-result.html`, you would add the
+following:
+
+```
+    - text: "The main result"
+      href: main-result.html
+```
+
+You can also create a drop-down menu from the navigation bar. See the [rmarkdown
+documentation][navbar] for instructions.
+
+Similar to changing the theme above, you will need to re-render each page of the
+website (the navbar is embedded within each individual HTML file). Thus you
+could run the same command as above:
+
+```{r wflow-publish-navbar}
+wflow_publish("analysis/_site.yml", "Add main result page to navbar",
+              republish = TRUE)
+```
+
+[navbar]: http://rmarkdown.rstudio.com/rmarkdown_websites.html#site_navigation
+
+## Setup SSH keys
+
+Using the https protocol to communicate with GitHub is tedious because it
+requires entering your GitHub username and password. Using SSH keys for
+authentication removes the password requirement. Follow these [GitHub
+instructions][ssh] for creating SSH keys and linking them to your GitHub
+account. You'll need to create separate SSH keys and link them each to GitHub
+for each machine where you clone your Git repository.
+
+After you create your SSH keys and add them to your GitHub account, you'll need
+to instruct your local Git repository to use the SSH protocol. For a
+hypothetical GitHub username of "myname" and GitHub repository of "myproject",
+you would change the remote "origin" (the default name by convention) using the
+function `wflow_git_remote()`:
+
+```{r https-to-ssh}
+wflow_git_remote(remote = "origin", user = "myname", repo = "myproject",
+              protocol = "ssh", action = "set_url")
+```
+
+Alternatively you could update the remote URL using Git directly in the shell.
+See this GitHub documentation on [changing a remote URL][set-url] for
+instructions.
+
+[ssh]: https://help.github.com/articles/generating-an-ssh-key/
+[set-url]: https://help.github.com/articles/changing-a-remote-s-url/
+
+## Change the session information function
+
+The default function used to report the session information is `sessionInfo()`.
+To change this, you can edit this setting in `_workflowr.yml`. For example, to
+instead use `devtools::session_info()`, add the following line to
+`_workflowr.yml`:
+
+```
+sessioninfo: "devtools::session_info()"
+```
+
+If you'd prefer to manually insert a more complex report of the session
+information, disable the automatic reporting by adding the following to
+`_workflowr.yml`:
+
+```
+sessioninfo: ""
+```
+
+Note however that workflowr will still check for the presence of a session
+information function. Specifically it expects to find either `sessionInfo` or
+`session_info` somewhere in the R Markdown document.
