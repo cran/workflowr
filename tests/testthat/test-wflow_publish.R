@@ -21,6 +21,9 @@ rmd_to_fail <- file.path(s$analysis, "error.Rmd")
 file.copy(from = "files/test-wflow_build/error.Rmd",
           to = rmd_to_fail)
 
+# Load helper function local_no_gitconfig()
+source("helpers.R", local = TRUE)
+
 # Test wflow_publish -----------------------------------------------------------
 
 test_that("wflow_publish works in a simple case", {
@@ -208,6 +211,38 @@ test_that("wflow_publish removes unused figure files even if directory no longer
   file.remove(file_w_figs)
 })
 
+test_that("wflow_publish commits new .nojekyll after docs/ name change", {
+
+  skip_on_cran()
+
+  x <- wflow_start(tempfile(), change_wd = FALSE, user.name = "Test Name",
+                   user.email = "test@email")
+  p <- workflowr:::wflow_paths(project = x$directory)
+  site_yml <- file.path(p$analysis, "_site.yml")
+  y <- yaml::yaml.load_file(site_yml)
+  y$output_dir <- "../test"
+  yaml::write_yaml(y, file = site_yml)
+  # Create the new output directory. Otherwise receive multiple warnings. I
+  # should improve this (added to project Improvements)
+  dir.create(file.path(x$directory, "test"))
+  publish <- wflow_publish(c(site_yml, file.path(p$analysis, "*Rmd")),
+                           "Change output dir to test/", view = FALSE,
+                           project = x$directory)
+  nojekyll <- file.path(p$root, "test", ".nojekyll")
+  expect_true(file.exists(nojekyll))
+  expect_true(nojekyll %in% publish$step3$commit_files)
+})
+
+test_that("wflow_publish can display build log directly in R console with verbose", {
+
+  skip_on_cran()
+
+  x <- utils::capture.output(
+    publish <- wflow_publish(rmd[2], view = FALSE, verbose = TRUE, project = site_dir))
+  expect_true(publish$step2$verbose)
+  expect_true(length(x) > 0)
+})
+
 # Test error handling ----------------------------------------------------------
 
 test_that("wflow_publish resets Git repo to previous commit if build fails", {
@@ -226,14 +261,35 @@ test_that("wflow_publish restores previous docs/ if build fails", {
 
   skip_on_cran()
 
-  md5sum_pre <- tools::md5sum(rmd)
-  mtime_pre <- file.mtime(rmd)
+  md5sum_pre <- tools::md5sum(html)
+  mtime_pre <- file.mtime(html)
   Sys.sleep(2)
   expect_error(utils::capture.output(
     wflow_publish(c(rmd, rmd_to_fail), view = FALSE, project = site_dir)),
     "There was an error")
-  md5sum_post <- tools::md5sum(rmd)
-  mtime_post <- file.mtime(rmd)
+  md5sum_post <- tools::md5sum(html)
+  mtime_post <- file.mtime(html)
   expect_identical(md5sum_post, md5sum_pre)
   expect_identical(mtime_post, mtime_pre)
+})
+
+test_that("wflow_publish throws an error if user.name and user.email are not set", {
+
+  skip_on_cran()
+
+  # local_no_gitconfig() is defined in tests/testthat/helpers.R
+  local_no_gitconfig("-workflowr")
+
+  # Also have to remove local ./.git/config in the project's Git repo. Couldn't
+  # figure out a good way to do this with withr. Couldn't get to "restore"
+  # function to run at the end of the function call.
+  gitconfig <- file.path(site_dir, ".git", "config")
+  gitconfig_tmp <- file.path(tempdir(), "config")
+  file.rename(gitconfig, gitconfig_tmp)
+  on.exit(file.rename(gitconfig_tmp, gitconfig), add = TRUE)
+
+  expect_error(wflow_publish(project = site_dir),
+               "You must set your user.name and user.email for Git first")
+  expect_error(wflow_publish(project = site_dir),
+               "wflow_publish")
 })

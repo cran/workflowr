@@ -20,17 +20,34 @@ and Git.
 \section{Main workflowr functions}{
 
 
-  \itemize{
+\describe{
 
-  \item \code{\link{wflow_start}} - Start workflowr project
+\item{\code{\link{wflow_start}}}{Start a workflowr project.}
 
-  \item \code{\link{wflow_build}} - Build the site to view locally
+\item{\code{\link{wflow_build}}}{Build the site to view locally.}
 
-  \item \code{\link{wflow_publish}} - Publish analyses to include in the
-  website
+\item{\code{\link{wflow_publish}}}{Publish analyses to include in the
+      website.}
 
-  \item \code{\link{wflow_status}} - Report status of analysis files
+\item{\code{\link{wflow_status}}}{Report status of analysis files.}
+}
+}
 
-  }
+\section{Supporting workflowr functions}{
+
+
+For further information on workflowr, see the help pages for these
+functions:
+
+\describe{
+
+\item{\code{\link{wflow_html}}}{More technical details about how
+  individual R Markdown files are converted to webpages, and how the
+  rendering settings can be customized.}
+
+\item{\code{\link{wflow_site}}}{This help page explains how
+  project-wide rendering settings can be customized in the
+  \code{_site.yml} file.}
+}
 }
 

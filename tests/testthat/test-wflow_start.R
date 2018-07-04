@@ -20,7 +20,7 @@ test_that("wflow_start copies files correctly", {
 
   # start project in a tempdir
   site_dir <- tempfile()
-  capture.output(wflow_start(site_dir, change_wd = FALSE,
+  utils::capture.output(wflow_start(site_dir, change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
   site_dir <- workflowr:::absolute(site_dir)
 
@@ -35,7 +35,7 @@ test_that("wflow_start copies files correctly", {
 test_that("wflow_start adds name to analysis/_site.yml and README.md", {
 
   site_dir <- tempfile()
-  capture.output(wflow_start(site_dir, change_wd = FALSE,
+  utils::capture.output(wflow_start(site_dir, change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
   site_dir <- workflowr:::absolute(site_dir)
 
@@ -52,7 +52,7 @@ test_that("wflow_start accepts custom name", {
 
   project_name <- "A new project"
   site_dir <- tempfile()
-  capture.output(wflow_start(site_dir, name = project_name, change_wd = FALSE,
+  utils::capture.output(wflow_start(site_dir, name = project_name, change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
   site_dir <- workflowr:::absolute(site_dir)
 
@@ -69,13 +69,12 @@ test_that("wflow_start creates docs/ directories and .nojekyll files", {
 
   # start project in a tempdir
   site_dir <- tempfile()
-  capture.output(wflow_start(site_dir, change_wd = FALSE,
+  utils::capture.output(wflow_start(site_dir, change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
   site_dir <- workflowr:::absolute(site_dir)
 
   expect_true(dir.exists(file.path(site_dir, "docs")))
   expect_true(file.exists(file.path(site_dir, "docs", ".nojekyll")))
-  expect_true(file.exists(file.path(site_dir, "analysis", ".nojekyll")))
 
   unlink(site_dir, recursive = TRUE, force = TRUE)
 })
@@ -84,7 +83,7 @@ test_that("wflow_start initializes Git repository by default", {
 
   # start project in a tempdir
   site_dir <- tempfile()
-  capture.output(wflow_start(site_dir, change_wd = FALSE,
+  utils::capture.output(wflow_start(site_dir, change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
   site_dir <- workflowr:::absolute(site_dir)
   expect_true(git2r::in_repository(site_dir))
@@ -95,10 +94,11 @@ test_that("wflow_start git = FALSE does not initialize a Git repository", {
 
   # start project in a tempdir
   site_dir <- tempfile()
-  capture.output(wflow_start(site_dir, git = FALSE, change_wd = FALSE,
-                             user.name = "Test Name", user.email = "test@email"))
+  o <- wflow_start(site_dir, git = FALSE, change_wd = FALSE,
+                   user.name = "Test Name", user.email = "test@email")
   site_dir <- workflowr:::absolute(site_dir)
   expect_false(git2r::in_repository(site_dir))
+  expect_null(o$commit)
   unlink(site_dir, recursive = TRUE, force = TRUE)
 })
 
@@ -106,7 +106,7 @@ test_that("wflow_start commits all the project files", {
 
   # start project in a tempdir
   site_dir <- tempfile()
-  capture.output(wflow_start(site_dir, change_wd = FALSE,
+  utils::capture.output(wflow_start(site_dir, change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
   site_dir <- workflowr:::absolute(site_dir)
 
@@ -114,15 +114,14 @@ test_that("wflow_start commits all the project files", {
   committed <- workflowr:::get_committed_files(r)
 
   for (f in project_files) {
-    expect_true(f %in% committed)
+    expect_true(file.path(site_dir, f) %in% committed)
   }
   # Rproj file
-  expect_true(paste0(basename(site_dir), ".Rproj") %in% committed)
+  expect_true(file.path(site_dir, paste0(basename(site_dir), ".Rproj")) %in% committed)
   # hidden files
-  expect_true(".gitignore" %in% committed)
-  expect_true(".Rprofile" %in% committed)
-  expect_true("analysis/.nojekyll" %in% committed)
-  expect_true("docs/.nojekyll" %in% committed)
+  expect_true(file.path(site_dir, ".gitignore") %in% committed)
+  expect_true(file.path(site_dir, ".Rprofile") %in% committed)
+  expect_true(file.path(site_dir, "docs/.nojekyll") %in% committed)
 
   unlink(site_dir, recursive = TRUE, force = TRUE)
 })
@@ -137,7 +136,7 @@ test_that("wflow_start does not overwrite files by default", {
   writeLines("original", con = readme_file)
   rprofile_file <- file.path(site_dir, ".Rprofile")
   writeLines("x <- 1", con = rprofile_file)
-  capture.output(wflow_start(site_dir, existing = TRUE,
+  utils::capture.output(wflow_start(site_dir, existing = TRUE,
                              change_wd = FALSE, user.name = "Test Name",
                              user.email = "test@email"))
 
@@ -158,7 +157,7 @@ test_that("wflow_start overwrites files when forced", {
   writeLines("original", con = readme_file)
   rprofile_file <- file.path(site_dir, ".Rprofile")
   writeLines("x <- 1", con = rprofile_file)
-  capture.output(wflow_start(site_dir,
+  utils::capture.output(wflow_start(site_dir,
                              existing = TRUE, overwrite = TRUE,
                              change_wd = FALSE, user.name = "Test Name",
                              user.email = "test@email"))
@@ -203,8 +202,10 @@ test_that("wflow_start throws an error if user.name and user.email are not set",
 
   site_dir <- tempfile()
   expect_error(wflow_start(site_dir, change_wd = FALSE),
-               "You must set your user.name and user.email for Git first\n")
+               "You must set your user.name and user.email for Git first")
   expect_false(dir.exists(site_dir))
+  expect_error(wflow_start(site_dir, change_wd = FALSE),
+               "`wflow_start` with `git = TRUE`")
 })
 
 test_that("wflow_start can handle relative path to current directory: .", {
@@ -218,7 +219,7 @@ test_that("wflow_start can handle relative path to current directory: .", {
   on.exit(setwd(cwd))
   on.exit(unlink(site_dir, recursive = TRUE, force = TRUE), add = TRUE)
 
-  capture.output(wflow_start(".", existing = TRUE, change_wd = FALSE,
+  utils::capture.output(wflow_start(".", existing = TRUE, change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
 
   expect_true(file.exists(paste0(basename(site_dir), ".Rproj")))
@@ -236,7 +237,7 @@ test_that("wflow_start can handle relative path to upstream directory: ..", {
   on.exit(setwd(cwd))
   on.exit(unlink(site_dir, recursive = TRUE, force = TRUE), add = TRUE)
 
-  capture.output(wflow_start("..", existing = TRUE, change_wd = FALSE,
+  utils::capture.output(wflow_start("..", existing = TRUE, change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
 
   expect_true(file.exists(file.path("..", paste0(basename(site_dir), ".Rproj"))))
@@ -256,7 +257,7 @@ test_that("wflow_start can handle relative paths to non-existent directories", {
   # Use the current working directory to set path to new directory, e.g. specify
   # "./new" instead of "new". There is no advantage to this more verbose option,
   # but it shouldn't break the code.
-  capture.output(wflow_start("./new", change_wd = FALSE,
+  utils::capture.output(wflow_start("./new", change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
   expect_true(file.exists("./new/new.Rproj"))
 
@@ -265,7 +266,7 @@ test_that("wflow_start can handle relative paths to non-existent directories", {
   setwd("unrelated")
 
   # Start a new workflowr project in an upstream, non-existent directory
-  capture.output(wflow_start("../upstream", change_wd = FALSE,
+  utils::capture.output(wflow_start("../upstream", change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
   expect_true(file.exists("../upstream/upstream.Rproj"))
 })
@@ -284,10 +285,10 @@ test_that("wflow_start can handle deeply nested paths that need to be created", 
 
   dir_test <- "a/b/c/x/y/z"
   expected <- file.path(workflowr:::absolute("."), dir_test)
-  capture.output(actual <- wflow_start(dir_test, change_wd = FALSE,
+  utils::capture.output(actual <- wflow_start(dir_test, change_wd = FALSE,
                                        user.name = "Test Name",
                                        user.email = "test@email"))
-  expect_identical(actual, expected)
+  expect_identical(actual$directory, expected)
   expect_true(file.exists(file.path(expected, "z.Rproj")))
 })
 
@@ -305,10 +306,10 @@ test_that("wflow_start can handle deeply nested paths that need to be created an
   dir_test <- "./a/b/c/x/y/z"
   expected <- file.path(workflowr:::absolute("."),
                         substr(dir_test, 3, nchar(dir_test)))
-  capture.output(actual <- wflow_start(dir_test, change_wd = FALSE,
+  utils::capture.output(actual <- wflow_start(dir_test, change_wd = FALSE,
                                        user.name = "Test Name",
                                        user.email = "test@email"))
-  expect_identical(actual, expected)
+  expect_identical(actual$directory, expected)
   expect_true(file.exists(file.path(expected, "z.Rproj")))
 })
 
@@ -331,10 +332,10 @@ test_that("wflow_start can handle deeply nested paths that need to be created an
   # Start workflowr project in a highly nested upstream directory
   dir_test <- "../../../../../../a/b/c/x/y/z"
   expected <- file.path(site_dir, "a/b/c/x/y/z")
-  capture.output(actual <- wflow_start(dir_test, change_wd = FALSE,
+  utils::capture.output(actual <- wflow_start(dir_test, change_wd = FALSE,
                                        user.name = "Test Name",
                                        user.email = "test@email"))
-  expect_identical(actual, expected)
+  expect_identical(actual$directory, expected)
   expect_true(file.exists(file.path(expected, "z.Rproj")))
 })
 
@@ -374,7 +375,7 @@ test_that("wflow_start changes to workflowr directory by default", {
   on.exit(setwd(cwd))
   on.exit(unlink(site_dir, recursive = TRUE, force = TRUE), add = TRUE)
 
-  capture.output(wflow_start(site_dir, user.name = "Test Name",
+  utils::capture.output(wflow_start(site_dir, user.name = "Test Name",
                              user.email = "test@email"))
   site_dir <- workflowr:::absolute(site_dir)
 
@@ -403,4 +404,209 @@ test_that("wflow_start fails early if directory does not exist and `existing = T
                "Directory does not exist. Set existing = FALSE to create a new directory for the workflowr files.")
   expect_false(dir.exists(site_dir))
 
+})
+
+# Test print.wflow_start -------------------------------------------------------
+
+test_that("print.wflow_start works with change_wd = FALSE", {
+  tmp_dir <- workflowr:::absolute(tempfile())
+  on.exit(unlink(tmp_dir, recursive = TRUE))
+
+  # Dry run
+  dry_run <- wflow_start(tmp_dir, change_wd = FALSE, dry_run = TRUE,
+                         user.name = "Test Name", user.email = "test@email")
+  p_dry_run <- utils::capture.output(dry_run)
+  expect_identical(p_dry_run[1], "wflow_start (\"dry run mode\"):")
+  expect_identical(p_dry_run[2],
+                   paste("- New directory will be created at", tmp_dir))
+  expect_identical(p_dry_run[3],
+                   sprintf("- Project name will be \"%s\"", basename(tmp_dir)))
+  expect_identical(p_dry_run[4],
+                   paste("- Working directory will continue to be", getwd()))
+  expect_identical(stringr::str_sub(p_dry_run[5], 1, 31),
+                   "- Git repo will be initiated at")
+  expect_identical(p_dry_run[6], "- Files will be commited with Git")
+
+  # Actual run
+  actual_run <- wflow_start(tmp_dir, change_wd = FALSE,
+                            user.name = "Test Name", user.email = "test@email")
+  # Resolve symlink on macOS
+  tmp_dir <- workflowr:::absolute(tmp_dir)
+  # Have to use discover argument to get same result with /.git/
+  r <- git2r::repository(path = tmp_dir, discover = TRUE)
+  p_actual_run <- utils::capture.output(actual_run)
+  expect_identical(p_actual_run[1], "wflow_start:")
+  expect_identical(p_actual_run[2],
+                   paste("- New directory created at", tmp_dir))
+  expect_identical(p_actual_run[3],
+                   sprintf("- Project name is \"%s\"", basename(tmp_dir)))
+  expect_identical(p_actual_run[4],
+                   paste("- Working directory continues to be", getwd()))
+  expect_identical(p_actual_run[5],
+                   paste("- Git repo initiated at", git2r_workdir(r)))
+  expect_identical(p_actual_run[6],
+                   paste("- Files were committed in version",
+                         workflowr:::shorten_sha(git2r::branch_target(git2r_head(r)))))
+})
+
+test_that("print.wflow_start works with change_wd = FALSE and git = FALSE", {
+  tmp_dir <- workflowr:::absolute(tempfile())
+  on.exit(unlink(tmp_dir, recursive = TRUE))
+
+  # Dry run
+  dry_run <- wflow_start(tmp_dir, change_wd = FALSE, git = FALSE, dry_run = TRUE)
+  p_dry_run <- utils::capture.output(dry_run)
+  expect_identical(p_dry_run[1], "wflow_start (\"dry run mode\"):")
+  expect_identical(p_dry_run[2],
+                   paste("- New directory will be created at", tmp_dir))
+  expect_identical(p_dry_run[3],
+                   sprintf("- Project name will be \"%s\"", basename(tmp_dir)))
+  expect_identical(p_dry_run[4],
+                   paste("- Working directory will continue to be", getwd()))
+  expect_identical(p_dry_run[5],
+                   "- Git repo will not be initiated")
+  expect_identical(p_dry_run[6], "- Files will not be commited with Git")
+
+  # Actual run
+  actual_run <- wflow_start(tmp_dir, change_wd = FALSE, git = FALSE)
+  # Resolve symlink on macOS
+  tmp_dir <- workflowr:::absolute(tmp_dir)
+  p_actual_run <- utils::capture.output(actual_run)
+  expect_identical(p_actual_run[1], "wflow_start:")
+  expect_identical(p_actual_run[2],
+                   paste("- New directory created at", tmp_dir))
+  expect_identical(p_actual_run[3],
+                   sprintf("- Project name is \"%s\"", basename(tmp_dir)))
+  expect_identical(p_actual_run[4],
+                   paste("- Working directory continues to be", getwd()))
+  expect_identical(p_actual_run[5], "- No Git repo")
+})
+
+test_that("print.wflow_start works with change_wd = FALSE and existing = TRUE", {
+  tmp_dir <- tempfile()
+  on.exit(unlink(tmp_dir, recursive = TRUE))
+  dir.create(tmp_dir)
+  tmp_dir <- workflowr:::absolute(tmp_dir)
+
+  # Dry run
+  dry_run <- wflow_start(tmp_dir, existing = TRUE, change_wd = FALSE, dry_run = TRUE,
+                         user.name = "Test Name", user.email = "test@email")
+  p_dry_run <- utils::capture.output(dry_run)
+  expect_identical(p_dry_run[1], "wflow_start (\"dry run mode\"):")
+  expect_identical(p_dry_run[2],
+                   paste("- Files will be added to existing directory", tmp_dir))
+  expect_identical(p_dry_run[3],
+                   sprintf("- Project name will be \"%s\"", basename(tmp_dir)))
+  expect_identical(p_dry_run[4],
+                   paste("- Working directory will continue to be", getwd()))
+  expect_identical(stringr::str_sub(p_dry_run[5], 1, 31),
+                   "- Git repo will be initiated at")
+  expect_identical(p_dry_run[6], "- Files will be commited with Git")
+
+  # Actual run
+  actual_run <- wflow_start(tmp_dir, existing = TRUE, change_wd = FALSE,
+                            user.name = "Test Name", user.email = "test@email")
+  # Have to use discover argument to get same result with /.git/
+  r <- git2r::repository(path = tmp_dir, discover = TRUE)
+  p_actual_run <- utils::capture.output(actual_run)
+  expect_identical(p_actual_run[1], "wflow_start:")
+  expect_identical(p_actual_run[2],
+                   paste("- Files added to existing directory", tmp_dir))
+  expect_identical(p_actual_run[3],
+                   sprintf("- Project name is \"%s\"", basename(tmp_dir)))
+  expect_identical(p_actual_run[4],
+                   paste("- Working directory continues to be", getwd()))
+  expect_identical(p_actual_run[5],
+                   paste("- Git repo initiated at", git2r_workdir(r)))
+  expect_identical(p_actual_run[6],
+                   paste("- Files were committed in version",
+                         workflowr:::shorten_sha(git2r::branch_target(git2r_head(r)))))
+})
+
+test_that("print.wflow_start works with existing Git repo", {
+  tmp_dir <- tempfile()
+  on.exit(unlink(tmp_dir, recursive = TRUE))
+  dir.create(tmp_dir)
+  tmp_dir <- workflowr:::absolute(tmp_dir)
+  repo <- git2r::init(tmp_dir)
+  config(repo, user.name = "Test Name", user.email = "test@email")
+  f <- file.path(tmp_dir, "file")
+  file.create(f)
+  git2r::add(repo, f)
+  git2r::commit(repo, "initial commit")
+
+  # Dry run
+  dry_run <- wflow_start(tmp_dir, existing = TRUE, change_wd = FALSE, dry_run = TRUE)
+  p_dry_run <- utils::capture.output(dry_run)
+  # Have to use discover argument to get same result with /.git/
+  r <- git2r::repository(path = tmp_dir, discover = TRUE)
+  expect_identical(p_dry_run[1], "wflow_start (\"dry run mode\"):")
+  expect_identical(p_dry_run[2],
+                   paste("- Files will be added to existing directory", tmp_dir))
+  expect_identical(p_dry_run[3],
+                   sprintf("- Project name will be \"%s\"", basename(tmp_dir)))
+  expect_identical(p_dry_run[4],
+                   paste("- Working directory will continue to be", getwd()))
+  expect_identical(p_dry_run[5],
+                   paste("- Git repo already present at", git2r_workdir(r)))
+  expect_identical(p_dry_run[6], "- Files will be commited with Git")
+
+  # Actual run
+  actual_run <- expect_warning(wflow_start(tmp_dir, existing = TRUE, change_wd = FALSE),
+                               paste("A .git directory already exists in", tmp_dir))
+  p_actual_run <- utils::capture.output(actual_run)
+  expect_identical(p_actual_run[1], "wflow_start:")
+  expect_identical(p_actual_run[2],
+                   paste("- Files added to existing directory", tmp_dir))
+  expect_identical(p_actual_run[3],
+                   sprintf("- Project name is \"%s\"", basename(tmp_dir)))
+  expect_identical(p_actual_run[4],
+                   paste("- Working directory continues to be", getwd()))
+  expect_identical(p_actual_run[5],
+                   paste("- Git repo already present at", git2r_workdir(r)))
+  expect_identical(p_actual_run[6],
+                   paste("- Files were committed in version",
+                         workflowr:::shorten_sha(git2r::branch_target(git2r_head(r)))))
+})
+
+test_that("print.wflow_start works with change_wd = TRUE", {
+  tmp_dir <- workflowr:::absolute(tempfile())
+  cwd <- getwd()
+  on.exit(setwd(cwd))
+  on.exit(unlink(tmp_dir, recursive = TRUE), add = TRUE)
+
+  # Dry run
+  dry_run <- wflow_start(tmp_dir, dry_run = TRUE,
+                         user.name = "Test Name", user.email = "test@email")
+  p_dry_run <- utils::capture.output(dry_run)
+  expect_identical(p_dry_run[1], "wflow_start (\"dry run mode\"):")
+  expect_identical(p_dry_run[2],
+                   paste("- New directory will be created at", tmp_dir))
+  expect_identical(p_dry_run[3],
+                   sprintf("- Project name will be \"%s\"", basename(tmp_dir)))
+  expect_identical(p_dry_run[4],
+                   paste("- Working directory will be changed to", tmp_dir))
+  expect_identical(stringr::str_sub(p_dry_run[5], 1, 31),
+                   "- Git repo will be initiated at")
+  expect_identical(p_dry_run[6], "- Files will be commited with Git")
+
+  # Actual run
+  actual_run <- wflow_start(tmp_dir, user.name = "Test Name", user.email = "test@email")
+  # Resolve symlink on macOS
+  tmp_dir <- workflowr:::absolute(tmp_dir)
+  # Have to use discover argument to get same result with /.git/
+  r <- git2r::repository(path = tmp_dir, discover = TRUE)
+  p_actual_run <- utils::capture.output(actual_run)
+  expect_identical(p_actual_run[1], "wflow_start:")
+  expect_identical(p_actual_run[2],
+                   paste("- New directory created at", tmp_dir))
+  expect_identical(p_actual_run[3],
+                   sprintf("- Project name is \"%s\"", basename(tmp_dir)))
+  expect_identical(p_actual_run[4],
+                   paste("- Working directory changed to", tmp_dir))
+  expect_identical(p_actual_run[5],
+                   paste("- Git repo initiated at", git2r_workdir(r)))
+  expect_identical(p_actual_run[6],
+                   paste("- Files were committed in version",
+                         workflowr:::shorten_sha(git2r::branch_target(git2r_head(r)))))
 })

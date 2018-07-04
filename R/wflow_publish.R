@@ -71,6 +71,7 @@ wflow_publish <- function(
   republish = FALSE,
   view = interactive(),
   seed = 12345,
+  verbose = FALSE,
   # general
   dry_run = FALSE,
   project = "."
@@ -119,6 +120,9 @@ wflow_publish <- function(
   if (!(is.numeric(seed) && length(seed) == 1))
     stop("seed must be a one element numeric vector")
 
+  if (!(is.logical(verbose) && length(verbose) == 1))
+    stop("verbose must be a one-element logical vector")
+
   if (!(is.logical(dry_run) && length(dry_run) == 1))
     stop("dry_run must be a one-element logical vector")
 
@@ -136,6 +140,8 @@ wflow_publish <- function(
   s0 <- wflow_status(project = project)
   r <- git2r::repository(path = s0$git)
   commit_current <- git2r::commits(r, n = 1)[[1]]
+
+  if (!dry_run) check_git_config(project, "`wflow_publish`")
 
   # Step 1: Commit analysis files ----------------------------------------------
 
@@ -196,7 +202,8 @@ wflow_publish <- function(
   files_to_build <- files_to_build[!s1$status[files_to_build, "mod_staged"]]
 
   if (length(files_to_build) > 0) {
-    # Create a backup copy of the docs/ directory
+    # Create a backup copy of the docs/ directory. If either step 2 (build the
+    # HTML) or step 3 (commit the HTML) fails, delete docs/ and restore backup
     docs_backup <- tempfile(pattern = sprintf("docs-backup-%s-",
                                               format(Sys.time(),
                                                      "%Y-%m-%d-%Hh-%Mm-%Ss")))
@@ -204,15 +211,16 @@ wflow_publish <- function(
     docs_backup <- absolute(docs_backup)
     file.copy(from = file.path(s1$docs, "."), to = docs_backup,
               recursive = TRUE, copy.date = TRUE)
-    step2 <- wflow_build(files = files_to_build, make = FALSE,
-                         update = update, republish = republish,
-                         view = view, seed = seed,
-                         local = FALSE, dry_run = dry_run, project = project)
-    # If something fails in subsequent steps, delete docs/ and restore backup
     on.exit(unlink(s1$docs, recursive = TRUE), add = TRUE)
     on.exit(dir.create(s1$docs), add = TRUE)
     on.exit(file.copy(from = file.path(docs_backup, "."), to = s1$docs,
                       recursive = TRUE, copy.date = TRUE), add = TRUE)
+
+    step2 <- wflow_build(files = files_to_build, make = FALSE,
+                         update = update, republish = republish,
+                         view = view, seed = seed,
+                         local = FALSE, verbose = verbose,
+                         dry_run = dry_run, project = project)
     s2 <- wflow_status(project = project)
   } else {
     step2 <- NULL
@@ -223,9 +231,10 @@ wflow_publish <- function(
 
   # Step 3 only needs to be performed if files were built in step 2.
   if (length(step2$built) > 0) {
-    site_libs <- file.path(s2$docs, "site_libs")
     dir_figure <- file.path(s2$docs, "figure", basename(step2$built))
-    files_to_commit <- c(step2$html, dir_figure, site_libs)
+    site_libs <- file.path(s2$docs, "site_libs")
+    docs_nojekyll <- file.path(s2$docs, ".nojekyll")
+    files_to_commit <- c(step2$html, dir_figure, site_libs, docs_nojekyll)
 
     # Call directly to internal function `wflow_git_commit_` to bypass input checks.
     # In a dry run, some files may not actually exist yet. Also, not every Rmd

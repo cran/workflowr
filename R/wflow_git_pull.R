@@ -53,8 +53,8 @@
 #'
 #' \item \bold{username}: GitHub username.
 #'
-#' \item \bold{merge_result}: The \code{\link[git2r]{git_merge_result-class}}
-#' object returned by \link{git2r} (only included if \code{dry_run == FALSE}).
+#' \item \bold{merge_result}: The \code{git_merge_result} object returned by
+#' \link{git2r} (only included if \code{dry_run == FALSE}).
 #'
 #' \item \bold{dry_run}: The input argument \code{dry_run}.
 #'
@@ -104,7 +104,7 @@ wflow_git_pull <- function(remote = NULL, branch = NULL, username = NULL,
   # Must be using Git
   p <- wflow_paths(error_git = TRUE, project = project)
   r <- git2r::repository(path = p$git)
-  git_head <- git2r::head(r)
+  git_head <- git2r_head(r)
   remote_avail <- wflow_git_remote(verbose = FALSE, project = project)
 
   # Fail early if HEAD does not point to a branch
@@ -120,7 +120,8 @@ wflow_git_pull <- function(remote = NULL, branch = NULL, username = NULL,
   branch <- remote_and_branch$branch
 
   # Send warning if the remote branch is not the same one as local branch (HEAD)
-  warn_branch_mismatch(remote_branch = branch, local_branch = git_head@name)
+  warn_branch_mismatch(remote_branch = branch,
+                       local_branch = git2r_slot(git_head, "name"))
 
   # Obtain authentication ------------------------------------------------------
 
@@ -161,12 +162,17 @@ wflow_git_pull <- function(remote = NULL, branch = NULL, username = NULL,
                } else {
                  reason <- c("Pull failed for unknown reason.",
                              "\n\nThe error message from git2r::pull() was:\n\n",
-                             e$message)
+                             e$message,
+                             "\n\nThese sorts of errors are difficult to
+                             troubleshoot. If you have Git installed on your
+                             machine, the easiest solution is to instead run
+                             `git pull` in the Terminal. This is equivalent to
+                             wflow_git_pull().")
                }
                stop(wrap(reason), call. = FALSE)
              }
     )
-    merge_result <- git2r::merge(r, paste(remote, branch, sep = "/"))
+    merge_result <- git2r_merge(r, paste(remote, branch, sep = "/"))
   } else {
     merge_result <- NULL
   }
@@ -199,23 +205,23 @@ print.wflow_git_pull <- function(x, ...) {
   cat("\n")
 
   if (!is.null(x$merge_result)) {
-    if (x$merge_result@up_to_date) {
+    if (git2r_slot(x$merge_result, "up_to_date")) {
       cat("\n", wrap(
         "No changes were made because your local and remote repositories are
         in sync."
         ), "\n", sep = "")
-    } else if (x$merge_result@fast_forward && length(x$merge_result@sha) == 0) {
+    } else if (git2r_slot(x$merge_result, "fast_forward")) {
       cat("\n", wrap(
         "The latest changes in the remote repository were successfully pulled
-        into your local repository."
+        into your local repository (fast-forward merge)."
       ), "\n", sep = "")
-    } else if (x$merge_result@fast_forward) {
+    } else if (!is.na(git2r_slot(x$merge_result, "sha"))) {
       cat("\n", wrap(sprintf(
         "The latest changes in the remote repository were successfully pulled
         into your local repository. To combine the changes that differed
         between the two repositories, the merge commit %s was created.",
-      x$merge_result@sha)), "\n", sep = "")
-    } else if (x$merge_result@conflicts) {
+      git2r_slot(x$merge_result, "sha"))), "\n", sep = "")
+    } else if (git2r_slot(x$merge_result, "conflicts")) {
       cat("\n", wrap(
         "There were conflicts that Git could not resolve automatically when
         trying to pull changes from the remote repository. You will need to

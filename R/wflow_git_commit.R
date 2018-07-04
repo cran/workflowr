@@ -54,8 +54,9 @@
 #'
 #' \item \bold{dry_run}: The input argument \code{dry_run}.
 #'
-#' \item \bold{commit}: The \code{\link[git2r]{git_commit-class}} object
-#' returned by \link{git2r} (only included if \code{dry_run == FALSE}).
+#' \item \bold{commit}: The object returned by
+#' \link{git2r}::\code{\link[git2r]{commit}} (only included if \code{dry_run ==
+#' FALSE}).
 #'
 #' \item \bold{commit_files}: The relative path(s) to the file(s) included in
 #' the commit (only included if \code{dry_run == FALSE}).
@@ -122,6 +123,8 @@ wflow_git_commit <- function(files = NULL, message = NULL, all = FALSE,
     stop("No Git repository detected.")
   }
 
+  if (!dry_run) check_git_config(project, "`wflow_git_commit`")
+
   if (is.null(files) && !all)
     stop("Must specify files to commit, set `all = TRUE`, or both",
          call. = FALSE)
@@ -151,8 +154,8 @@ wflow_git_commit <- function(files = NULL, message = NULL, all = FALSE,
 # run, some of the files may not yet be built (which would cause an error).
 # Also, not every Rmd file will create output figures, but it's easier to just
 # attempt to add figures for every file.
-wflow_git_commit_ <- function(files = files, message = message, all = all,
-                          force = force, dry_run = dry_run, project = project) {
+wflow_git_commit_ <- function(files = NULL, message = NULL, all = FALSE,
+                              force = FALSE, dry_run = FALSE, project = ".") {
 
   # Obtain workflowr status
   s <- wflow_status(project = project)
@@ -163,7 +166,7 @@ wflow_git_commit_ <- function(files = files, message = message, all = all,
   if (!dry_run) {
     # Add the specified files
     if (!is.null(files)) {
-      git2r::add(r, relative(files, start = git2r::workdir(r)), force = force)
+      git2r::add(r, absolute(files), force = force)
     }
     if (all) {
       # Temporary fix until git2r::commit can do `git commit -a`
@@ -173,7 +176,7 @@ wflow_git_commit_ <- function(files = files, message = message, all = all,
       # bug that affects Ubuntu and Windows, but not macOS. Manually adding all
       # unstaged changes.
       unstaged <- unlist(git2r::status(r)$unstaged)
-      git2r::add(r, unstaged)
+      git2r::add(r, file.path(git2r_workdir(r), unstaged))
     }
     # Commit
     tryCatch(
@@ -195,7 +198,6 @@ wflow_git_commit_ <- function(files = files, message = message, all = all,
   class(o) <- "wflow_git_commit"
   if (!dry_run) {
     commit_files <- obtain_files_in_commit(r, commit)
-    commit_files <- paste0(git2r::workdir(r), commit_files)
     o$commit <- commit
     o$commit_files <- relative(commit_files)
   }
@@ -226,7 +228,7 @@ print.wflow_git_commit <- function(x, ...) {
   if (!x$dry_run) {
     cat(sep = "", "\n",
         wrap("The following file(s) were included in commit ",
-             stringr::str_sub(x$commit@sha, start = 1, end = 7)),
+             stringr::str_sub(git2r_slot(x$commit, "sha"), start = 1, end = 7)),
         ":\n")
     cat(shorten_site_libs(x$commit_files), sep = "\n")
   }

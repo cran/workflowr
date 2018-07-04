@@ -139,7 +139,7 @@ wflow_status <- function(files = NULL, project = ".") {
   s <- git2r::status(r, ignored = TRUE)
   # Convert from a list of lists of paths relative to the .git directory to a
   # list of character vectors of absolute paths
-  s <- lapply(s, function(x) paste0(git2r::workdir(r), as.character(x)))
+  s <- lapply(s, function(x) file.path(git2r_workdir(r), as.character(x)))
   # Convert from absolute paths to paths relative to working directory
   s <- lapply(s, relative)
   # Determine status of each analysis file in the Git repository. Each status
@@ -149,7 +149,7 @@ wflow_status <- function(files = NULL, project = ".") {
   mod_staged <- files_analysis %in% s$staged
   tracked <- files_analysis %in% setdiff(files_analysis,
                                          c(s$untracked, s$ignored))
-  files_committed <- paste0(git2r::workdir(r), get_committed_files(r))
+  files_committed <- get_committed_files(r)
   files_committed <- relative(files_committed)
   committed <- files_analysis %in% files_committed
   files_html <- to_html(files_analysis, outdir = o$docs)

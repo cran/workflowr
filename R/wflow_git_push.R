@@ -109,7 +109,7 @@ wflow_git_push <- function(remote = NULL, branch = NULL,
   # Must be using Git
   p <- wflow_paths(error_git = TRUE, project = project)
   r <- git2r::repository(path = p$git)
-  git_head <- git2r::head(r)
+  git_head <- git2r_head(r)
   remote_avail <- wflow_git_remote(verbose = FALSE, project = project)
 
   # Fail early if HEAD does not point to a branch
@@ -125,7 +125,8 @@ wflow_git_push <- function(remote = NULL, branch = NULL,
   branch <- remote_and_branch$branch
 
   # Send warning if the remote branch is not the same one as local branch (HEAD)
-  warn_branch_mismatch(remote_branch = branch, local_branch = git_head@name)
+  warn_branch_mismatch(remote_branch = branch,
+                       local_branch = git2r_slot(git_head, "name"))
 
   # Obtain authentication ------------------------------------------------------
 
@@ -170,7 +171,12 @@ wflow_git_push <- function(remote = NULL, branch = NULL,
                } else {
                  reason <- c("Push failed for unknown reason.",
                              "\n\nThe error message from git2r::push() was:\n\n",
-                             e$message)
+                             e$message,
+                             "\n\nThese sorts of errors are difficult to
+                             troubleshoot. If you have Git installed on your
+                             machine, the easiest solution is to instead run
+                             `git push` in the Terminal. This is equivalent to
+                             wflow_git_push().")
                }
                stop(wrap(reason), call. = FALSE)
              }

@@ -83,7 +83,7 @@ create_report <- function(input, output_dir, has_code, opts) {
 
 get_versions <- function(input, output_dir, blobs, r, github) {
 
-  blobs$fname <- file.path(git2r::workdir(r), blobs$path, blobs$name)
+  blobs$fname <- file.path(git2r_workdir(r), blobs$path, blobs$name)
   blobs$fname <- absolute(blobs$fname)
   blobs$ext <- tools::file_ext(blobs$fname)
 
@@ -92,7 +92,7 @@ get_versions <- function(input, output_dir, blobs, r, github) {
                       c("ext", "commit", "author", "when")]
   # Ignore blobs that don't map to commits (caused by `git commit --amend`)
   git_log <- git2r::commits(r)
-  git_log_sha <- vapply(git_log, function(x) x@sha, character(1))
+  git_log_sha <- vapply(git_log, function(x) git2r_slot(x, "sha"), character(1))
   blobs_file <- blobs_file[blobs_file$commit %in% git_log_sha, ]
   # Exit early if there are no past versions
   if (nrow(blobs_file) == 0) {
@@ -105,8 +105,9 @@ get_versions <- function(input, output_dir, blobs, r, github) {
                                get_commit_title,
                                "character(1)",
                                r = r)
-  git_html <- stringr::str_replace(html, git2r::workdir(r), "")
-  git_rmd <- stringr::str_replace(input, git2r::workdir(r), "")
+  workdir_w_trailing_slash <- paste0(git2r_workdir(r), "/")
+  git_html <- stringr::str_replace(html, workdir_w_trailing_slash, "")
+  git_rmd <- stringr::str_replace(input, workdir_w_trailing_slash, "")
 
   if (is.na(github)) {
     blobs_file$Version <- shorten_sha(blobs_file$Version)
@@ -165,11 +166,11 @@ get_versions_fig <- function(fig, r, github) {
   blobs <- git2r::odb_blobs(r)
   blobs$fname <- ifelse(blobs$path == "", blobs$name,
                         file.path(blobs$path, blobs$name))
-  blobs$fname_abs <- paste0(git2r::workdir(r), blobs$fname)
+  blobs$fname_abs <- file.path(git2r_workdir(r), blobs$fname)
   blobs_file <- blobs[blobs$fname_abs == fig, ]
   # Ignore blobs that don't map to commits (caused by `git commit --amend`)
   git_log <- git2r::commits(r)
-  git_log_sha <- vapply(git_log, function(x) x@sha, character(1))
+  git_log_sha <- vapply(git_log, function(x) git2r_slot(x, "sha"), character(1))
   blobs_file <- blobs_file[blobs_file$commit %in% git_log_sha, ]
 
   # Exit early if there are no past versions
@@ -225,7 +226,7 @@ get_versions_fig <- function(fig, r, github) {
 
 
 get_commit_title <- function(x, r) {
-  full <- git2r::lookup(r, x)@message
+  full <- git2r_slot(git2r::lookup(r, x), "message")
   title <- stringr::str_split(full, "\n")[[1]][1]
   return(title)
 }
@@ -235,7 +236,7 @@ check_vc <- function(input, r, s, github) {
    pass <- TRUE
    log <- git2r::commits(r)
    if (length(log) > 0) {
-     sha <- log[[1]]@sha
+     sha <- git2r_slot(log[[1]], "sha")
      sha7 <- shorten_sha(sha)
      if (!is.na(github)) {
        sha_display <- sprintf("<a href=\"%s/tree/%s\" target=\"_blank\">%s</a>",
@@ -481,7 +482,7 @@ build the HTML.
 
 add_git_path <- function(x, r) {
   if (!is.null(x)) {
-    paste0(git2r::workdir(r), x)
+    file.path(git2r_workdir(r), x)
   } else {
    NA_character_
   }

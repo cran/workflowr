@@ -5,65 +5,216 @@
 \title{Start a new workflowr project}
 \usage{
 wflow_start(directory, name = NULL, git = TRUE, existing = FALSE,
-  overwrite = FALSE, change_wd = TRUE, user.name = NULL,
-  user.email = NULL)
+  overwrite = FALSE, change_wd = TRUE, dry_run = FALSE,
+  user.name = NULL, user.email = NULL)
 }
 \arguments{
-\item{directory}{character. The directory for the project, e.g.
-"~/new-project". When \code{existing = FALSE}, the directory will
-be created.}
+\item{directory}{character. The directory where the workflowr
+project files will be added, e.g., "~/my-wflow-project". When
+\code{existing = FALSE}, the directory will be created.}
 
-\item{name}{character (default: NULL). Project name, e.g. "My Project". When
-\code{name = NULL}, the project name is automatically set based on the
-argument \code{directory}. For example, if \code{directory =
-"~/projects/myproject"}, then \code{name} is set to \code{"myproject"}.
-\code{name} is displayed on the site's navigation bar and the README.md.}
+\item{name}{character (default: \code{NULL}). The name of the
+project, e.g. "My Workflowr Project". When \code{name = NULL}, the
+project name is automatically determined based on
+\code{directory}. For example, if \code{directory =
+"~/projects/my-wflow-project"}, then \code{name} is set to
+\code{"my-wflow-project"}. The project name is displayed on the
+website's navigation bar and in the \code{README.md} file.}
 
-\item{git}{logical (default: TRUE). Should Git be used for version
-control? If \code{directory} is a new Git repository and \code{git
-= TRUE}, \code{wflow_start} will initialize the repository and make
-an initial commit. If \code{git = TRUE} and \code{directory} is
-already a Git repository, \code{wflow_start} will make an
-additional commit. In both cases, only files needed for the
-workflowr project will be included in the commit.}
+\item{git}{logical (default: \code{TRUE}). Should the workflowr
+files be committed with Git? If \code{git = TRUE} and no existing
+Git repository is detected, \code{wflow_start} will initialize the
+repository and make an initial commit. If a Git repository already
+exists in the chosen directory, \code{wflow_start} any newly
+created or modified files will be commited to the existing
+repository.}
 
-\item{existing}{logical (default: FALSE). Indicate if the specified
-\code{directory} already exists. The default prevents injecting the
-workflowr files into an unwanted location. Only set to TRUE if you wish to
-add the workflowr files to an existing project.}
+\item{existing}{logical (default: \code{FALSE}). Indicate whether
+\code{directory} already exists. This argument is added to prevent
+accidental creation of files in an existing directory; setting
+\code{existing = FALSE} prevents files from being created if the
+specified directory already exists.}
 
-\item{overwrite}{logical (default: FALSE). Control whether to overwrite
-existing files. Only relevant if \code{existing = TRUE}.}
+\item{overwrite}{logical (default: \code{FALSE}). Similar to
+\code{existing}, this argument prevents files from accidentally
+being overwritten when \code{overwrite = FALSE}. When
+\code{overwrite = TRUE}, any existing file in \code{directory} that
+has the same name as a workflowr file will be replaced by the
+workflowr file. When \code{git = TRUE}, all the standard workflowr
+files will be added and committed (regardless of whether they were
+overwritten or still contain the original content).}
 
-\item{change_wd}{logical (default: TRUE). Change the working directory to the
-\code{directory}.}
+\item{change_wd}{logical (default: \code{TRUE}). Change the working
+directory to the \code{directory}.}
 
-\item{user.name}{character (default: NULL). The user name used by Git to sign
-commits, e.g. "My Name". This setting will only apply to this specific
-workflowr project being created. To create a Git user name to apply to all
-workflowr projects (and Git repositories) on this computer, instead use
-\code{\link{wflow_git_config}}.}
+\item{dry_run}{logical (default: \code{FALSE}). When \code{dry_run
+= TRUE}, the actions are previewed without executing them.}
 
-\item{user.email}{character (default: NULL). The email addresse used by Git
-to sign commits, e.g. "email@domain". This setting will only apply to this
-specific workflowr project being created. To create a Git email address to
-apply to all workflowr projects (and Git repositories) on this computer,
-instead use \code{\link{wflow_git_config}}.}
+\item{user.name}{character (default: \code{NULL}). The user name
+used by Git to sign commits, e.g., "Ada Lovelace". This setting
+only applies to the workflowr project being created. To specify the
+global setting for the Git user name, use
+\code{\link{wflow_git_config}} instead. When \code{user.name =
+NULL}, no user name is recorded for the project, and the global
+setting will be used. This setting can be modified later
+by running \code{git config --local} in the Terminal.}
+
+\item{user.email}{character (default: \code{NULL}). The email
+address used by Git to sign commits, e.g.,
+"ada.lovelace@ox.ac.uk". This setting only applies to the workflowr
+project being created. To specify the global setting for the Git
+email address, use \code{\link{wflow_git_config}} instead. When
+\code{user.name = NULL}, no email address is recorded for the
+project, and the global setting will be used. This setting can be
+modified later by running \code{git config --local} in the Terminal.}
 }
 \value{
-Invisibly returns absolute path to workflowr project.
+An object of class \code{wflow_start}, which is a list with the
+  following elements:
+
+   \item{directory}{The input argument \code{directory}.}
+
+   \item{name}{The input argument \code{name}.}
+
+   \item{git}{The input argument \code{git}.}
+
+   \item{existing}{The input argument \code{existing}.}
+
+   \item{overwrite}{The input argument \code{overwrite}.}
+
+   \item{change_wd}{The input argument \code{change_wd}.}
+
+   \item{dry_run}{The input argument \code{dry_run}.}
+
+   \item{user.name}{The input argument \code{user.name}.}
+
+   \item{user.email}{The input argument \code{user.email}.}
+
+   \item{commit}{The object returned by
+   \link{git2r}::\code{\link[git2r]{commit}}, or \code{NULL} if \code{git =
+   FALSE}.}
 }
 \description{
-\code{wflow_start} creates a minimal workflowr project. The default
-behaviour is to add these files to a new directory, but it is also
-possible to populate an already existing project. By default, it
-also changes the working directory to the workflowr project.
+\code{wflow_start} creates a directory with the essential files for
+a workflowr project. The default behaviour is to add these files to
+a new directory, but it is also possible to populate an existing
+directory. By default, the working directory is changed to the
+workflowr project directory.
 }
 \details{
-This is the initial function that organizes the infrastructure to
-create a research website for your project. Note that while you do
-not need to use RStudio with workflowr, do not delete the Rproj
-file because it is required by other functions.
+This is recommended function to set up the file infrastructure for
+a workflowr project. If you are using RStudio, you can also create
+a new workflowr project as an "RStudio Project Template". Go to
+"File" -> "New Project..." then select "workflowr project" from the
+list of project types. In the future, you can return to your
+project by choosing menu option "Open Project..." and selecting the
+\code{.Rproj} file located at the root of the workflowr project
+directory. In RStudio, opening this file will change the working
+directory to the appropriate location, set the file navigator to
+the workflowr project directory, and configure the Git pane.
+
+\code{wflow_start} populates the chosen directory with the
+following files:
+
+\preformatted{|--- .gitignore
+|--- .Rprofile
+|--- _workflowr.yml
+|--- analysis/
+|   |--- about.Rmd
+|   |--- index.Rmd
+|   |--- license.Rmd
+|   |--- _site.yml
+|--- code/
+|   |--- README.md
+|--- data/
+|   |--- README.md
+|--- docs/
+|--- <directory>.Rproj
+|--- output/
+|   |--- README.md
+|--- README.md
+}
+
+The two \bold{required} subdirectories are \code{analysis/} and
+\code{docs/}. These directories should never be removed from the
+workflowr project.
+
+\code{analysis/} contains all the source R Markdown files that
+implement the analyses for your project. It contains a special R
+Markdown file, \code{index.Rmd}, that typically does not include R
+code, and is will be used to generate \code{index.html}, the
+homepage for the project website.  Additionally, this directory
+contains the important configuration file \code{_site.yml}. The
+website theme, navigation bar, and other properties can be
+controlled through this file (for more details see the
+documentation on
+\href{https://rmarkdown.rstudio.com/rmarkdown_websites.html}{R
+Markdown websites}). Do not delete \code{index.Rmd} or
+\code{_site.yml}.
+
+\code{docs/} will contain all the webpages generated from the R
+Markdown files in \code{analysis/}. Any figures generated by
+rendering the R Markdown files are also stored here. Each figure is
+saved according to the following convention:
+\code{docs/figure/<Rmd-filename>/<chunk-name>-#.png}, where
+\code{#} corresponds to which of the plots the chunk generated (one
+chunk can produce several plots).
+
+\code{_workflowr.yml} is an additional configuration file used only
+by workflowr. It is used to apply the workflowr reproducibility
+checks consistently across all R Markdown files. The most important
+setting is \code{knit_root_dir} which determines the directory
+where the scripts in \code{analysis/} are executed. The default is
+to run code from the project root (\emph{i.e.,} \code{"."}). To
+execute the code from \code{analysis/}, for example, change the
+setting to \code{knit_root_dir: "analysis"}. See
+\code{\link{wflow_html}} for more details.
+
+Another required file is the RStudio project file (ending in
+\code{.Rproj}). \emph{Do not delete this file even if you do not
+use RStudio; among other essential tasks, it is used to determine
+the project root directory.}
+
+The \bold{optional} directories are \code{data/}, \code{code/}, and
+\code{output/}. These directories are suggestions for organizing
+your workflowr project and can be removed if you do not find them
+relevant to your project.
+
+\code{data/} should be used to store "raw" (unprocessed) data
+files.
+
+\code{code/} should be used to store additional code that might not
+be appropriate to include in R Markdown files (e.g., code to
+preprocess the data, long-running scripts, or functions that are
+used in multiple R Markdown files).
+
+\code{output/} should be used to store processed data files and
+other outputs generated from the code and analyses. For example,
+scripts in \code{code/} that pre-process raw data files from
+\code{data/} should save the processed data files in
+\code{output/}.
+
+All these subdirectories except for \code{docs/} include a README
+file summarizing the contents of the subdirectory, and can be
+modified as desired, for example, to document the files stored in
+each directory.
+
+\code{.Rprofile} is an optional file in the root directory of the
+workflowr project containing R code that is executed whenever the
+\code{.Rproj} file is loaded in RStudio, or whenever R is started
+up inside the project root directory. This file includes the line
+of code \code{library("workflowr")} to ensure that the workflowr
+package is loaded.
+
+Finally, \code{.gitignore} is an optional file that indicates to
+Git which files should be ignored---that is, files that are never
+committed to the repository. Some suggested files to ignore such as
+\code{.Rhistory} and \code{.Rdata} are listed here.
+}
+\note{
+Do not delete the file \code{.Rproj} even if you do not use
+  RStudio; workflowr will not work correctly unless this file is
+  there.
 }
 \examples{
 \dontrun{
@@ -73,6 +224,9 @@ wflow_start("path/to/new-project")
 # Provide a custom name for the project.
 wflow_start("path/to/new-project", name = "My Project")
 
+# Preview what wflow_start would do
+wflow_start("path/to/new-project", dry_run = TRUE)
+
 # Add workflowr files to an existing project.
 wflow_start("path/to/current-project", existing = TRUE)
 
@@ -80,6 +234,7 @@ wflow_start("path/to/current-project", existing = TRUE)
 # commit them.
 wflow_start("path/to/current-project", git = FALSE, existing = TRUE)
 }
+
 }
 \seealso{
 vignette("wflow-01-getting-started")

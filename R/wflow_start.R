@@ -1,53 +1,207 @@
 #' Start a new workflowr project
 #'
-#' \code{wflow_start} creates a minimal workflowr project. The default
-#' behaviour is to add these files to a new directory, but it is also
-#' possible to populate an already existing project. By default, it
-#' also changes the working directory to the workflowr project.
+#' \code{wflow_start} creates a directory with the essential files for
+#' a workflowr project. The default behaviour is to add these files to
+#' a new directory, but it is also possible to populate an existing
+#' directory. By default, the working directory is changed to the
+#' workflowr project directory.
 #'
-#' This is the initial function that organizes the infrastructure to
-#' create a research website for your project. Note that while you do
-#' not need to use RStudio with workflowr, do not delete the Rproj
-#' file because it is required by other functions.
+#' This is recommended function to set up the file infrastructure for
+#' a workflowr project. If you are using RStudio, you can also create
+#' a new workflowr project as an "RStudio Project Template". Go to
+#' "File" -> "New Project..." then select "workflowr project" from the
+#' list of project types. In the future, you can return to your
+#' project by choosing menu option "Open Project..." and selecting the
+#' \code{.Rproj} file located at the root of the workflowr project
+#' directory. In RStudio, opening this file will change the working
+#' directory to the appropriate location, set the file navigator to
+#' the workflowr project directory, and configure the Git pane.
 #'
-#' @param directory character. The directory for the project, e.g.
-#'   "~/new-project". When \code{existing = FALSE}, the directory will
-#'   be created.
+#' \code{wflow_start} populates the chosen directory with the
+#' following files:
 #'
-#' @param name character (default: NULL). Project name, e.g. "My Project". When
-#'   \code{name = NULL}, the project name is automatically set based on the
-#'   argument \code{directory}. For example, if \code{directory =
-#'   "~/projects/myproject"}, then \code{name} is set to \code{"myproject"}.
-#'   \code{name} is displayed on the site's navigation bar and the README.md.
+#' \preformatted{|--- .gitignore
+#' |--- .Rprofile
+#' |--- _workflowr.yml
+#' |--- analysis/
+#' |   |--- about.Rmd
+#' |   |--- index.Rmd
+#' |   |--- license.Rmd
+#' |   |--- _site.yml
+#' |--- code/
+#' |   |--- README.md
+#' |--- data/
+#' |   |--- README.md
+#' |--- docs/
+#' |--- <directory>.Rproj
+#' |--- output/
+#' |   |--- README.md
+#' |--- README.md
+#' }
 #'
-#' @param git logical (default: TRUE). Should Git be used for version
-#'   control? If \code{directory} is a new Git repository and \code{git
-#'   = TRUE}, \code{wflow_start} will initialize the repository and make
-#'   an initial commit. If \code{git = TRUE} and \code{directory} is
-#'   already a Git repository, \code{wflow_start} will make an
-#'   additional commit. In both cases, only files needed for the
-#'   workflowr project will be included in the commit.
+#' The two \bold{required} subdirectories are \code{analysis/} and
+#' \code{docs/}. These directories should never be removed from the
+#' workflowr project.
 #'
-#' @param existing logical (default: FALSE). Indicate if the specified
-#'   \code{directory} already exists. The default prevents injecting the
-#'   workflowr files into an unwanted location. Only set to TRUE if you wish to
-#'   add the workflowr files to an existing project.
-#' @param overwrite logical (default: FALSE). Control whether to overwrite
-#'   existing files. Only relevant if \code{existing = TRUE}.
-#' @param change_wd logical (default: TRUE). Change the working directory to the
-#'   \code{directory}.
-#' @param user.name character (default: NULL). The user name used by Git to sign
-#'   commits, e.g. "My Name". This setting will only apply to this specific
-#'   workflowr project being created. To create a Git user name to apply to all
-#'   workflowr projects (and Git repositories) on this computer, instead use
-#'   \code{\link{wflow_git_config}}.
-#' @param user.email character (default: NULL). The email addresse used by Git
-#'   to sign commits, e.g. "email@domain". This setting will only apply to this
-#'   specific workflowr project being created. To create a Git email address to
-#'   apply to all workflowr projects (and Git repositories) on this computer,
-#'   instead use \code{\link{wflow_git_config}}.
+#' \code{analysis/} contains all the source R Markdown files that
+#' implement the analyses for your project. It contains a special R
+#' Markdown file, \code{index.Rmd}, that typically does not include R
+#' code, and is will be used to generate \code{index.html}, the
+#' homepage for the project website.  Additionally, this directory
+#' contains the important configuration file \code{_site.yml}. The
+#' website theme, navigation bar, and other properties can be
+#' controlled through this file (for more details see the
+#' documentation on
+#' \href{https://rmarkdown.rstudio.com/rmarkdown_websites.html}{R
+#' Markdown websites}). Do not delete \code{index.Rmd} or
+#' \code{_site.yml}.
 #'
-#' @return Invisibly returns absolute path to workflowr project.
+#' \code{docs/} will contain all the webpages generated from the R
+#' Markdown files in \code{analysis/}. Any figures generated by
+#' rendering the R Markdown files are also stored here. Each figure is
+#' saved according to the following convention:
+#' \code{docs/figure/<Rmd-filename>/<chunk-name>-#.png}, where
+#' \code{#} corresponds to which of the plots the chunk generated (one
+#' chunk can produce several plots).
+#'
+#' \code{_workflowr.yml} is an additional configuration file used only
+#' by workflowr. It is used to apply the workflowr reproducibility
+#' checks consistently across all R Markdown files. The most important
+#' setting is \code{knit_root_dir} which determines the directory
+#' where the scripts in \code{analysis/} are executed. The default is
+#' to run code from the project root (\emph{i.e.,} \code{"."}). To
+#' execute the code from \code{analysis/}, for example, change the
+#' setting to \code{knit_root_dir: "analysis"}. See
+#' \code{\link{wflow_html}} for more details.
+#'
+#' Another required file is the RStudio project file (ending in
+#' \code{.Rproj}). \emph{Do not delete this file even if you do not
+#' use RStudio; among other essential tasks, it is used to determine
+#' the project root directory.}
+#'
+#' The \bold{optional} directories are \code{data/}, \code{code/}, and
+#' \code{output/}. These directories are suggestions for organizing
+#' your workflowr project and can be removed if you do not find them
+#' relevant to your project.
+#'
+#' \code{data/} should be used to store "raw" (unprocessed) data
+#' files.
+#'
+#' \code{code/} should be used to store additional code that might not
+#' be appropriate to include in R Markdown files (e.g., code to
+#' preprocess the data, long-running scripts, or functions that are
+#' used in multiple R Markdown files).
+#'
+#' \code{output/} should be used to store processed data files and
+#' other outputs generated from the code and analyses. For example,
+#' scripts in \code{code/} that pre-process raw data files from
+#' \code{data/} should save the processed data files in
+#' \code{output/}.
+#'
+#' All these subdirectories except for \code{docs/} include a README
+#' file summarizing the contents of the subdirectory, and can be
+#' modified as desired, for example, to document the files stored in
+#' each directory.
+#'
+#' \code{.Rprofile} is an optional file in the root directory of the
+#' workflowr project containing R code that is executed whenever the
+#' \code{.Rproj} file is loaded in RStudio, or whenever R is started
+#' up inside the project root directory. This file includes the line
+#' of code \code{library("workflowr")} to ensure that the workflowr
+#' package is loaded.
+#'
+#' Finally, \code{.gitignore} is an optional file that indicates to
+#' Git which files should be ignored---that is, files that are never
+#' committed to the repository. Some suggested files to ignore such as
+#' \code{.Rhistory} and \code{.Rdata} are listed here.
+#'
+#' @note Do not delete the file \code{.Rproj} even if you do not use
+#'   RStudio; workflowr will not work correctly unless this file is
+#'   there.
+#'
+#' @param directory character. The directory where the workflowr
+#'   project files will be added, e.g., "~/my-wflow-project". When
+#'   \code{existing = FALSE}, the directory will be created.
+#'
+#' @param name character (default: \code{NULL}). The name of the
+#'   project, e.g. "My Workflowr Project". When \code{name = NULL}, the
+#'   project name is automatically determined based on
+#'   \code{directory}. For example, if \code{directory =
+#'   "~/projects/my-wflow-project"}, then \code{name} is set to
+#'   \code{"my-wflow-project"}. The project name is displayed on the
+#'   website's navigation bar and in the \code{README.md} file.
+#'
+#' @param git logical (default: \code{TRUE}). Should the workflowr
+#'   files be committed with Git? If \code{git = TRUE} and no existing
+#'   Git repository is detected, \code{wflow_start} will initialize the
+#'   repository and make an initial commit. If a Git repository already
+#'   exists in the chosen directory, \code{wflow_start} any newly
+#'   created or modified files will be commited to the existing
+#'   repository.
+#'
+#' @param existing logical (default: \code{FALSE}). Indicate whether
+#'   \code{directory} already exists. This argument is added to prevent
+#'   accidental creation of files in an existing directory; setting
+#'   \code{existing = FALSE} prevents files from being created if the
+#'   specified directory already exists.
+#'
+#' @param overwrite logical (default: \code{FALSE}). Similar to
+#'   \code{existing}, this argument prevents files from accidentally
+#'   being overwritten when \code{overwrite = FALSE}. When
+#'   \code{overwrite = TRUE}, any existing file in \code{directory} that
+#'   has the same name as a workflowr file will be replaced by the
+#'   workflowr file. When \code{git = TRUE}, all the standard workflowr
+#'   files will be added and committed (regardless of whether they were
+#'   overwritten or still contain the original content).
+#'
+#' @param change_wd logical (default: \code{TRUE}). Change the working
+#'   directory to the \code{directory}.
+#'
+#' @param dry_run logical (default: \code{FALSE}). When \code{dry_run
+#'   = TRUE}, the actions are previewed without executing them.
+#'
+#' @param user.name character (default: \code{NULL}). The user name
+#'   used by Git to sign commits, e.g., "Ada Lovelace". This setting
+#'   only applies to the workflowr project being created. To specify the
+#'   global setting for the Git user name, use
+#'   \code{\link{wflow_git_config}} instead. When \code{user.name =
+#'   NULL}, no user name is recorded for the project, and the global
+#'   setting will be used. This setting can be modified later
+#'   by running \code{git config --local} in the Terminal.
+#'
+#' @param user.email character (default: \code{NULL}). The email
+#'   address used by Git to sign commits, e.g.,
+#'   "ada.lovelace@ox.ac.uk". This setting only applies to the workflowr
+#'   project being created. To specify the global setting for the Git
+#'   email address, use \code{\link{wflow_git_config}} instead. When
+#'   \code{user.name = NULL}, no email address is recorded for the
+#'   project, and the global setting will be used. This setting can be
+#'   modified later by running \code{git config --local} in the Terminal.
+#'
+#' @return An object of class \code{wflow_start}, which is a list with the
+#'   following elements:
+#'
+#'    \item{directory}{The input argument \code{directory}.}
+#'
+#'    \item{name}{The input argument \code{name}.}
+#'
+#'    \item{git}{The input argument \code{git}.}
+#'
+#'    \item{existing}{The input argument \code{existing}.}
+#'
+#'    \item{overwrite}{The input argument \code{overwrite}.}
+#'
+#'    \item{change_wd}{The input argument \code{change_wd}.}
+#'
+#'    \item{dry_run}{The input argument \code{dry_run}.}
+#'
+#'    \item{user.name}{The input argument \code{user.name}.}
+#'
+#'    \item{user.email}{The input argument \code{user.email}.}
+#'
+#'    \item{commit}{The object returned by
+#'    \link{git2r}::\code{\link[git2r]{commit}}, or \code{NULL} if \code{git =
+#'    FALSE}.}
 #'
 #' @seealso vignette("wflow-01-getting-started")
 #'
@@ -59,6 +213,9 @@
 #' # Provide a custom name for the project.
 #' wflow_start("path/to/new-project", name = "My Project")
 #'
+#' # Preview what wflow_start would do
+#' wflow_start("path/to/new-project", dry_run = TRUE)
+#'
 #' # Add workflowr files to an existing project.
 #' wflow_start("path/to/current-project", existing = TRUE)
 #'
@@ -66,13 +223,16 @@
 #' # commit them.
 #' wflow_start("path/to/current-project", git = FALSE, existing = TRUE)
 #' }
+#'
 #' @export
+#'
 wflow_start <- function(directory,
                         name = NULL,
                         git = TRUE,
                         existing = FALSE,
                         overwrite = FALSE,
                         change_wd = TRUE,
+                        dry_run = FALSE,
                         user.name = NULL,
                         user.email = NULL) {
   if (!is.character(directory) | length(directory) != 1)
@@ -87,6 +247,8 @@ wflow_start <- function(directory,
     stop("overwrite must be a one element logical vector: ", overwrite)
   if (!is.logical(change_wd) | length(change_wd) != 1)
     stop("change_wd must be a one element logical vector: ", change_wd)
+  if (!is.logical(dry_run) | length(dry_run) != 1)
+    stop("dry_run must be a one element logical vector: ", dry_run)
   if (!(is.null(user.name) | (is.character(user.name) | length(user.name) != 1)))
     stop("user.name must be NULL or a one element character vector: ", user.name)
   if (!(is.null(user.email) | (is.character(user.email) | length(user.email) != 1)))
@@ -111,17 +273,17 @@ wflow_start <- function(directory,
     dir_existing <- obtain_existing_path(directory)
     if (git2r::in_repository(dir_existing)) {
       r <- git2r::repository(dir_existing, discover = TRUE)
-      stop("The directory where you have chosen to create a new workflowr directory is already within a Git repository. This is potentially dangerous. If you want to have a workflowr project created within this existing Git repository, re-run wflow_start with `git = FALSE` and then manually commit the new files. The following directory contains the existing .git directory: ", dirname(r@path))
+      stop("The directory where you have chosen to create a new workflowr directory is already within a Git repository. This is potentially dangerous. If you want to have a workflowr project created within this existing Git repository, re-run wflow_start with `git = FALSE` and then manually commit the new files. The following directory contains the existing .git directory: ", git2r_workdir(r))
     }
   }
 
   # Require that user.name and user.email be set locally or globally
   if (git && is.null(user.name) && is.null(user.email)) {
-    check_git_config(path = directory)
+    check_git_config(path = directory, "`wflow_start` with `git = TRUE`")
   }
 
   # Create directory if it doesn't already exist
-  if (!existing & !dir.exists(directory)) {
+  if (!existing && !dir.exists(directory) && !dry_run) {
     dir.create(directory, recursive = TRUE)
   }
 
@@ -152,41 +314,37 @@ wflow_start <- function(directory,
                                                "docs", "output")),
                         showWarnings = FALSE)
 
-  for (fname in project_files) {
-    if (!file.exists(fname) || overwrite) {
-      cat(glue::glue(templates[[fname]]), file = fname)
+  if (!dry_run) {
+    for (fname in project_files) {
+      if (!file.exists(fname) || overwrite) {
+        cat(glue::glue(templates[[fname]]), file = fname)
+      }
     }
   }
 
-  # Create .nojekyll files in analysis/ and docs/ directories
-  nojekyll_analysis <- file.path(directory, "analysis", ".nojekyll")
-  file.create(nojekyll_analysis)
-  nojekyll_docs <- file.path(directory, "docs", ".nojekyll")
-  file.create(nojekyll_docs)
-  project_files <- c(project_files, nojekyll_analysis, nojekyll_docs)
+  # Create .nojekyll file in docs/ directory
+  nojekyll <- file.path(directory, "docs", ".nojekyll")
+  project_files <- c(project_files, nojekyll)
+  if (!dry_run) {
+    file.create(nojekyll)
+  }
 
   # Configure, initialize, and commit ------------------------------------------
 
   # Configure RStudio
   rs_version <- check_rstudio_version()
 
-  message(glue::glue("Project \"{name}\" started in {directory}\n"))
-
   # Change working directory to workflowr project
-  if (change_wd) {
+  if (change_wd && !dry_run) {
     setwd(directory)
-  } else {
-    message("Did not change working directory.\n",
-            "Current working directory: ", getwd())
   }
 
   # Configure Git repository
-  if (git) {
+  if (git && !dry_run) {
     if (git2r::in_repository(directory)) {
       warning("A .git directory already exists in ", directory)
     } else {
       git2r::init(directory)
-      message("Git repository initialized.")
     }
     repo <- git2r::repository(directory)
     # Set local user.name and user.email
@@ -199,11 +357,91 @@ wflow_start <- function(directory,
     if (length(status$staged) == 0) {
       warning("No new workflowr files were committed.")
     } else{
-      git2r::commit(repo, message = "Start workflowr project.")
+      commit <- git2r::commit(repo, message = "Start workflowr project.")
     }
   }
 
-  return(invisible(directory))
+  # Prepare output -------------------------------------------------------------
+
+  o <- list(directory = directory,
+            name = name,
+            git = git,
+            existing = existing,
+            overwrite = overwrite,
+            change_wd = change_wd,
+            dry_run = dry_run,
+            user.name = user.name,
+            user.email = user.email,
+            commit = if (exists("commit", inherits = FALSE)) commit else NULL)
+  class(o) <- "wflow_start"
+
+  return(o)
+}
+
+#' @export
+print.wflow_start <- function(x, ...) {
+  if (x$dry_run) {
+    cat("wflow_start (\"dry run mode\"):\n")
+    if (x$existing) {
+      cat(sprintf("- Files will be added to existing directory %s\n", x$directory))
+    } else {
+      cat(sprintf("- New directory will be created at %s\n", x$directory))
+    }
+    cat(sprintf("- Project name will be \"%s\"\n", x$name))
+    if (x$change_wd) {
+      cat(sprintf("- Working directory will be changed to %s\n", x$directory))
+    } else {
+      cat(sprintf("- Working directory will continue to be %s\n", getwd()))
+    }
+    if (x$existing && git2r::in_repository(x$directory)) {
+      repo <- git2r::repository(x$directory, discover = TRUE)
+      cat(sprintf("- Git repo already present at %s\n", git2r_workdir(repo)))
+    } else if (x$git) {
+      cat(sprintf("- Git repo will be initiated at %s\n", x$directory))
+    } else {
+      cat(sprintf("- Git repo will not be initiated\n", x$directory))
+    }
+    if (x$git) {
+      cat("- Files will be commited with Git\n")
+    } else {
+      cat("- Files will not be commited with Git\n")
+    }
+  } else {
+    cat("wflow_start:\n")
+    if (x$existing) {
+      cat(sprintf("- Files added to existing directory %s\n", x$directory))
+    } else {
+      cat(sprintf("- New directory created at %s\n", x$directory))
+    }
+    cat(sprintf("- Project name is \"%s\"\n", x$name))
+    if (x$change_wd) {
+      cat(sprintf("- Working directory changed to %s\n", x$directory))
+    } else {
+      cat(sprintf("- Working directory continues to be %s\n", getwd()))
+    }
+    if (git2r::in_repository(x$directory)) {
+      repo <- git2r::repository(x$directory, discover = TRUE)
+      if (x$git && !x$existing) {
+        cat(sprintf("- Git repo initiated at %s\n", git2r_workdir(repo)))
+      } else if (x$git && x$existing && length(git2r::commits(repo)) == 1) {
+        cat(sprintf("- Git repo initiated at %s\n", git2r_workdir(repo)))
+      } else {
+        cat(sprintf("- Git repo already present at %s\n", git2r_workdir(repo)))
+      }
+      if (x$git) {
+        if (is.null(x$commit)) {
+          cat("- Files were not committed\n")
+        } else {
+          cat(sprintf("- Files were committed in version %s\n",
+                      shorten_sha(git2r_slot(x$commit, "sha"))))
+        }
+      }
+    } else {
+      cat("- No Git repo\n")
+    }
+  }
+
+  return(invisible(x))
 }
 
 check_rstudio_version <- function() {
@@ -219,46 +457,4 @@ check_rstudio_version <- function() {
     rs_version <- NULL
   }
   return(rs_version)
-}
-
-# Check for user.name and user.email in .gitconfig
-#
-# path character. Path to repository
-#
-# If unable to find user.name and user.email, stops the program.
-check_git_config <- function(path) {
-  stopifnot(is.character(path))
-  # Only look for local configuration file if the directory exists and it is a
-  # Git repo
-  if (dir.exists(path)) {
-    look_for_local <- git2r::in_repository(path)
-  } else {
-    look_for_local <- FALSE
-  }
-
-  # Determine if user.name and user.email are set
-  if (look_for_local) {
-    r <- git2r::repository(path)
-    git_config <- git2r::config(r)
-    config_email_set <- "user.email" %in% names(git_config$global) |
-                        "user.email" %in% names(git_config$local)
-    config_name_set <- "user.name" %in% names(git_config$global) |
-                       "user.name" %in% names(git_config$local)
-  } else {
-    git_config <- git2r::config()
-    config_email_set <- "user.email" %in% names(git_config$global)
-    config_name_set <- "user.name" %in% names(git_config$global)
-  }
-
-  if (config_email_set & config_name_set) {
-    return(invisible())
-  } else {
-   stop("You must set your user.name and user.email for Git first\n",
-        "to be able to run `wflow_start` with `git = TRUE`.\n",
-        "Run the following command in R, replacing the arguments\n",
-        "with your name and email address, and then re-run `wflow_start`:\n",
-        "\n",
-        'wflow_git_config(user.name = "Your Name", user.email = "email@domain")',
-        call. = FALSE)
-  }
 }

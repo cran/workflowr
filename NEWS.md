@@ -1,3 +1,87 @@
+# workflowr 1.1.0
+
+workflowr 1.1.0 is a maintenance release. It includes some minor new features,
+improved error handling, and bug fixes. Critically, it makes workflowr
+compatible with the latest release of [git2r][].
+
+[git2r]: https://cran.r-project.org/package=git2r
+
+The most noticeable changes are 1) `wflow_publish()`/`wflow_status()` are now
+much faster, especially if your project has many R Markdown files and/or many
+Git commits, 2) the rmarkdown package is no longer loaded automatically when you
+load workflowr, and 3) the new function `wflow_open()` (based on a previous
+version in [workflowrBeta][]) to open new or existing R Markdown files.
+
+[workflowrBeta]: https://github.com/jdblischak/workflowrBeta
+
+## New features
+
+* Resurrect `wflow_open()`. Since there is no longer a workflowr template in
+workflowr 1.0+, it creates a file with a minimal YAML header (@xiangzhu, #107)
+* Add bibliography before session information (reported by @docmanny, #102)
+* Add argument `verbose` to `wflow_build()`/`wflow_publish()` to display the
+build log in the R console as each file is built. Useful for monitoring
+long-running code chunks (idea from @pcarbo)
+* Argument `dry_run` added to `wflow_start()`
+* S3 print method for `wflow_start()`
+* Updates to `wflow_view()`:
+    * Renamed argument `recent` to `latest` to display the most recently
+    modified HTML file
+    * The argument `files` now requires correct paths to existing R Markdown or
+    HTML files. Previously, `wflow_view()` would guess the correct path. While
+    convenient, it was also potentially confusing since it was inconsistent with
+    the other workflowr functions
+    * The argument `latest` is no longer mutually-exclusive with `files`. If the
+    most recently modified HTML is different than those specified by `files`,
+    they will all be opened for viewing
+    * S3 print method
+    * Do not attemt to open HTML files with `browseURL()` if
+    `getOption("browser")` does not provide a default option
+
+## Internal changes
+
+* Dramatically increase speed of `wflow_status()`/`wflow_publish()` by using
+`git2r::odb_blobs()` to obtain past commit times of files (if these functions
+are stil slow for you, try running `git gc` in the Terminal)
+* Make workflowr compatible with latest release of [git2r][] as well as previous
+versions
+* Move rmarkdown from Depends to Imports. Unlike earlier versions, it's no
+longer necessary to call rmarkdown functions directly when using workflowr
+(which was the original intention of attaching rmarkdown). Also there is the
+potential for problems to arise from the order in which packages are loaded in a
+user's R session (described [here][leeper-depends])
+
+[leeper-depends]: https://github.com/leeper/Depends
+
+* Remove the fields `include`/`exclude` from the template `_site.yml`. Also
+remove the file `analysis/.nojekyll` (related to point above). Unlike
+`rmarkdown:::default_site`, `wflow_site()` does not copy the entire directory to
+the output directory, so these fields have no effect. See the R Markdown
+documentation on [Included files][included-files] for more information
+
+[included-files]: https://rmarkdown.rstudio.com/rmarkdown_websites.html#included-files
+
+*  Add GitHub Issue Templates (created by @pcarbo)
+
+## Bug fixes and improved error handling
+
+* Fix Windows-specific bug in `wflow_publish()`, `wflow_remove()`, and
+`wflow_git_commit()`. The bug prevented Windows users from running these
+functions from a subdirectory of a workflowr project
+
+* Restore all files in website directory if `wflow_publish()` fails to build any
+of the files (reported by @pcarbo)
+
+* If a user has not set the Git configuration variables `user.name` and
+`user.email`, any workflowr function that creates a Git commit will throw an
+informative error message. Previously this was only done for `wflow_start()`,
+but has been expanded to `wflow_git_commit()`, `wflow_publish()`, and
+`wflow_remove()` (idea from @pcarbo)
+
+* Ensure that `wflow_build()` creates a new `.nojekyll` file if necessary and
+that `wflow_publish()` commits it. This is most useful when changing the name of
+the output directory (#72)
+
 # workflowr 1.0.1
 
 Various minor changes to documentation, tests, and package infrastructure to

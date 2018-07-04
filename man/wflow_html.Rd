@@ -2,86 +2,141 @@
 % Please edit documentation in R/wflow_html.R
 \name{wflow_html}
 \alias{wflow_html}
-\title{Reproducible HTML document}
+\title{Convert to a workflowr HTML document}
 \usage{
 wflow_html(...)
 }
 \arguments{
-\item{...}{Arguments passed to \code{\link[rmarkdown]{html_document}}}
+\item{...}{Arguments passed to \code{\link[rmarkdown]{html_document}}.}
 }
 \value{
-\code{\link[rmarkdown]{output_format}}
+An \code{\link[rmarkdown]{output_format}} object to pass to
+\code{\link[rmarkdown]{render}}.
 }
 \description{
-The output format \code{wflow_html} automatically sets a seed with
-\code{\link{set.seed}}, inserts version of Git repo, inserts
-\code{\link{sessionInfo}}, inserts links to past versions of the file and
-figures, and more!
+Workflowr custom format for converting from R Markdown to an HTML document.
+\code{wflow_html} has two distinct functionalities: 1) configure the
+formatting of the HTML by extending \code{\link[rmarkdown]{html_document}}
+(see the
+\href{https://rmarkdown.rstudio.com/html_document_format.html}{RStudio
+documentation} for the available options), and 2) configure the workflowr
+reproducibility features (typically specified in a file named
+\code{_workflowr.yml}). \code{wflow_html} is intended to be used to generate
+webpages for a workflowr website, but it can also be used outside a workflowr
+project to implement reproducibilty features for single R Markdown documents.
 }
-\details{
-\code{wflow_html} extends \code{\link[rmarkdown]{html_document}}. To change
-aesthetic aspects of the website (e.g. the theme, table of contents, etc.),
-you can pass these arguments directly to \code{wflow_html} defined in
-_site.yml or the YAML header of the R Markdown files. To control the
-reproducibility features of \code{wflow_html}, you can edit
-_workflowr.yml or set them in the YAML header (described below).
+\section{HTML formatting}{
 
-\code{wflow_html} searches for workflowr options set in two locations. The
-first is a file named _workflowr.yml that exists in the current or an
-upstream directory (for a typical workflowr project, _workflowr.yml should be
-at the root of the project). Second, it checks for any options set in the
-YAML header of the R Markdown file, which will overrride the settings in
-_workflowr.yml.
 
-The currently available settings (and their default values) are:
+\code{wflow_html} extends
+\code{\link[rmarkdown]{html_document}}. To set default formatting options to
+be shared across all of your HTML files, set them in the file
+\code{analysis/_site.yml}. This special file can also be used to configure
+other aspects of the website like the navigation bar (for more details see
+the documentation on
+\href{https://rmarkdown.rstudio.com/rmarkdown_websites.html}{R Markdown
+websites}). For example, to use the theme "cosmo" and add a table of contents
+to every webpage, you would add the following to \code{analysis/_site.yml}:
 
-\itemize{
-
-\item \bold{knit_root_dir:} The directory to execute the code in the R
-  Markdown file. This is ultimately passed to
-  \code{\link[rmarkdown]{render}}. New workflowr projects define
-  \code{knit_root_dir} in _workflowr.yml to be \code{"."}, which results in
-  the code being executed in the root directory. If you'd prefer to knit the
-  files you can change this to \code{"analysis"}. Alternatively you could
-  delete this option from _workflowr.yml. This is because if
-  \code{knit_root_dir} is not set in _workflowr.yml or the YAML header, the
-  default is to execute the code in the same directory as the R Markdown file
-  (i.e. analysis/).
-
-\item \bold{seed:} The seed to set at the beginning of the analysis. New
-  workflowr projects will define the seed in _workflowr.yml as the date in
-  the format YYYYMMDD. If no seed is configured in _workflowr.yml or the
-  YAML header of the file, the default is 12345.
-
-\item \bold{sessioninfo:} The function to run to record the session
- information. The default is \code{sessionInfo()}.
-
-\item \bold{github:} The URL of the GitHub repo for creating links to past
- results. The default is to try and guess the URL from the remote
- repositories defined (see \code{\link{wflow_git_remote}}). If multiple users
- are collaborating on a project, setting the value of \code{github} in
- _workflowr.yml ensures that everyone generates the same URLs in the HTML
- files.
-
+\preformatted{
+output:
+  workflowr::wflow_html:
+    toc: true
+    theme: cosmo
 }
 
-Here's an example of a customized _workflowr.yml file:
+Formatting options can also be set for a specific file, which will override
+the default options set in \code{analysis/_site.yml}. For example, to remove
+the table of contents from one specific file, you would add the following to
+the YAML header of that file:
+
+\preformatted{
+output:
+  workflowr::wflow_html:
+    toc: false
+}
+
+However, this will preserve any of the other shared options (e.g. the theme
+in the above example). If you are not overriding any of the shared options,
+it is not necessary to specify \code{wflow_html} in the YAML header of your
+workflowr R Markdown files.
+}
+
+\section{Reproducibility features}{
+
+
+\code{wflow_html} also implements the workflowr reproducibility features. For
+example, it automatically sets a seed with \code{\link{set.seed}}; inserts
+the current code version (i.e. Git commit ID); runs \code{\link{sessionInfo}}
+at the end of the document; and inserts links to past versions of the file
+and figures.
+
+These reproducibility options are not passed directly as arguments to
+\code{wflow_html}. Instead these options are specified in
+\code{_workflowr.yml} or in the YAML header of an R Markdown file (using the
+field \code{workflowr:}). These options (along with their default values) are
+as follows:
+
+\describe{
+  \item{knit_root_dir}{The directory where code inside an R Markdown file is
+  executed; this ultimately sets argument \code{knit_root_dir} in
+  \code{\link[rmarkdown]{render}}. By default, \code{\link{wflow_start}} sets
+  \code{knit_root_dir} in the file \code{_workflowr.yml} to be the path
+  \code{"."}. This path is a
+  \href{https://swcarpentry.github.io/shell-novice/reference/#relative-path}{relative
+  path} from the location of \code{_workflowr.yml} to the directory for the
+  code to be executed. The path \code{"."} is shorthand for "current working
+  directory", and thus code is executed in the root of the workflowr project.
+  You can change this to be a relative path to any subdirectory of your
+  project. Also, if you were to delete this line from \code{_workflowr.yml},
+  then this would cause the code to be executed from the same directory in
+  which the R Markdown files are located (i.e. \code{analysis/} in the
+  default workflowr setup).
+
+  It is also possible (though in general not recommended) to configure the
+  \code{knit_root_dir} to apply to only one of the R Markdown files by
+  specifying it in the YAML header of that particular file. In this case, the
+  supplied path is interpreted as relative to the R Markdown file itself.
+  Thus \code{knit_root_dir: "../data"} would execute the code in the
+  subdirectory \code{data/}.}
+
+  \item{seed}{The \code{seed} argument in the call to \code{\link{set.seed}},
+  which is added to the beginning of an R Markdown file. In
+  \code{\link{wflow_start}}, this is set to the date using the format
+  \code{YYYYMMDD}. If no seed is specified, the default is \code{12345}.}
+
+  \item{sessioninfo}{The function that is run to record the session
+  information. The default is \code{"sessionInfo()"}.}
+
+  \item{github}{The URL of the GitHub repository for creating links to past
+  results. If unspecified, the URL is guessed from the "git remote" settings
+  (see \code{\link{wflow_git_remote}}). Specifying this setting inside
+  \code{_workflowr.yml} is especially helpful if multiple users are
+  collaborating on a project since it ensures that everyone generates the
+  same URLs.}
+}
+
+In the default workflowr setup, the file \code{_workflowr.yml} is located in
+the root of the project. For most users it is best to leave it there, but if
+you are interested in experimenting with the directory layout, the
+\code{_workflowr.yml} file can be located in the same directory as the R
+Markdown files or in any directory upstream of that directory.
+
+Here is an example of a customized \code{_workflowr.yml} file:
 
 \preformatted{
 # Execute code in project directory
 knit_root_dir: "."
 # Set a custom seed
 seed: 4815162342
-# Use devtools to generate the
-# session information
+# Use devtools to generate the session information.
 sessioninfo: "devtools::session_info()"
-# Always use this URL when inserting links
-# to past results
+# Use this URL when inserting links to past results.
 github: https://github.com/repoowner/mainrepo
 }
 
-The same could be acheived for a single file in its YAML header using the
-keyword workflowr:
+And here is an example of a YAML header inside an R Markdown file with the
+same exact custom settings as above:
 
 \preformatted{
 ---
@@ -90,10 +145,16 @@ output:
   workflowr::wflow_html:
     toc: false
 workflowr:
-  knit_root_dir: "."
+  knit_root_dir: ".."
   seed: 4815162342
   sessioninfo: "devtools::session_info()"
   github: https://github.com/repoowner/mainrepo
 ---
 }
+
+Note that the path passed to \code{knit_root_dir} changed to \code{".."}
+because it is relative to the R Markdown file instead of
+\code{_workflowr.yml}. Both have the effect of having the code executed in
+the root of the workflowr project.
 }
+

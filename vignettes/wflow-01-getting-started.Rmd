@@ -27,7 +27,17 @@ if (git2r::in_repository(tempdir())) {
     https://jdblischak.github.io/workflowr/articles/wflow-01-getting-started.html
     \n\nYou should consider removing the directory since it was likely created
     in error: ",
-    git2r::repository(tempdir(), discover = TRUE)@path))
+    workflowr:::git2r_slot(git2r::repository(tempdir(), discover = TRUE), "path")))
+}
+
+# The code in this vignette requires pandoc. Not every CRAN server has pandoc
+# installed.
+if (!rmarkdown::pandoc_available()) {
+  opts_chunk$set(eval = FALSE)
+  message(workflowr:::wrap(
+    "The code chunks below were not executed because this machine does not
+    have pandoc installed."
+  ))
 }
 ```
 
@@ -159,8 +169,11 @@ implementing the data analyses for your project. It also contains a special R
 Markdown file, `index.Rmd`, that does not contain any R code, but will be used
 to generate `index.html`, the homepage for your website. In addition, this
 directory contains the important configuration files `_site.yml`, which you can
-use to edit the theme, navigation bar, and other website aesthetics. Do not
+use to edit the theme, navigation bar, and other website aesthetics (for more
+details see the documentation on [R Markdown websites][rmd-website]). Do not
 delete `index.Rmd` or `_site.yml`.
+
+[rmd-website]: https://rmarkdown.rstudio.com/rmarkdown_websites.html
 
 * `docs/`: This directory contains all the HTML files for your
 website. The HTML files are built from the R Markdown files in
@@ -194,7 +207,7 @@ code).
 
 * `output/`: This directory is for processed data files and other
 outputs generated from the code and data. For example, scripts in
-`code` that pre-process raw data files from `data/` should save the
+`code/` that pre-process raw data files from `data/` should save the
 processed data files in `output/`.
 
 The `.Rprofile` file is a regular R script that is run once when the project is
@@ -317,8 +330,15 @@ wflow_status()
 
 At this point you have built a version-controlled website that exists on your
 local computer. The next step is to put your code on GitHub so that it can serve
-your website online. To do this, login to your account on GitHub and create a
-new repository following these [instructions][new-repo]. For the purposes of this
+your website online.
+
+To do this, login to your account on GitHub and create a new repository
+following these [instructions][new-repo]. The screenshot below shows the menu in
+the topright of the webpage.
+
+![Create a new repository on GitHub.](github-new-repo.png)
+
+For the purposes of this
 tutorial, the code below assumes that the GitHub repository also has the name
 "myproject." This isn't strictly neccesary (you can name your GitHub repository
 whatever you like), but it's generally good organizational practice to use the
@@ -372,14 +392,17 @@ the GitHub Pages section of the Settings page, you can click on the URL there.
 
 Now that you have a functioning website, the next step is to start analyzing
 data! Create a new R Markdown file, save it as `analysis/first-analysis.Rmd`,
-and open it in your preferred text editor (e.g. RStudio). For the purpose of
-this vignette, the code below creates a minimal file that only contains a title:
+and open it in your preferred text editor (e.g. RStudio). Alternatively, you can
+use the convenience function `wflow_open()`, which will create the file (and
+open it if you are using RStudio):
 
-```{r create-file}
-cat(file = "analysis/first-analysis.Rmd",
-"---
-title: 'First analysis'
----")
+```{r create-file, eval=FALSE}
+wflow_open("analysis/first-analysis.Rmd")
+```
+
+```{r create-file-hidden, echo=FALSE}
+# Don't want to actually open the file when building the vignette in RStudio
+wflow_open("analysis/first-analysis.Rmd", edit_in_rstudio = FALSE)
 ```
 
 Now you are ready to start writing! Go ahead and add some example code. If you
@@ -398,8 +421,8 @@ Once you are ready to publish it to share with others, you can use
 committed to the Git repository prior to generating the results.
 
 In order to make it easier to navigate to your new file, you can include a link
-to it on the main index page. First open `analysis/index.Rmd`. Second paste
-the following line into `index.Rmd`:
+to it on the main index page. First open `analysis/index.Rmd` (optionally using
+`wflow_open()`). Second paste the following line into `index.Rmd`:
 
 ```
 Click on this [link](first-analysis.html) to see my results.
@@ -447,7 +470,8 @@ latest changes to the website.
 
 This is the general workflow:
 
-1. Open a new or existing R Markdown file in `analysis/`
+1. Open a new or existing R Markdown file in `analysis/` (optionally using
+`wflow_open()`)
 
 1. Perform your analysis in the R Markdown file (For RStudio users: to quickly
 develop the code I recommend executing the code in the R console via Ctrl-Enter
@@ -465,8 +489,8 @@ HTML files
 1. Push the changes to GitHub with `wflow_git_push()` (or `git push` in the
 Terminal)
 
-This ensures that the "Code version:" inserted into each HTML file corresponds
-to the state of the Git repository at the time the HTML was built.
+This ensures that the code version recorded at the top of an HTML file
+corresponds to the state of the Git repository at the time it was built.
 
 The only exception to this workflow is if you are updating the aesthetics of
 your website (e.g. anytime you make edits to `analysis/_site.yml`). In this case

@@ -4,19 +4,18 @@
 \alias{wflow_view}
 \title{View research website locally}
 \usage{
-wflow_view(files = NULL, recent = FALSE, dry_run = FALSE, project = ".")
+wflow_view(files = NULL, latest = FALSE, dry_run = FALSE, project = ".")
 }
 \arguments{
 \item{files}{character (default: NULL). Name(s) of the specific file(s) to
 view. These can be either the name(s) of the R Markdown file(s) in the
-analysis directory or the HTML file(s) in the docs directory. Also, the
-full path(s) to the file(s) can be input or just the basename(s) of the
-file(s). Supports file
+analysis directory or the HTML file(s) in the docs directory. Supports file
 \href{https://en.wikipedia.org/wiki/Glob_(programming)}{globbing}.}
 
-\item{recent}{logical (default: FALSE). If \code{files = NULL}, display the
-HTML file with the most recent modification time. If \code{files = NULL}
-and \code{recent = FALSE}, then \code{index.html} is viewed.}
+\item{latest}{logical (default: FALSE). Display the HTML file with the most
+recent modification time (in addition to those specified in \code{files}).
+If \code{files = NULL} and \code{latest = FALSE}, then \code{index.html} is
+viewed.}
 
 \item{dry_run}{logical (default: FALSE). Do not actually view file(s). Mainly
 useful for testing.}
@@ -26,8 +25,20 @@ current working directory is within the project. If this is not true,
 you'll need to provide the path to the project directory.}
 }
 \value{
-Invisibly returns a character vector of the relative paths to the
-  HTML files to be viewed.
+An object of class \code{wflow_view}, which is a list with the
+  following elements:
+
+  \item{files}{The input argument \code{files} (converted to relative paths).}
+
+  \item{latest}{The input argument \code{latest}.}
+
+  \item{dry_run}{The input argument \code{dry_run}.}
+
+  \item{browser}{Logical indicating if a default browser has been set. If
+  FALSE, no HTML files can be opened. This is determined by the value
+  returned by \code{getOption("browser")}.}
+
+  \item{opened}{The HTML files opened by \code{wflow_view}.}
 }
 \description{
 \code{wflow_view} displays the website locally in your browser or the RStudio
@@ -35,10 +46,9 @@ Viewer pane.
 }
 \details{
 \code{wflow_view} by default displays the file \code{index.html}. To view the
-most recently modified HTML file, set \code{recent = TRUE}. To specify which
+most recently modified HTML file, set \code{latest = TRUE}. To specify which
 file(s) to view, specify either the name(s) of the R Markdown or HTML
-file(s). The path(s) to the file(s) will be discarded, thus only HTML files
-in docs directory can be viewed with this function.
+file(s).
 
 \code{wflow_view} uses \code{\link{browseURL}} to view the HTML files in the
 browser. If you wish to do something non-traditional like view an HTML file
@@ -49,6 +59,10 @@ If \code{wflow_view} is run in the RStudio IDE and only one file has been
 requested to be viewed, the file is displayed in the
 \href{https://rstudio.github.io/rstudio-extensions/rstudio_viewer.html}{RStudio
 Viewer}.
+
+If R has no default browser set (determined by \code{getOption("browser")}),
+then \code{wflow_view} cannot open any HTML files. See
+\code{\link{browseURL}} for setup instructions.
 }
 \examples{
 \dontrun{
@@ -57,20 +71,17 @@ Viewer}.
 wflow_view()
 
 # View the most recently modified HTML file
-wflow_view(recent = TRUE)
+wflow_view(latest = TRUE)
 
 # View a file by specifying the R Markdown file
-# (the following two are equivalent)
-wflow_view("fname.Rmd")
 wflow_view("analysis/fname.Rmd")
 
 # View a file by specifying the HTML file
-# (the following two are equivalent)
-wflow_view("fname.html")
 wflow_view("docs/fname.html")
 
 # View multiple files
 wflow_view(c("fname1.Rmd", "fname2.Rmd"))
+wflow_view("docs/*html")
 }
 }
 \seealso{

@@ -13,7 +13,17 @@ if (git2r::in_repository(tempdir())) {
     https://jdblischak.github.io/workflowr/articles/wflow-01-getting-started.html
     \n\nYou should consider removing the directory since it was likely created
     in error: ",
-    git2r::repository(tempdir(), discover = TRUE)@path))
+    workflowr:::git2r_slot(git2r::repository(tempdir(), discover = TRUE), "path")))
+}
+
+# The code in this vignette requires pandoc. Not every CRAN server has pandoc
+# installed.
+if (!rmarkdown::pandoc_available()) {
+  opts_chunk$set(eval = FALSE)
+  message(workflowr:::wrap(
+    "The code chunks below were not executed because this machine does not
+    have pandoc installed."
+  ))
 }
 
 ## ----chunk-options, cache=FALSE, include=FALSE---------------------------
@@ -78,11 +88,12 @@ wflow_git_remote("origin", "myname", "myproject")
 ## ----wflow-git-push------------------------------------------------------
 wflow_git_push(dry_run = TRUE)
 
-## ----create-file---------------------------------------------------------
-cat(file = "analysis/first-analysis.Rmd",
-"---
-title: 'First analysis'
----")
+## ----create-file, eval=FALSE---------------------------------------------
+#  wflow_open("analysis/first-analysis.Rmd")
+
+## ----create-file-hidden, echo=FALSE--------------------------------------
+# Don't want to actually open the file when building the vignette in RStudio
+wflow_open("analysis/first-analysis.Rmd", edit_in_rstudio = FALSE)
 
 ## ----edit-index, include=FALSE-------------------------------------------
 cat("\nClick on this [link](first-analysis.html) to see my results.\n",

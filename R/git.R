@@ -46,26 +46,70 @@ extract_commit <- function(path, num) {
   return(list(sha1 = sha1, message = commit_message))
 }
 
+# Check for user.name and user.email in .gitconfig
+#
+# path character. Path to repository
+#
+# If unable to find user.name and user.email, stops the program.
+check_git_config <- function(path, custom_message = "this function") {
+  stopifnot(is.character(path))
+  # Only look for local configuration file if the directory exists and it is a
+  # Git repo
+  if (dir.exists(path)) {
+    look_for_local <- git2r::in_repository(path)
+  } else {
+    look_for_local <- FALSE
+  }
+
+  # Determine if user.name and user.email are set
+  if (look_for_local) {
+    r <- git2r::repository(path, discover = TRUE)
+    git_config <- git2r::config(r)
+    config_email_set <- "user.email" %in% names(git_config$global) |
+      "user.email" %in% names(git_config$local)
+    config_name_set <- "user.name" %in% names(git_config$global) |
+      "user.name" %in% names(git_config$local)
+  } else {
+    git_config <- git2r::config()
+    config_email_set <- "user.email" %in% names(git_config$global)
+    config_name_set <- "user.name" %in% names(git_config$global)
+  }
+
+  if (config_email_set & config_name_set) {
+    return(invisible())
+  } else {
+    stop(wrap(
+      "You must set your user.name and user.email for Git first to be able to
+      run ", custom_message, ". To do this, run the following command in R,
+      replacing the arguments with your name and email address:\n\n
+      wflow_git_config(user.name = \"Your Name\", user.email = \"email@domain\")"),
+      call. = FALSE)
+  }
+}
+
 # Obtain all the committed files in a Git repository at a given commit.
 #
 # The default is to use the head commit.
+#
+# Returns absolute paths.
 get_committed_files <- function(repo, commit = NULL) {
   n_commits <- length(git2r::commits(repo))
   if (n_commits == 0) {
-    stop(wrap("The Git repository has no commits yet."))
+    return(NA)
   }
   if (is.null(commit)) {
-    commit <- git2r::lookup(repo, git2r::branch_target(git2r::head(repo)))
+    commit <- git2r::lookup(repo, git2r::branch_target(git2r_head(repo)))
   }
   tree <- git2r::tree(commit)
   files <- ls_files(tree)
+  files <- absolute(file.path(git2r_workdir(repo), files))
   return(files)
 }
 
 # List all files in a given "git_tree" object.
 ls_files <- function (tree) {
-  tree_list <- methods::as(tree, "list")
-  tree_df <- methods::as(tree, "data.frame")
+  tree_list <- git2r_as.list(tree)
+  tree_df <-git2r_as.data.frame(tree)
   names(tree_list) <- tree_df$name
   files <- tree_df$name[tree_df$type == "blob"]
   dirs <- tree_df$name[tree_df$type == "tree"]
@@ -86,100 +130,37 @@ ls_files <- function (tree) {
 # files: character vector of filenames
 # outdir: directory with website files
 get_outdated_files <- function(repo, files, outdir = NULL) {
+  if (length(files) == 0) return(files)
+
   ext <- tools::file_ext(files)
   if (!all(grepl("[Rr]md", ext)))
     stop("Only R Markdown files are accepted.")
   # Corresponding HTML files
   html <- to_html(files, outdir = outdir)
   # Remove preceding path if necessary. Has to be relative to .git directory.
-  path_to_git <- git2r::workdir(repo)
+  path_to_git <- paste0(git2r_workdir(repo), "/")
   files <- stringr::str_replace(files, path_to_git, "")
   html <- stringr::str_replace(html, path_to_git, "")
   # For each source file, determine if it has been committed more recently than
   # its corresponding HTML
   out_of_date <- logical(length = length(files))
+
+  blobs <- git2r::odb_blobs(repo)
+  blobs$fname <- ifelse(blobs$path == "", blobs$name,
+                        file.path(blobs$path, blobs$name))
+
   for (i in seq_along(files)) {
     # Most recent commit time of source and HTML files
-    recent_source <- get_recent_commit_time(repo, files[i])
-    recent_html <- get_recent_commit_time(repo, html[i])
+    recent_source <- max(blobs$when[blobs$fname == files[i]])
+    recent_html <- max(blobs$when[blobs$fname == html[i]])
     if (recent_source >= recent_html) {
       out_of_date[i] <- TRUE
     }
   }
   outdated <- files[out_of_date]
   # Prepend path to Git repository
-  outdated <- paste0(path_to_git, outdated)
+  outdated <- file.path(path_to_git, outdated)
   return(outdated)
-}
-
-# Get the time of the most recent commit for a file.
-#
-# repo: git_repository object
-# f: path to file relative to .git
-#
-# Note: This function is not vectorized.
-get_recent_commit_time <- function(repo, f) {
-  # Obtain every commit for the file
-  blame <- git2r::blame(repo, f)
-  # Extract the times of the commits
-  times <- sapply(blame@hunks,
-                  function(x) git2r::when(x@final_signature@when))
-  times <- strptime(times, format = "%Y-%m-%d %H:%M:%S")
-  times <- sort(unique(times), decreasing = TRUE)
-  # Most recent commit time
-  recent <- times[1]
-  return(recent)
-}
-
-# Decide which files to render and commit
-#
-# Recursively search the commit log until the R Markdown file or its
-# corresponding HTML file is found. If the Rmd is found first, the HTML file
-# needs to be re-rendered, added, and committed (return TRUE). If the HTML file
-# is found first, then it is up-to-date (return FALSE).
-#
-# @seealso \code{\link{obtain_files_in_commit}},
-#   \code{\link{obtain_files_in_commit_root}}, \code{\link{wflow_git_commit}}
-decide_to_render <- function(repo, log, rmd) {
-  stopifnot(class(repo) == "git_repository",
-            class(log) == "list",
-            is.character(rmd))
-  if (length(log) == 0) {
-    warning("File not found in commit log: ", rmd)
-    return(NA)
-  } else {
-    stopifnot(sapply(log, function(x) class(x) == "git_commit"))
-  }
-  html <- file.path("docs", stringr::str_replace(basename(rmd), "Rmd$", "html"))
-  # Obtain the files updated in the most recent commit, similar to `git
-  # status --stat`
-  parent_commit <- git2r::parents(log[[1]])
-  # The next action depends on what kind of commit is the most recent. Skip
-  # merge commits (2 parents). Obtain files from a standard commit (1 parent)
-  # using obtain_files_in_commit. Obtain files from root commit (0 parents)
-  # using obtain_files_in_commit_root.
-  if (length(parent_commit) == 2) {
-    return(decide_to_render(repo, log[-1], rmd))
-  } else if (length(parent_commit) == 1) {
-    files <- obtain_files_in_commit(repo, log[[1]])
-  } else if (length(parent_commit) == 0) {
-    files <- obtain_files_in_commit_root(repo, log[[1]])
-  }
-  # Decide if the R Markdown file should be rendered (it has been updated most
-  # recently), not rendered (the HTML has been updated more recently), or to
-  # continue searching the commit log (neither the Rmd nor HTML has been
-  # observed in the commit log yet).
-  if (rmd %in% files) {
-    return(TRUE)
-  } else if (html %in% files) {
-    return(FALSE)
-  } else {
-    return(decide_to_render(repo, log[-1], rmd))
-  }
-
-  # This final return should only be executed if there is an error in the
-  # recursive function.
-  return(files)
 }
 
 # Obtain the files updated in a commit
@@ -188,26 +169,39 @@ decide_to_render <- function(repo, log, rmd) {
 # running a diff between the trees pointed to by the commit and its parent
 # commit.
 #
-# This only works for commits that have one parent commit. Thus it will fail
-# for merge commits (two parents) or the initial root commit (zero parents).
-# two most recent commits. This uses `diff,git_tree`. See the source code at
+# This only works for commits that have one parent commit. Thus it will fail for
+# merge commits (two or more parents) or the initial root commit (zero parents).
+# This uses `diff,git_tree`. See the source code at
 # \url{https://github.com/ropensci/git2r/blob/89d916f17cb979b3cc21cbb5834755a2cf075f5f/R/diff.r#L314}
 # and examples at
 # \url{https://github.com/ropensci/git2r/blob/cb30b1dd5f8b57978101ea7b7dc26ae2c9eed38e/tests/diff.R#L88}.
 #
-# @seealso \code{\link{obtain_files_in_commit_root}},
-#   \code{\link{decide_to_render}}
+# @seealso \code{\link{obtain_files_in_commit_root}}
+#
+# Returns absolute paths.
 obtain_files_in_commit <- function(repo, commit) {
   stopifnot(class(repo) == "git_repository",
             class(commit) == "git_commit")
   parent_commit <- git2r::parents(commit)
-  if (length(parent_commit) != 1) {
+
+  # 3 possibilities:
+  #
+  # 1. Root commit with 0 parents
+  # 2. Standard commit with 1 parent
+  # 3. Merge commit with 2+ parents (yes, it's possible to merge more than 2 branches!)
+  if (length(parent_commit) == 0) {
+    files <- obtain_files_in_commit_root(repo, commit)
+  } else if (length(parent_commit) == 1) {
+    git_diff <- git2r_diff(git2r::tree(commit),
+                            git2r::tree(parent_commit[[1]]))
+    files <- sapply(git2r_slot(git_diff, "files"),
+                    function(x) git2r_slot(x, "new_file"))
+  } else {
     stop(sprintf("Cannot perform diff on commit %s because it has %d parents",
-                 commit@sha, length(parent_commit)))
+                 git2r_slot(commit, "sha"), length(parent_commit)))
   }
-  git_diff <- git2r::diff(git2r::tree(commit),
-                          git2r::tree(parent_commit[[1]]))
-  files <- sapply(git_diff@files, function(x) x@new_file)
+
+  files <- absolute(file.path(git2r_workdir(repo), files))
   return(files)
 }
 
@@ -220,13 +214,15 @@ obtain_files_in_commit <- function(repo, commit) {
 #
 # This only works for the root commit, i.e. it must have no parents.
 #
-# @seealso \code{\link{obtain_files_in_commit}}, \code{\link{decide_to_render}}
+# @seealso \code{\link{obtain_files_in_commit}}
+#
+# Returns paths relative to Git root directory.
 obtain_files_in_commit_root <- function(repo, commit) {
   # Obtain the files in the root commit of a Git repository
   stopifnot(class(repo) ==  "git_repository",
             class(commit) == "git_commit",
             length(git2r::parents(commit)) == 0)
-  entries <- methods::as(git2r::tree(commit), "data.frame")
+  entries <- git2r_as.data.frame(git2r::tree(commit))
   files <- character()
   while (nrow(entries) > 0) {
     if (entries$type[1] == "blob") {
@@ -241,7 +237,7 @@ obtain_files_in_commit_root <- function(repo, commit) {
       #  - add the subdirectory to the name so that path is correct
       #  - remove the entry from beginning and add new entries to end of
       #    data.frame
-      new_tree_df <- methods::as(git2r::lookup(repo, entries$sha[1]), "data.frame")
+      new_tree_df <- git2r_as.data.frame(git2r::lookup(repo, entries$sha[1]))
       new_tree_df$name <- file.path(entries$name[1], new_tree_df$name)
       entries <- rbind(entries[-1, ], new_tree_df)
     } else {
@@ -320,13 +316,14 @@ check_remote <- function(remote, remote_avail) {
 # Returns a list of length two.
 determine_remote_and_branch <- function(repo, remote, branch) {
   stopifnot(class(repo) == "git_repository")
-  git_head <- git2r::head(repo)
+  git_head <- git2r_head(repo)
   tracking <- git2r::branch_get_upstream(git_head)
   # If both remote and branch are NULL and the current branch is tracking a
   # remote branch, use this remote and branch.
   if (is.null(remote) && is.null(branch) && !is.null(tracking)) {
     remote <- git2r::branch_remote_name(tracking)
-    branch <- stringr::str_split_fixed(tracking@name, "/", n = 2)[, 2]
+    branch <- stringr::str_split_fixed(git2r_slot(tracking, "name"),
+                                       "/", n = 2)[, 2]
   }
   # If remote is NULL, take an educated guess at what the user would want.
   if (is.null(remote)) {
@@ -334,7 +331,7 @@ determine_remote_and_branch <- function(repo, remote, branch) {
   }
   # If branch is NULL, use the same name as the current branch.
   if (is.null(branch)) {
-    branch <- git_head@name
+    branch <- git2r_slot(git_head, "name")
   }
 
   return(list(remote = remote, branch = branch))

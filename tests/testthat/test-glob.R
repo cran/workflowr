@@ -116,6 +116,24 @@ test_that("wflow_git_commit accepts file globs", {
                "Invalid file glob:")
 })
 
+test_that("wflow_open accepts file globs", {
+  rmd_glob_expanded <- Sys.glob(rmd_glob)
+  open_w_glob <- wflow_open(rmd_glob, change_wd = FALSE, edit_in_rstudio = FALSE,
+                            project = site_dir)
+  expect_identical(relative(open_w_glob$files), rmd_glob_expanded)
+
+  expect_error(wflow_open(file.path(s$analysis, "bad*blob.Rmd"),
+                          project = site_dir),
+               "Invalid file glob:")
+
+  rmd_new <- file.path(s$analysis, "new.Rmd")
+  on.exit(file.remove(rmd_new))
+  open_w_glob_new <- wflow_open(c(rmd_glob, rmd_new), change_wd = FALSE,
+                                edit_in_rstudio = FALSE, project = site_dir)
+  expect_identical(relative(open_w_glob_new$files), c(rmd_glob_expanded, rmd_new))
+  expect_true(file.exists(rmd_new))
+})
+
 test_that("wflow_publish accepts file globs", {
 
   skip_on_cran()
@@ -148,7 +166,7 @@ test_that("wflow_view accepts file globs", {
   file.create(html)
   on.exit(file.remove(html))
   actual <- wflow_view(rmd_glob, dry_run = TRUE, project = site_dir)
-  expect_identical(actual, html)
+  expect_identical(actual$opened, html)
   expect_error(wflow_view(file.path(s$analysis, "bad*blob.Rmd"),
                             dry_run = TRUE, project = site_dir),
                "Invalid file glob:")

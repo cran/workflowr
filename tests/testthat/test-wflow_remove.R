@@ -3,6 +3,10 @@ context("wflow_remove")
 # Setup -----------------------------------------------------------------------
 
 library("git2r")
+
+# Load helper function local_no_gitconfig()
+source("helpers.R", local = TRUE)
+
 cwd <- getwd()
 tdir <- tempfile("test-wflow_remove-")
 on.exit(setwd(cwd))
@@ -88,14 +92,15 @@ test_that("wflow_remove removes a published Rmd file and its associated files", 
   expect_true(all(file.exists(rmd_published, data_published),
                   dir.exists(c(cache_published, fig_docs_published))))
   files_committed <- workflowr:::get_committed_files(r)
-  expect_true(all(c(rmd_published, data_published) %in% files_committed))
+  expect_true(all(c(rmd_published, data_published) %in% relative(files_committed)))
   # Now remove the files
   actual <- wflow_remove(c(rmd_published, data_published))
   expect_false(any(file.exists(rmd_published, data_published),
                    dir.exists(c(cache_published, fig_docs_published))))
   commit_latest <- commits(r)[[1]]
-  expect_identical(actual$commit@sha, commit_latest@sha)
-  expect_identical(commit_latest@message,
+  expect_identical(git2r_slot(actual$commit, "sha"),
+                   git2r_slot(commit_latest, "sha"))
+  expect_identical(git2r_slot(commit_latest, "message"),
                    "wflow_remove(c(rmd_published, data_published))")
   # Confirm the files were removed from the Git directory
   files_committed <- workflowr:::get_committed_files(r)
@@ -105,8 +110,8 @@ test_that("wflow_remove removes a published Rmd file and its associated files", 
 test_that("wflow_remove can remove files with no Git repo present", {
   # Temporarily move .git directory
   tgit <- tempfile("git-")
-  on.exit(file.rename(from = tgit, to = p$git), add = TRUE)
-  file.rename(from = p$git, to = tgit)
+  on.exit(file.rename(from = tgit, to = file.path(p$git, ".git")), add = TRUE)
+  file.rename(from = file.path(p$git, ".git"), to = tgit)
   tgit <- workflowr:::absolute(tgit)
   # The test will remove README, so restore it afterwards
   f <- "README.md"
@@ -132,6 +137,19 @@ test_that("wflow_remove can remove a directory", {
   expect_identical(actual$files_git, f)
   expect_false(dir.exists(d))
   expect_false(file.exists(f))
+})
+
+test_that("wflow_remove can remove a file with a relative path from a subdir", {
+  rmd <- file.path(p$analysis, "new.Rmd")
+  file.create(rmd)
+  add(r, rmd)
+  commit(r, "Add an rmd file to remove")
+
+  expect_silent(with_dir("code/",
+                         o <- wflow_remove(file.path("../analysis", basename(rmd)))))
+  expect_false(file.exists(rmd))
+  s <- status(r)
+  expect_equal(length(s$untracked) + length(s$unstaged) + length(s$staged), 0)
 })
 
 # Test error handling ----------------------------------------------------------
@@ -202,4 +220,26 @@ test_that("wflow_remove requires valid argument: project", {
   expect_error(wflow_remove("analysis/index.Rmd", project = "nonexistent/",
                             dry_run = TRUE),
                "project directory does not exist.")
+})
+
+test_that("wflow_remove throws an error if user.name and user.email are not set", {
+
+  skip_on_cran()
+
+  # local_no_gitconfig() is defined in tests/testthat/helpers.R
+  local_no_gitconfig("-workflowr")
+
+  # Also have to remove local ./.git/config in the project's Git repo. Couldn't
+  # figure out a good way to do this with withr. Couldn't get to "restore"
+  # function to run at the end of the function call.
+  gitconfig <- file.path(tdir, ".git", "config")
+  gitconfig_tmp <- file.path(tempdir(), "config")
+  file.rename(gitconfig, gitconfig_tmp)
+  on.exit(file.rename(gitconfig_tmp, gitconfig), add = TRUE)
+
+  about <- file.path(p$analysis, "about.Rmd")
+  expect_error(wflow_remove(about, project = tdir),
+               "You must set your user.name and user.email for Git first")
+  expect_error(wflow_remove(about, project = tdir),
+               "`wflow_remove` with `git = TRUE`")
 })

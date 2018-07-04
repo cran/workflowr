@@ -10,6 +10,10 @@ suppressMessages(wflow_start(site_dir, change_wd = FALSE, user.name = "Test Name
 site_dir <- workflowr:::relative(site_dir)
 on.exit(unlink(site_dir, recursive = TRUE, force = TRUE))
 r <- repository(path = site_dir)
+s <- wflow_status(project = site_dir)
+
+# Load helper function local_no_gitconfig()
+source("helpers.R", local = TRUE)
 
 # Test wflow_git_commit ------------------------------------------------------------
 
@@ -19,7 +23,7 @@ test_that("wflow_git_commit can commit one new file", {
   expect_silent(actual <- wflow_git_commit(f1, project = site_dir))
   expect_true(f1 %in% actual$commit_files)
   recent <- commits(r, n = 1)[[1]]
-  expect_identical(actual$commit@sha, recent@sha)
+  expect_identical(git2r_slot(actual$commit, "sha"), git2r_slot(recent, "sha"))
   actual_print <- paste(utils::capture.output(actual), collapse = "\n")
   expect_true(grepl(sprintf("\\$ git add %s", f1), actual_print))
 })
@@ -31,7 +35,7 @@ test_that("wflow_git_commit can commit multiple new files", {
   expect_silent(actual <- wflow_git_commit(c(f2, f3), project = site_dir))
   expect_identical(actual$commit_files, c(f2, f3))
   recent <- commits(r, n = 1)[[1]]
-  expect_identical(actual$commit@sha, recent@sha)
+  expect_identical(git2r_slot(actual$commit, "sha"), git2r_slot(recent, "sha"))
   actual_print <- paste(utils::capture.output(actual), collapse = "\n")
   expect_true(grepl(sprintf("\\$ git add %s %s", f2, f3), actual_print))
 })
@@ -66,11 +70,11 @@ test_that("wflow_git_commit can commit all tracked files", {
   file.create(untracked)
   on.exit(file.remove(untracked))
   for (f in tracked)
-    cat("edit", file = f, append = TRUE)
+    cat("edit\n", file = f, append = TRUE)
   expect_silent(actual <- wflow_git_commit(all = TRUE, project = site_dir))
   expect_identical(actual$commit_files, tracked)
   recent <- commits(r, n = 1)[[1]]
-  expect_identical(actual$commit@sha, recent@sha)
+  expect_identical(git2r_slot(actual$commit, "sha"), git2r_slot(recent, "sha"))
 })
 
 test_that("wflow_git_commit does not affect Git repo if `dry_run = TRUE`", {
@@ -82,6 +86,77 @@ test_that("wflow_git_commit does not affect Git repo if `dry_run = TRUE`", {
                              project = site_dir))
   after <- commits(r, n = 1)[[1]]
   expect_identical(after, before)
+})
+
+test_that("wflow_git_commit can perform the initial commit", {
+  cwd <- getwd()
+  on.exit(setwd(cwd))
+  x <- tempfile()
+  on.exit(unlink(x, recursive = TRUE), add = TRUE)
+
+  o_start <- wflow_start(x, git = FALSE)
+  expect_null(o_start$commit)
+
+  r <- init(x)
+  config(r, user.name = "Test Name", user.email = "test@email")
+  o <- wflow_git_commit(c("*", ".gitignore", ".Rprofile"),
+                        message = "Initial commit", project = x)
+  expect_equal(length(commits(r)), 1)
+  s <- status(r)
+  expect_equal(length(s$untracked) + length(s$unstaged) + length(s$staged), 0)
+})
+
+# Test wflow_git_commit_ -------------------------------------------------------
+
+test_that("wflow_git_commit_ can commit deleted files", {
+  commit_current <- commits(r, n = 1)[[1]]
+  on.exit(reset(commit_current, reset_type = "hard"))
+
+  index <- file.path(s$analysis, "index.Rmd")
+  about <- file.path(s$analysis, "about.Rmd")
+  cat("edit\n", file = index, append = TRUE)
+  file.remove(about)
+  observed <- workflowr:::wflow_git_commit_(c(index, about),
+                                            message = "Edit and delete",
+                                            project = site_dir)
+  expect_true(index %in% observed$commit_files)
+  expect_true(about %in% observed$commit_files)
+})
+
+test_that("wflow_git_commit_ can commit deleted files from project root", {
+  cwd <- getwd()
+  on.exit(setwd(cwd))
+  setwd(s$root)
+
+  commit_current <- commits(r, n = 1)[[1]]
+  on.exit(reset(commit_current, reset_type = "hard"), add = TRUE)
+
+  index <- "analysis/index.Rmd"
+  about <- "analysis/about.Rmd"
+  cat("edit\n", file = index, append = TRUE)
+  file.remove(about)
+  observed <- workflowr:::wflow_git_commit_(c(index, about),
+                                            message = "Edit and delete")
+  expect_true(index %in% observed$commit_files)
+  expect_true(about %in% observed$commit_files)
+})
+
+test_that("wflow_git_commit_ can commit deleted files from project subdir", {
+  cwd <- getwd()
+  on.exit(setwd(cwd))
+  setwd(s$analysis)
+
+  commit_current <- commits(r, n = 1)[[1]]
+  on.exit(reset(commit_current, reset_type = "hard"), add = TRUE)
+
+  index <- "index.Rmd"
+  about <- "about.Rmd"
+  cat("edit\n", file = index, append = TRUE)
+  file.remove(about)
+  observed <- workflowr:::wflow_git_commit_(c(index, about),
+                                            message = "Edit and delete")
+  expect_true(index %in% observed$commit_files)
+  expect_true(about %in% observed$commit_files)
 })
 
 # Test error handling ----------------------------------------------------------
@@ -118,4 +193,25 @@ test_that("wflow_git_commit fails early if no Git repository", {
   expect_error(wflow_git_commit(Sys.glob(file.path(site_dir, "analysis", "*Rmd")),
                                 project = site_dir),
                "No Git repository detected.")
+})
+
+test_that("wflow_git_commit throws an error if user.name and user.email are not set", {
+
+  skip_on_cran()
+
+  # local_no_gitconfig() is defined in tests/testthat/helpers.R
+  local_no_gitconfig("-workflowr")
+
+  # Also have to remove local ./.git/config in the project's Git repo. Couldn't
+  # figure out a good way to do this with withr. Couldn't get to "restore"
+  # function to run at the end of the function call.
+  gitconfig <- file.path(site_dir, ".git", "config")
+  gitconfig_tmp <- file.path(tempdir(), "config")
+  file.rename(gitconfig, gitconfig_tmp)
+  on.exit(file.rename(gitconfig_tmp, gitconfig), add = TRUE)
+
+  expect_error(wflow_git_commit(project = site_dir),
+               "You must set your user.name and user.email for Git first")
+  expect_error(wflow_git_commit(project = site_dir),
+               "wflow_git_commit")
 })

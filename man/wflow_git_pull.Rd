@@ -40,8 +40,8 @@ An object of class \code{wflow_git_pull}, which is a list with the
 
 \item \bold{username}: GitHub username.
 
-\item \bold{merge_result}: The \code{\link[git2r]{git_merge_result-class}}
-object returned by \link{git2r} (only included if \code{dry_run == FALSE}).
+\item \bold{merge_result}: The \code{git_merge_result} object returned by
+\link{git2r} (only included if \code{dry_run == FALSE}).
 
 \item \bold{dry_run}: The input argument \code{dry_run}.
 

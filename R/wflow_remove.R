@@ -23,8 +23,9 @@
 #'
 #'   \item \bold{dry_run}: The input argument \code{dry_run}.
 #'
-#'   \item \bold{commit}: The \code{\link[git2r]{git_commit-class}} object
-#'   returned by \link{git2r} (only included if \code{dry_run == FALSE}).
+#'   \item \bold{commit}:The object returned by
+#'   \link{git2r}::\code{\link[git2r]{commit}} (only included if \code{dry_run
+#'   == FALSE}).
 #'
 #'   \item \bold{files_git}: The relative path(s) to the file(s) removed from
 #'   the Git repository.
@@ -96,6 +97,9 @@ wflow_remove <- function(files,
     use_git <- FALSE
   }
 
+  if (use_git && !dry_run) check_git_config(project,
+                                            "`wflow_remove` with `git = TRUE`")
+
   # Gather files to remove -----------------------------------------------------
 
   # Are any of the specified files R Markdown files in the analysis directory?
@@ -158,18 +162,11 @@ wflow_remove <- function(files,
   # Gather files to remove from Git --------------------------------------------
 
   if (use_git) {
-    # Need to make the files relative to Git directory
-    files_to_remove_rel <- relative(files_to_remove,
-                                    start = git2r::workdir(r))
-    # Obtain committed files (relative to Git directory)
-    files_committed <- get_committed_files(r)
+    # Obtain committed files
+    files_committed <- relative(get_committed_files(r))
 
     # Obtain files to be removed from Git
-    #
-    # Need both relative to Git to pass to git2r and relative to current working
-    # directory to report to user
-    logical_files_git <- files_to_remove_rel %in% files_committed
-    files_to_remove_from_git_rel <- files_to_remove_rel[logical_files_git]
+    logical_files_git <- files_to_remove %in% files_committed
     files_to_remove_from_git <- files_to_remove[logical_files_git]
   } else {
     files_to_remove_from_git <- NA
@@ -185,8 +182,8 @@ wflow_remove <- function(files,
 
   # Commit removed files -------------------------------------------------------
 
-  if (use_git && !dry_run && length(files_to_remove_from_git_rel) > 0) {
-    git2r::add(r, files_to_remove_from_git_rel)
+  if (use_git && !dry_run && length(files_to_remove_from_git) > 0) {
+    git2r::add(r, absolute(files_to_remove_from_git))
     git2r::commit(r, message = message)
     commit <- git2r::commits(r, n = 1)[[1]]
   } else {
@@ -222,7 +219,8 @@ print.wflow_remove <- function(x, ...) {
     } else {
       cat("\n", wrap(sprintf(
         "The following was removed from the Git repo in commit %s:",
-        stringr::str_sub(x$commit@sha, start = 1, end = 7))), "\n\n", sep = "")
+        stringr::str_sub(git2r_slot(x$commit, "sha"), start = 1, end = 7))),
+        "\n\n", sep = "")
     }
     cat(x$files_git, sep = "\n")
     cat("\ncommit message:\n")

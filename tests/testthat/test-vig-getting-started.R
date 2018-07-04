@@ -44,7 +44,7 @@ test_that("wflow_view opens website.", {
 
   expected <- file.path(s$docs, "index.html")
   actual <- wflow_view(dry_run = TRUE, project = site_dir)
-  expect_identical(actual, expected)
+  expect_identical(actual$opened, expected)
 })
 
 test_rmd <- file.path(s$analysis, "first-analysis.Rmd")
@@ -67,13 +67,14 @@ test_that("wflow_build only builds new file", {
   expect_silent(wflow_build(view = FALSE, project = site_dir))
 })
 
-test_that("wflow_view can open specific file with Rmd extension & without path.", {
+test_that("wflow_view can open specific file with Rmd extension.", {
 
   skip_on_cran()
 
   expected <- file.path(s$docs, "first-analysis.html")
-  actual <- wflow_view("first-analysis.Rmd", dry_run = TRUE, project = site_dir)
-  expect_identical(actual, expected)
+  actual <- wflow_view(file.path(s$analysis, "first-analysis.Rmd"),
+                       dry_run = TRUE, project = site_dir)
+  expect_identical(actual$opened, expected)
 })
 
 all_rmd <- rownames(s$status)
@@ -94,8 +95,8 @@ test_that("wflow_publish can commit new file and website", {
   expect_true(all(html_mtime_pre < html_mtime_post))
   log <- commits(r)
   expect_true(length(log) == 3)
-  expect_identical(log[[1]]@message, "Build site.")
-  expect_identical(log[[2]]@message, "first analysis")
+  expect_identical(git2r_slot(log[[1]], "message"), "Build site.")
+  expect_identical(git2r_slot(log[[2]], "message"), "first analysis")
   expect_silent(wflow_build(make = TRUE, update = TRUE, view = FALSE,
                             project = site_dir))
 })
