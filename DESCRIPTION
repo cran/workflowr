@@ -1,8 +1,8 @@
 Package: workflowr
 Type: Package
 Title: A Framework for Reproducible and Collaborative Data Science
-Date: 2018-07-04
-Version: 1.1.0
+Date: 2018-07-06
+Version: 1.1.1
 Authors@R: c(
     person("John", "Blischak", role = c("aut", "cre"),
            email = "jdblischak@uchicago.edu"),
@@ -25,10 +25,10 @@ Suggests: covr, devtools, testthat, withr
 VignetteBuilder: knitr
 SystemRequirements: pandoc (>= 1.12.3) - http://pandoc.org
 NeedsCompilation: no
-Packaged: 2018-07-04 16:15:18 UTC; jdblischak
+Packaged: 2018-07-06 16:34:04 UTC; jdblischak
 Author: John Blischak [aut, cre],
   Peter Carbonetto [aut],
   Matthew Stephens [aut]
 Maintainer: John Blischak <jdblischak@uchicago.edu>
 Repository: CRAN
-Date/Publication: 2018-07-04 16:30:03 UTC
+Date/Publication: 2018-07-06 21:00:03 UTC
