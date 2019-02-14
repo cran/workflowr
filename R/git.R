@@ -22,7 +22,7 @@
 #' }
 #' @export
 extract_commit <- function(path, num) {
-  stopifnot(file.exists(path),
+  stopifnot(fs::file_exists(path),
             is.numeric(num),
             num == trunc(num),
             num > 0)
@@ -55,7 +55,7 @@ check_git_config <- function(path, custom_message = "this function") {
   stopifnot(is.character(path))
   # Only look for local configuration file if the directory exists and it is a
   # Git repo
-  if (dir.exists(path)) {
+  if (fs::dir_exists(path)) {
     look_for_local <- git2r::in_repository(path)
   } else {
     look_for_local <- FALSE
@@ -83,6 +83,34 @@ check_git_config <- function(path, custom_message = "this function") {
       run ", custom_message, ". To do this, run the following command in R,
       replacing the arguments with your name and email address:\n\n
       wflow_git_config(user.name = \"Your Name\", user.email = \"email@domain\")"),
+      call. = FALSE)
+  }
+}
+
+# Check for staged changes
+#
+# path character. Path to repository
+#
+# If staged changes are detected, stops the program.
+check_staged_changes <- function(path, custom_message = "this function") {
+  stopifnot(is.character(path))
+
+  r <- git2r::repository(path, discover = TRUE)
+  git_status <- git2r::status(r)
+
+  if (length(git_status$staged) == 0) {
+    return(invisible())
+  } else {
+    # Format files
+    files_staged <- as.character(git_status$staged)
+    files_staged <- file.path(git2r_workdir(r), files_staged)
+    files_staged <- relative(files_staged)
+    files_staged <- utils::capture.output(dput(files_staged))
+    stop(wrap(
+      "The Git repository has staged changes. You must decide if you want to
+      commit these changes first before you run ", custom_message, ". To do
+      this, run the following command in R:\n\n wflow_git_commit(",
+      files_staged, ")"),
       call. = FALSE)
   }
 }
@@ -381,8 +409,8 @@ warn_branch_mismatch <- function(remote_branch, local_branch) {
 #
 # remote - the name or URL of a remote repository
 # remote_avail - a named character vector of remote URLs
-# username - GitHub username or NULL
-# password - GitHub password or NULL
+# username - username or NULL
+# password - password or NULL
 # dry_run - logical
 authenticate_git <- function(remote, remote_avail, username = NULL,
                              password = NULL, dry_run = FALSE) {
@@ -415,7 +443,7 @@ authenticate_git <- function(remote, remote_avail, username = NULL,
   if (protocol == "https" && !dry_run) {
     if (is.null(username)) {
       if (interactive()) {
-        username <- readline("Please enter your GitHub username: ")
+        username <- readline("Please enter your username: ")
       } else {
         m <-
           "No username was specified. Either include the username in the
@@ -426,7 +454,7 @@ authenticate_git <- function(remote, remote_avail, username = NULL,
     }
     if (is.null(password)) {
       if (interactive()) {
-        password <- getPass::getPass("Please enter your GitHub password: ")
+        password <- getPass::getPass("Please enter your password: ")
       } else {
         m <-
           "No password was specified. Either include the password in the

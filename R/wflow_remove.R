@@ -56,7 +56,7 @@ wflow_remove <- function(files,
   if (!(is.character(files) && length(files) > 0))
     stop("files must be a character vector of filenames")
   files <- glob(files)
-  if (!all(file.exists(files)))
+  if (!all(fs::file_exists(files) | fs::dir_exists(files)))
     stop("Not all files exist. Check the paths to the files")
   # Change filepaths to relative paths
   files <- relative(files)
@@ -79,7 +79,7 @@ wflow_remove <- function(files,
   if (!(is.character(project) && length(project) == 1))
     stop("project must be a one-element character vector")
 
-  if (!dir.exists(project)) {
+  if (!fs::dir_exists(project)) {
     stop("project directory does not exist.")
   }
 
@@ -110,7 +110,7 @@ wflow_remove <- function(files,
 
   # If the user inputs a directory, obtain all the files in those directories so
   # that they can be removed from the Git repo if applicable.
-  is_dir <- dir.exists(files)
+  is_dir <- fs::dir_exists(files)
   files_to_remove <- files[!is_dir]
   dirs_to_remove <- files[is_dir]
   for (d in dirs_to_remove) {
@@ -121,14 +121,15 @@ wflow_remove <- function(files,
   for (rmd in files_rmd) {
     # Corresponding HTML?
     html <- to_html(rmd, outdir = p$docs)
-    if (file.exists(html)) {
+    if (fs::file_exists(html)) {
       files_to_remove <- c(files_to_remove, html)
     }
     # Any figure files in analysis directory?
+    fig_path <- create_figure_path(rmd)
     if (p$analysis == ".") {
-      dir_figs_analysis <- file.path("figure", basename(rmd))
+      dir_figs_analysis <- fig_path
     } else {
-      dir_figs_analysis <- file.path(p$analysis, "figure", basename(rmd))
+      dir_figs_analysis <- file.path(p$analysis, fig_path)
     }
     figs_analysis <- list.files(path = dir_figs_analysis, full.names = TRUE)
     if (length(figs_analysis) > 0) {
@@ -137,9 +138,9 @@ wflow_remove <- function(files,
     }
     # Any figure files in docs directory?
     if (p$docs == ".") {
-      dir_figs_docs <- file.path("figure", basename(rmd))
+      dir_figs_docs <- fig_path
     } else {
-      dir_figs_docs <- file.path(p$docs, "figure", basename(rmd))
+      dir_figs_docs <- file.path(p$docs, fig_path)
     }
     figs_docs <- list.files(path = dir_figs_docs, full.names = TRUE)
     if (length(figs_docs) > 0) {
@@ -151,7 +152,7 @@ wflow_remove <- function(files,
     if (p$analysis != ".") {
       dir_cache <- file.path(p$analysis, dir_cache)
     }
-    if (dir.exists(dir_cache)) {
+    if (fs::dir_exists(dir_cache)) {
       files_cache <- list.files(path = dir_cache, full.names = TRUE,
                                 recursive = TRUE)
       files_to_remove <- c(files_to_remove, files_cache)
@@ -175,7 +176,7 @@ wflow_remove <- function(files,
   # Remove files ---------------------------------------------------------------
 
   if (!dry_run) {
-    file.remove(files_to_remove)
+    fs::file_delete(files_to_remove)
     # Remove the empty (though potentially nested) directories
     unlink(dirs_to_remove, recursive = TRUE)
   }
@@ -183,7 +184,7 @@ wflow_remove <- function(files,
   # Commit removed files -------------------------------------------------------
 
   if (use_git && !dry_run && length(files_to_remove_from_git) > 0) {
-    git2r::add(r, absolute(files_to_remove_from_git))
+    git2r_add(r, files_to_remove_from_git)
     git2r::commit(r, message = message)
     commit <- git2r::commits(r, n = 1)[[1]]
   } else {
@@ -200,7 +201,6 @@ wflow_remove <- function(files,
   class(o) <- "wflow_remove"
   return(o)
 }
-
 
 #' @export
 print.wflow_remove <- function(x, ...) {

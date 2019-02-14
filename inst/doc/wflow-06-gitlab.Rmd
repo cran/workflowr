@@ -1,0 +1,106 @@
+---
+title: "Hosting workflowr websites using GitLab"
+subtitle: "workflowr version `r utils::packageVersion('workflowr')`"
+author: "Luke Zappia, John Blischak"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Hosting workflowr websites using GitLab}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## What is in this vignette?
+
+By default workflowr assumes that the project will be hosted on GitHub, but this
+is not always the case. Users may prefer to use another service or have a
+private git repository hosting instance. This vignette details how to host a
+workflowr project on GitLab. For more details, see the documentation for [GitLab
+Pages][gitlab-pages]. Similar steps will be required for other platforms but
+some of the specifics will be different.
+
+[gitlab-pages]: https://docs.gitlab.com/ee/ci/yaml/README.html#pages
+
+## Step 0: Set up a project
+
+The first thing we need to do is set up the project we want to host. We can do
+this by following the first few steps of the instructions in the
+"Getting started" vignette. When you get to the section [Deploy the website](wflow-01-getting-started.html#deploy-the-website), follow
+the rest of the steps in this vignette.
+
+## Step 1: Create a remote repository on GitLab
+
+Log in to the GitLab instance you want to use and create a repository to host
+your project (follow this [link](https://gitlab.com/projects/new) if you are
+using GitLab.com). We recommend setting the project to be Public so that others
+can inspect the code behind your results and extend your work.
+
+## Step 2: Configure your local workflowr project to use GitLab
+
+You will need to know your user name and the repository name for the following
+steps (here we are going to use "myname" and "myproject") as well as a URL for
+the hosting instance. The example below assumes you are using GitLab.com. If
+instead you are using a custom instance of GitLab, you will need to change the
+value for the argument `domain` accordingly ^[For example, the University of
+Chicago hosts a GitLab instance for its researchers at
+https://git.rcc.uchicago.edu/, which would require setting `domain =
+"git.rcc.uchicago.edu"`].
+
+```{r wflow-use-gitlab, eval=FALSE}
+wflow_use_gitlab(username = "myname", repository = "myproject")
+```
+
+The function `wflow_use_gitlab()` automates all the local configuration
+necessary to use GitLab. It changes the website directory from `docs/` to
+`public/`, it creates the GitLab-specific configuration file `.gitlab-ci.yml`
+with the necessary settings, and it connects the local Git repository to
+communicate with the remote repository on GitLab.
+
+## Step 3: Republish the analyses
+
+In order for the correct URLs to past versions to be inserted into the HTML
+pages, republish the analyses with `wflow_publish()`.
+
+```
+wflow_publish(republish = TRUE)
+```
+
+## Step 4: Push to GitLab
+
+As a final step, push the workflowr project to GitLab (you will be prompted for
+your GitLab username and password):
+
+```{r wflow-git-push, eval=FALSE}
+wflow_git_push()
+```
+
+If this step has worked correctly you should be able to refresh your GitLab page
+and see all the files in your workflowr project. You can view your site at
+`myname.gitlab.io/myproject/`, replacing with your username and project (note it
+may take a minute for the site to be deployed).
+
+## Compatibility with custom GitLab instances
+
+Currently workflowr works best with the public GitLab instance hosted at
+gitlab.com. If you are using a custom GitLab instance that is hosted by your
+institution, it may not work as smoothly.
+
+If you cannot view your workflowr website, this may be because your
+administrators have not enabled [GitLab Pages][gitlab-pages]. You will need to
+email them to activate this feature. You can include this link to the [GitLab
+Pages administration][gitlab-pages-admin] instructions.
+
+[gitlab-pages-admin]: https://git.rcc.uchicago.edu/help/administration/pages/index.md
+
+If GitLab Pages is enabled, the links to past versions of the R Markdown files
+should work correctly (open an [Issue][workflowr-issues] if you are having
+problems). However, there is currently no way to conveniently view the past
+versions of the HTML files. This is because workflowr uses the free service
+[raw.githack.com][] to host past HTML files, and it only supports the URLs
+`raw.githubusercontent.com`, `gist.githubusercontent.com`, `bitbucket.org`, and
+`gitlab.com`.
+
+[raw.githack.com]: http://raw.githack.com/
+[workflowr-issues]: https://github.com/jdblischak/workflowr/issues

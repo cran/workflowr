@@ -18,8 +18,7 @@ rmd <- file.path(s$analysis, c("about.Rmd", "index.Rmd", "license.Rmd"))
 html <- workflowr:::to_html(rmd, outdir = s$docs)
 
 rmd_to_fail <- file.path(s$analysis, "error.Rmd")
-file.copy(from = "files/test-wflow_build/error.Rmd",
-          to = rmd_to_fail)
+fs::file_copy("files/test-wflow_build/error.Rmd", rmd_to_fail)
 
 # Load helper function local_no_gitconfig()
 source("helpers.R", local = TRUE)
@@ -32,14 +31,14 @@ test_that("wflow_publish works in a simple case", {
 
   expect_message(o <- wflow_publish(rmd, view = FALSE, project = site_dir),
                  rmd[1])
-  expect_true(all(file.exists(html)))
+  expect_true(all(fs::file_exists(html)))
   s <- wflow_status(project = site_dir)
   expect_true(all(s$status[rmd, "published"]))
 })
 
 # Create decoy file that should not be built since it is unpublished
 rmd_decoy <- file.path(s$analysis, "decoy.Rmd")
-file.create(rmd_decoy)
+fs::file_create(rmd_decoy)
 html_decoy <- workflowr:::to_html(rmd_decoy, outdir = s$docs)
 
 test_that("wflow_publish can `republish`", {
@@ -63,7 +62,7 @@ test_that("wflow_publish can `republish`", {
   expect_true(all(mtime_post > mtime_pre))
   expect_true(config == o$step1$commit_files)
   expect_true(all(html %in% o$step3$commit_files))
-  expect_false(file.exists(html_decoy))
+  expect_false(fs::file_exists(html_decoy))
   expect_false(html_decoy %in% o$step3$commit_files)
 })
 
@@ -83,7 +82,7 @@ test_that("wflow_publish can `update`", {
                  rmd[1])
   expect_true(is.null(o$step1))
   expect_true(html[1] == o$step3$commit_files)
-  expect_false(file.exists(html_decoy))
+  expect_false(fs::file_exists(html_decoy))
   expect_false(html_decoy %in% o$step3$commit_files)
 })
 
@@ -119,44 +118,40 @@ test_that("wflow_publish can be used to commit non-Rmd files instead of wflow_gi
   skip_on_cran()
 
   f_test <- file.path(s$root, "test.txt")
-  file.create(f_test)
+  fs::file_create(f_test)
   expect_silent(o <- wflow_publish(f_test, view = FALSE, project = site_dir))
   expect_true(f_test == o$step1$commit_files)
   expect_true(is.null(o$step2))
   expect_true(is.null(o$step3))
 })
 
-# wflow_publish no longer needs to remove unused figures in analysis/ because
-# wflow_site() moves them. Thus the lines confirming their original existence
-# are commented out below. However, it still needs to remove the figure files in
-# docs/ and commit the changes, which is tested below.
 test_that("wflow_publish automatically removes unused figure files", {
 
   skip_on_cran()
 
   # Publish a file that has 2 plots from 2 unnamed chunks
   file_w_figs <- file.path(s$analysis, "fig.Rmd")
-  file.copy("files/test-wflow_build/figure-v01.Rmd", file_w_figs)
+  fs::file_copy("files/test-wflow_build/figure-v01.Rmd", file_w_figs)
   publish_v01 <- wflow_publish(file_w_figs, view = FALSE, project = site_dir)
   figs_analysis_v01 <- file.path(s$analysis, "figure", basename(file_w_figs),
                                  c("unnamed-chunk-1-1.png", "unnamed-chunk-2-1.png"))
-  # expect_true(all(file.exists(figs_analysis_v01))) # see wflow_site()
+  expect_false(all(fs::file_exists(figs_analysis_v01))) # moved by wflow_site()
   figs_docs_v01 <- file.path(s$docs, "figure", basename(file_w_figs),
                              c("unnamed-chunk-1-1.png", "unnamed-chunk-2-1.png"))
-  expect_true(all(file.exists(figs_docs_v01)))
+  expect_true(all(fs::file_exists(figs_docs_v01)))
   expect_true(all(figs_docs_v01 %in% publish_v01$step3$commit_files))
   # Update the file such that the previous 2 chunks are now named, plus add a
   # 3rd plot chunk
-  file.copy("files/test-wflow_build/figure-v02.Rmd", file_w_figs, overwrite = TRUE)
+  fs::file_copy("files/test-wflow_build/figure-v02.Rmd", file_w_figs, overwrite = TRUE)
   publish_v02 <- wflow_publish(file_w_figs, view = FALSE, project = site_dir)
-  expect_false(all(file.exists(figs_analysis_v01)))
-  expect_false(all(file.exists(figs_docs_v01)))
+  expect_false(all(fs::file_exists(figs_analysis_v01)))
+  expect_false(all(fs::file_exists(figs_docs_v01)))
   figs_analysis_v02 <- file.path(s$analysis, "figure", basename(file_w_figs),
                                  c("named1-1.png", "named2-1.png", "named3-1.png"))
-  # expect_true(all(file.exists(figs_analysis_v02))) # see wflow_site()
+  expect_false(all(fs::file_exists(figs_analysis_v02))) # moved by wflow_site()
   figs_docs_v02 <- file.path(s$docs, "figure", basename(file_w_figs),
                              c("named1-1.png", "named2-1.png", "named3-1.png"))
-  expect_true(all(file.exists(figs_docs_v02)))
+  expect_true(all(fs::file_exists(figs_docs_v02)))
   expect_true(all(figs_docs_v02 %in% publish_v02$step3$commit_files))
   # The v01 files should also be listed in the commit_files b/c they are removed
   # in this commit
@@ -167,11 +162,7 @@ test_that("wflow_publish automatically removes unused figure files", {
   expect_false(length(current_status$staged) > 0)
   expect_false(length(current_status$unstaged) > 0)
   # Cleanup
-  file.remove(file_w_figs)
-  unlink(file.path(s$analysis, "figure", basename(file_w_figs)),
-         recursive = TRUE, force = TRUE)
-  unlink(file.path(s$docs, "figure", basename(file_w_figs)),
-         recursive = TRUE, force = TRUE)
+  wflow_remove(file_w_figs, project = site_dir)
 })
 
 # This tests the edge case where a file had one or more figures but then gets
@@ -185,20 +176,20 @@ test_that("wflow_publish removes unused figure files even if directory no longer
 
   # Publish a file that has 2 plots from 2 unnamed chunks
   file_w_figs <- file.path(s$analysis, "fig.Rmd")
-  file.copy("files/test-wflow_build/figure-v01.Rmd", file_w_figs)
+  fs::file_copy("files/test-wflow_build/figure-v01.Rmd", file_w_figs)
   publish_v01 <- wflow_publish(file_w_figs, view = FALSE, project = site_dir)
   figs_analysis_v01 <- file.path(s$analysis, "figure", basename(file_w_figs),
                                  c("unnamed-chunk-1-1.png", "unnamed-chunk-2-1.png"))
-  # expect_true(all(file.exists(figs_analysis_v01))) # see wflow_site()
+  # expect_true(all(fs::file_exists(figs_analysis_v01))) # see wflow_site()
   figs_docs_v01 <- file.path(s$docs, "figure", basename(file_w_figs),
                              c("unnamed-chunk-1-1.png", "unnamed-chunk-2-1.png"))
-  expect_true(all(file.exists(figs_docs_v01)))
+  expect_true(all(fs::file_exists(figs_docs_v01)))
   expect_true(all(figs_docs_v01 %in% publish_v01$step3$commit_files))
   # Update the file to have no plots
-  file.copy("files/test-wflow_build/seed.Rmd", file_w_figs, overwrite = TRUE)
+  fs::file_copy("files/test-wflow_build/seed.Rmd", file_w_figs, overwrite = TRUE)
   publish_v02 <- wflow_publish(file_w_figs, view = FALSE, project = site_dir)
-  expect_false(all(file.exists(figs_analysis_v01)))
-  expect_false(all(file.exists(figs_docs_v01)))
+  expect_false(all(fs::file_exists(figs_analysis_v01)))
+  expect_false(all(fs::file_exists(figs_docs_v01)))
   # The old figure files should also be listed in the commit_files b/c they are
   # removed in this commit
   expect_true(all(figs_docs_v01 %in% publish_v02$step3$commit_files))
@@ -208,7 +199,65 @@ test_that("wflow_publish removes unused figure files even if directory no longer
   expect_false(length(current_status$staged) > 0)
   expect_false(length(current_status$unstaged) > 0)
   # Cleanup
-  file.remove(file_w_figs)
+  wflow_remove(file_w_figs, project = site_dir)
+})
+
+test_that("wflow_publish deletes cache when delete_cache = TRUE", {
+
+  skip_on_cran()
+
+  # Build a file that has cached chunks
+  file_w_cache <- file.path(s$analysis, "cache.Rmd")
+  fs::file_copy("files/test-wflow_html/cache-all-chunks.Rmd", file_w_cache)
+  publish_v01 <- wflow_publish(file_w_cache, view = FALSE, project = site_dir)
+  dir_cache <- fs::path_ext_remove(file_w_cache)
+  dir_cache <- glue::glue("{dir_cache}_cache")
+  expect_true(fs::dir_exists(dir_cache))
+
+  # By default, cache directory is not affected
+  dir_cache_mod_pre <- fs::file_info(dir_cache)$modification_time
+  expect_message(
+    publish_v02 <- wflow_publish(file_w_cache, view = FALSE, project = site_dir),
+    "  - Note: This file has a cache directory"
+  )
+  expect_false(publish_v02$step2$delete_cache)
+  expect_true(fs::dir_exists(dir_cache))
+  dir_cache_mod_post <- fs::file_info(dir_cache)$modification_time
+  expect_equal(dir_cache_mod_post, dir_cache_mod_pre)
+
+  # delete_cache deletes cache directory prior to building (it gets re-created)
+  dir_cache_mod_pre <- fs::file_info(dir_cache)$modification_time
+  expect_message(
+    publish_v03 <- wflow_publish(file_w_cache, view = FALSE, delete_cache = TRUE,
+                                 project = site_dir),
+    "  - Note: Deleted the cache directory before building"
+  )
+  expect_true(publish_v03$step2$delete_cache)
+  expect_true(fs::dir_exists(dir_cache))
+  dir_cache_mod_post <- fs::file_info(dir_cache)$modification_time
+  expect_true(dir_cache_mod_post > dir_cache_mod_pre)
+
+  # Cleanup
+  wflow_remove(file_w_cache, project = site_dir)
+})
+
+test_that("wflow_publish commits CSS/JavaScript files", {
+
+  skip_on_cran()
+
+  files_support <- c("style1.css", "style2.css", "script1.js", "script2.js")
+  files_analysis <- file.path(s$analysis, files_support)
+  files_docs <- file.path(s$docs, files_support)
+
+  fs::file_create(files_analysis)
+  rmd <- file.path(s$analysis, "index.Rmd")
+  o <- wflow_publish(c(rmd, files_analysis), view = FALSE, project = site_dir)
+
+  # CSS and JS files should have been copied (not moved) to docs directory
+  expect_true(all(fs::file_exists(files_analysis)))
+  expect_true(all(fs::file_exists(files_docs)))
+  # CSS and JS files should have been committed in step 3
+  expect_true(all(files_docs %in% o$step3$commit_files))
 })
 
 test_that("wflow_publish commits new .nojekyll after docs/ name change", {
@@ -224,12 +273,12 @@ test_that("wflow_publish commits new .nojekyll after docs/ name change", {
   yaml::write_yaml(y, file = site_yml)
   # Create the new output directory. Otherwise receive multiple warnings. I
   # should improve this (added to project Improvements)
-  dir.create(file.path(x$directory, "test"))
+  fs::dir_create(file.path(x$directory, "test"))
   publish <- wflow_publish(c(site_yml, file.path(p$analysis, "*Rmd")),
                            "Change output dir to test/", view = FALSE,
                            project = x$directory)
   nojekyll <- file.path(p$root, "test", ".nojekyll")
-  expect_true(file.exists(nojekyll))
+  expect_true(fs::file_exists(nojekyll))
   expect_true(nojekyll %in% publish$step3$commit_files)
 })
 
@@ -272,6 +321,23 @@ test_that("wflow_publish restores previous docs/ if build fails", {
   expect_identical(md5sum_post, md5sum_pre)
   expect_identical(mtime_post, mtime_pre)
 })
+
+test_that("wflow_publish does *not* backup docs/ if it doesn't exist", {
+
+  skip_on_cran()
+
+  docs <- file.path(site_dir, "docs")
+  docs_tmp <- fs::file_temp("docs-")
+  on.exit(file.rename(docs_tmp, docs))
+  file.rename(docs, docs_tmp)
+  # It should no longer send a Warning about the directory not existing
+  expect_silent(suppressMessages(
+    published <- wflow_publish(rmd, view = FALSE, project = site_dir)
+  ))
+  # Remove the docs/ that was just created so that it can be restored on exit
+  unlink(docs, recursive = TRUE, force = TRUE)
+})
+
 
 test_that("wflow_publish throws an error if user.name and user.email are not set", {
 

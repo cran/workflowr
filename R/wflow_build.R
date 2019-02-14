@@ -42,8 +42,8 @@
 #' @param make logical (default: \code{is.null(files)}). When \code{make =
 #'   TRUE}, build any files that have been modified more recently than their
 #'   corresponding HTML files (inspired by
-#'   \href{https://www.gnu.org/software/make/}{GNU Make}). This is the default
-#'   action if no files are specified.
+#'   \href{https://en.wikipedia.org/wiki/Make_(software)}{Make}). This is the
+#'   default action if no files are specified.
 #' @param update logical (default: FALSE). Build any files that have been
 #'   committed more recently than their corresponding HTML files (and do not
 #'   have any unstaged or staged changes). This ensures that the commit version
@@ -57,6 +57,16 @@
 #'   with \code{\link{wflow_view}} after building files. If only one file is
 #'   built, it is opened. If more than one file is built, the main index page is
 #'   opened. Not applicable if no files are built or if \code{dry_run = TRUE}.
+#' @param clean_fig_files logical (default: FALSE). Delete existing figure files
+#'   for each R Markdown file prior to building it. This ensures that only
+#'   relevant figure files are saved. As you develop an analysis, it is easy to
+#'   generate lots of unused plots due to changes in the number of code chunks
+#'   and their names. However, if you are caching chunks during code
+#'   development, this could cause figures to disappear. Note that
+#'   \code{\link{wflow_publish}} uses \code{clean_fig_files = TRUE} to ensure
+#'   the results can be reproduced.
+#' @param delete_cache logical (default: FALSE). Delete the cache directory (if
+#'   it exists) for each R Markdown file prior to building it.
 #' @param seed numeric (default: 12345). The seed to set before building each
 #'   file. Passed to \code{\link{set.seed}}. \bold{DEPRECATED:} The seed set
 #'   here has no effect if you are using \code{\link{wflow_html}} as the output
@@ -92,6 +102,10 @@
 #'    \item \bold{republish}: The input argument \code{republish}
 #'
 #'    \item \bold{view}: The input argument \code{view}
+#'
+#'    \item \bold{clean_fig_files}: The input argument \code{clean_fig_files}
+#'
+#'    \item \bold{delete_cache}: The input argument \code{delete_cache}
 #'
 #'    \item \bold{seed}: The input argument \code{seed}
 #'
@@ -132,6 +146,7 @@
 #' @export
 wflow_build <- function(files = NULL, make = is.null(files),
                         update = FALSE, republish = FALSE, view = interactive(),
+                        clean_fig_files = FALSE, delete_cache = FALSE,
                         seed = 12345, log_dir = NULL, verbose = FALSE,
                         local = FALSE, dry_run = FALSE, project = ".") {
 
@@ -140,10 +155,10 @@ wflow_build <- function(files = NULL, make = is.null(files),
   if (!is.null(files)) {
     if (!(is.character(files) && length(files) > 0))
       stop("files must be NULL or a character vector of filenames")
-    if (any(dir.exists(files)))
+    if (any(fs::dir_exists(files)))
       stop("files cannot include a path to a directory")
     files <- glob(files)
-    if (!all(file.exists(files)))
+    if (!all(fs::file_exists(files)))
       stop("Not all files exist. Check the paths to the files")
     # Change filepaths to relative paths
     files <- relative(files)
@@ -166,6 +181,12 @@ wflow_build <- function(files = NULL, make = is.null(files),
   if (!(is.logical(view) && length(view) == 1))
     stop("view must be a one-element logical vector")
 
+  if (!(is.logical(clean_fig_files) && length(clean_fig_files) == 1))
+    stop("clean_fig_files must be a one-element logical vector")
+
+  if (!(is.logical(delete_cache) && length(delete_cache) == 1))
+    stop("delete_cache must be a one-element logical vector")
+
   if (!(is.numeric(seed) && length(seed) == 1))
     stop("seed must be a one element numeric vector")
 
@@ -175,7 +196,7 @@ wflow_build <- function(files = NULL, make = is.null(files),
     stop("log_dir must be NULL or a one element character vector")
   }
   log_dir <- absolute(log_dir)
-  dir.create(log_dir, showWarnings = FALSE, recursive = TRUE)
+  fs::dir_create(log_dir)
 
   if (!(is.logical(verbose) && length(verbose) == 1))
     stop("verbose must be a one-element logical vector")
@@ -189,7 +210,7 @@ wflow_build <- function(files = NULL, make = is.null(files),
   if (!(is.character(project) && length(project) == 1))
     stop("project must be a one-element character vector")
 
-  if (!dir.exists(project)) {
+  if (!fs::dir_exists(project)) {
     stop("project directory does not exist.")
   }
 
@@ -243,15 +264,37 @@ wflow_build <- function(files = NULL, make = is.null(files),
   if (!dry_run) {
     n_files <- length(files_to_build)
     if (n_files > 0) {
+      wd <- getwd()
+      message(sprintf("Current working directory: %s", wd))
       message(sprintf("Building %i file(s):", n_files))
     }
     for (f in files_to_build) {
-      message("Building ", f)
+      # Determine knit directory
+      wflow_opts <- wflow_options(f)
+      if (wflow_opts$knit_root_dir != wd) {
+        message(sprintf("Building %s in %s", f, wflow_opts$knit_root_dir))
+      } else {
+        message("Building ", f)
+      }
       # Remove figure files to prevent accumulating outdated files
-      figs_analysis <- file.path(p$analysis, "figure", basename(f))
-      unlink(figs_analysis, recursive = TRUE)
-      figs_docs <- file.path(p$docs, "figure", basename(f))
-      unlink(figs_docs, recursive = TRUE)
+      if (clean_fig_files) {
+        path <- create_figure_path(f)
+        figs_analysis <- file.path(p$analysis, path)
+        unlink(figs_analysis, recursive = TRUE)
+        figs_docs <- file.path(p$docs, path)
+        unlink(figs_docs, recursive = TRUE)
+      }
+      # Delete the cache directory
+      dir_cache <- fs::path_ext_remove(f)
+      dir_cache <- glue::glue("{dir_cache}_cache")
+      if (fs::dir_exists(dir_cache)) {
+        if (delete_cache) {
+          fs::dir_delete(dir_cache)
+          message("  - Note: Deleted the cache directory before building")
+        } else {
+          message("  - Note: This file has a cache directory")
+        }
+      }
       if (local) {
         build_rmd(f, seed = seed, envir = .GlobalEnv)
       } else {
@@ -261,8 +304,8 @@ wflow_build <- function(files = NULL, make = is.null(files),
     }
     # Create .nojekyll if it doesn't exist
     nojekyll <- file.path(p$docs, ".nojekyll")
-    if (!file.exists(nojekyll)) {
-      file.create(nojekyll)
+    if (!fs::file_exists(nojekyll)) {
+      fs::file_create(nojekyll)
     }
   }
 
@@ -287,6 +330,7 @@ wflow_build <- function(files = NULL, make = is.null(files),
 
   o <- list(files = files, make = make,
             update = update, republish = republish, view = view,
+            clean_fig_files = clean_fig_files, delete_cache = delete_cache,
             seed = seed, log_dir = log_dir, verbose = verbose,
             local = local, dry_run = dry_run,
             built = files_to_build,
@@ -303,6 +347,8 @@ print.wflow_build <- function(x, ...) {
   if (x$make) cat(" make: TRUE")
   if (x$update) cat(" update: TRUE")
   if (x$republish) cat(" republish: TRUE")
+  if (x$clean_fig_files) cat(" clean_fig_files: TRUE")
+  if (x$delete_cache) cat(" delete_cache: TRUE")
   cat("\n\n")
 
   if (length(x$built) == 0) {
@@ -361,14 +407,14 @@ return_modified_rmd <- function(rmd_files, docs) {
 build_rmd_external <- function(rmd, seed, log_dir, verbose = FALSE, ...) {
   if (!(is.character(rmd) && length(rmd) == 1))
     stop("rmd must be a one element character vector")
-  if (!file.exists(rmd))
+  if (!fs::file_exists(rmd))
     stop("rmd does not exist: ", rmd)
   if (!(is.numeric(seed) && length(seed) == 1))
     stop("seed must be a one element numeric vector")
   if (!(is.character(log_dir) && length(log_dir) == 1))
     stop("log_dir must be a one element character vector")
-  if (!dir.exists(log_dir)) {
-    dir.create(log_dir, recursive = TRUE)
+  if (!fs::dir_exists(log_dir)) {
+    fs::dir_create(log_dir)
     message("log directory created: ", log_dir)
   }
 
@@ -403,7 +449,7 @@ build_rmd <- function(rmd, seed, ...) {
     stop("rmd must be a one element character vector")
   if (!(is.numeric(seed) && length(seed) == 1))
     stop("seed must be a one element numeric vector")
-  if (!file.exists(rmd))
+  if (!fs::file_exists(rmd))
     stop("rmd must exist")
 
   set.seed(seed)

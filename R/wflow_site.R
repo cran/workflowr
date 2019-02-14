@@ -81,18 +81,26 @@ wflow_site <- function(input, encoding = getOption("encoding"), ...) {
 
       if (output_dir != input) {
         # Move HTML file
-        file.copy(output_file, output_dir, overwrite = TRUE)
+        fs::file_copy(output_file, output_dir, overwrite = TRUE)
         unlink(output_file)
         output_file <- file.path(output_dir, basename(output_file))
 
         # Move figures
-        fig_dir <- file.path(input, "figure", basename(f))
-        if (dir.exists(fig_dir)) {
+        fig_dir <- create_figure_path(f)
+        fig_dir <- file.path(input, fig_dir)
+
+        if (fs::dir_exists(fig_dir)) {
           fig_output_dir <- file.path(output_dir, "figure")
-          dir.create(fig_output_dir, showWarnings = FALSE)
+          fs::dir_create(fig_output_dir)
           file.copy(fig_dir, fig_output_dir, recursive = TRUE)
           unlink(fig_dir, recursive = TRUE)
         }
+
+        # Copy CSS/Javascript files
+        files_css <- list.files(path = input, pattern = "css$", full.names = TRUE)
+        fs::file_copy(files_css, output_dir, overwrite = TRUE)
+        files_js <- list.files(path = input, pattern = "js$", full.names = TRUE)
+        fs::file_copy(files_js, output_dir, overwrite = TRUE)
       }
     }
 

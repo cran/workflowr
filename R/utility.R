@@ -16,7 +16,7 @@
 # non-existing.
 #
 obtain_existing_path <- function(path) {
-  if (dir.exists(path)) {
+  if (fs::dir_exists(path)) {
     return(absolute(path))
   } else {
     return(obtain_existing_path(dirname(path)))
@@ -62,29 +62,16 @@ absolute <- function(path) {
   if (!is.character(path))
     stop("path must be NULL or a character vector")
 
-  # Using normalizePath is frustrating because of its differences on Windows,
-  # but it is the easiest way to resolve symlinks. Note that it only resolves
-  # symlinks if the file or directory exists.
-  newpath <- normalizePath(path, winslash = "/", mustWork = FALSE)
-
-  # On Windows **only**, NA gets appended to path. Ensure that any NAs are
-  # returned as NA
-  newpath[is.na(path)] <- NA
-
-  # On Windows **only**, normalizePath doesn't strip trailing slash. This is
-  # presumably due to the edge case of the homedrive, i.e. "C:/" is a valid path
-  # but not "C:". If this function manually removes the trailing slash, then the
-  # drive, e.g. "C:", gets returned as the current working directory.
-  # Fortunately R.utils::getAbsolutePath is smarter than normalizePath (it
-  # strips the trailing slash expect when the path is to the root of a drive),
-  # so this does not need to be explicitly performed.
-
-  # normalizePath does not return an absolute path for a non-existent file or
-  # directory, e.g. `normalizePath("a")` returns `"a"`.
-  newpath <- R.utils::getAbsolutePath(newpath)
-  # The original filepaths are added as the "names" attribute when there is more
-  # than one filepath. Remove them.
-  attributes(newpath) <- NULL
+  newpath <- path
+  # Convert to absolute path
+  newpath <- fs::path_abs(newpath)
+  # Expand ~ using R's definition of user directory
+  newpath <- fs::path_expand_r(newpath)
+  # Ensure Windows Drive is uppercase
+  newpath <- toupper_win_drive(newpath)
+  # Resolve symlinks
+  newpath <- resolve_symlink(newpath)
+  newpath <- as.character(newpath)
 
   return(newpath)
 }
@@ -103,13 +90,62 @@ relative <- function(path, start = getwd()) {
   if (!(is.character(start) && length(start) == 1))
     stop("start must be a character vector of length 1")
 
-  newpath <- R.utils::getRelativePath(absolute(path),
-                                      relativeTo = absolute(start))
-  # The original filepaths are added as the "names" attribute when there is more
-  # than one filepath. Remove them.
-  attributes(newpath) <- NULL
+  newpath <- path
+  # First resolve any symlinks
+  newpath <- absolute(newpath)
+  start <- absolute(start)
+
+  # Handle any issues with Windows drives
+  if (.Platform$OS.type == "windows") {
+    # Require that all files are on the same Windows drive
+    drive <- unique(get_win_drive(newpath))
+    drive <- drive[!is.na(drive)]
+    if (length(drive) != 1) {
+      stop("All paths must be on the same Windows drive", call. = FALSE)
+    }
+    # If path and start are on different drives, return the absolute path
+    drive_start <- get_win_drive(start)
+    if (drive != drive_start) return(newpath)
+  }
+
+  # Convert to relative path
+  newpath <- fs::path_rel(newpath, start = start)
+  newpath <- as.character(newpath)
 
   return(newpath)
+}
+
+# Resolve symlinks in a filepath even if file does not exist.
+#
+# Input: Vector of absolute filepaths
+# Output: Vector of absolute filepaths with any symlinks resolved
+resolve_symlink <- function(path) {
+  return(vapply(path, resolve_symlink_, character(1), USE.NAMES = FALSE))
+}
+
+# Recursive function to resolve symlinks one path at a time.
+resolve_symlink_ <- function(path) {
+  # Base case #1: If path exists, resolve symlink
+  if (fs::file_exists(path)) {
+    return(fs::path_real(path))
+  }
+
+  parts <- fs::path_split(path)[[1]]
+  len <- length(parts)
+
+  # Base case #2: Only 1 part of file path remaining. Return it.
+  #
+  # Possible cases:
+  #   * Invalid input such as NA
+  #   * A Fake file path that doesn't exist on the machine
+  if (len == 1) {
+    return(path)
+  }
+
+  # Recursive case
+  return(fs::path_join(c(
+    resolve_symlink_(fs::path_join(parts[-len])),
+    parts[len])))
 }
 
 # Because ~ maps to ~/Documents on Windows, need a reliable way to determine the
@@ -125,7 +161,7 @@ get_home <- function() {
   } else {
     home <- Sys.getenv("USERPROFILE")
     home <- absolute(home)
-    if (!dir.exists(home)) {
+    if (!fs::dir_exists(home)) {
       stop(wrap("Unable to determine user's home directory on Windows: ", home))
     }
     return(home)
@@ -157,12 +193,20 @@ glob <- function(paths) {
   return(result)
 }
 
-# If the user doesn't define a URL for a GitHub repo in the YAML header or
+# If the user doesn't define a URL for a host repo in the YAML header or
 # _workflowr.yml, determine the URL from the remote "origin". If this remote
 # doesn't exist, return NA.
-get_github_from_remote <- function(path) {
-  # HTTPS: https://github.com/jdblischak/workflowr.git
-  # SSH: git@github.com:jdblischak/workflowr.git
+#
+# GitHub:
+# HTTPS: https://github.com/jdblischak/workflowr.git
+# SSH: git@github.com:jdblischak/workflowr.git
+# Return value:  https://github.com/jdblischak/workflowr
+#
+# GitLab:
+# HTTPS: https://gitlab.com/jdblischak/wflow-gitlab.git
+# SSH: git@gitlab.com:jdblischak/wflow-gitlab.git
+# Return value: https://gitlab.com/jdblischak/wflow-gitlab
+get_host_from_remote <- function(path) {
   if (!git2r::in_repository(path = path)) {
     return(NA_character_)
   }
@@ -172,24 +216,21 @@ get_github_from_remote <- function(path) {
     return(NA_character_)
   }
   origin <- git2r::remote_url(r, remote = "origin")
-  if (!stringr::str_detect(origin, "github")) {
-    return(NA_character_)
-  }
-  github <- origin
+  host <- origin
   # Remove trailing .git
-  github <- stringr::str_replace(github, "\\.git$", "")
+  host <- stringr::str_replace(host, "\\.git$", "")
   # If SSH, replace with HTTPS URL
-  github <- stringr::str_replace(github, "^git@github.com:", "https://github.com/")
-  return(github)
+  host <- stringr::str_replace(host, "^git@(.+):", "https://\\1/")
+  return(host)
 }
 
 # Get output directory if it exists
 get_output_dir <- function(directory, yml = "_site.yml") {
 
-  stopifnot(dir.exists(directory))
+  stopifnot(fs::dir_exists(directory))
 
   site_fname <- file.path(directory, "_site.yml")
-  if (!file.exists(site_fname)) {
+  if (!fs::file_exists(site_fname)) {
     return(NULL)
   }
   site_yml <- yaml::yaml.load_file(site_fname)
@@ -198,39 +239,126 @@ get_output_dir <- function(directory, yml = "_site.yml") {
     output_dir <- directory
   } else {
     output_dir <- file.path(directory, site_yml$output_dir)
-    dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
+    fs::dir_create(output_dir)
     output_dir <- absolute(output_dir)
   }
 
   return(output_dir)
 }
 
-# Convert named nested list to data frame
-status_to_df <- function(s) {
-  stopifnot(class(s) == "git_status")
-  s_vec <- unlist(s)
-  if (length(s_vec) > 0) {
-    categories <- stringr::str_split(names(s_vec), pattern = "\\.", n = 2,
-                                     simplify = TRUE)
-    d <- data.frame(categories, s_vec, stringsAsFactors = FALSE)
-    colnames(d) <- c("state1", "state2", "file")
-  } else {
-    d <- data.frame(state1 = character(0), state2 = character(0),
-                    file = character(0))
+# Convert the output of git2r::status() to a data frame for easier manipulation
+status_to_df <- function(x) {
+  stopifnot(class(x) == "git_status")
+
+  col_status <- character()
+  col_substatus <- character()
+  col_file <- character()
+
+  for (stat in names(x)) {
+    files <- unlist(x[[stat]])
+    col_status <- c(col_status, rep(stat, length(files)))
+    col_substatus <- c(col_substatus, names(files))
+    col_file <- c(col_file, files)
   }
 
-  return(d)
+  out <- data.frame(status = col_status,
+                    substatus = col_substatus,
+                    file = col_file,
+                    row.names = seq_along(col_status),
+                    stringsAsFactors = FALSE)
+  return(out)
 }
 
 # Convert data frame to git_status
 df_to_status <- function(d) {
   stopifnot(is.data.frame(d),
-            colnames(d) == c("state1", "state2", "file"))
-  status <- list(staged = list(), unstaged = list(), untracked = list())
+            colnames(d) == c("status", "substatus", "file"))
+  status <- list(staged = structure(list(), .Names = character(0)),
+                 unstaged = structure(list(), .Names = character(0)),
+                 untracked = structure(list(), .Names = character(0)))
   for (i in seq_along(d$file)) {
-    status[[d$state1[i]]] <- c(status[[d$state1[i]]], list(d$file[i]))
-    names(status[[d$state1[i]]])[length(status[[d$state1[i]]])] <- d$state2[i]
+    status[[d$status[i]]] <- c(status[[d$status[i]]], list(d$file[i]))
+    names(status[[d$status[i]]])[length(status[[d$status[i]]])] <- d$substatus[i]
   }
   class(status) <- "git_status"
   return(status)
+}
+
+# Determine if a file is executable
+#
+# https://github.com/r-lib/fs/issues/172
+file_is_executable <- function(f) {
+  stopifnot(fs::file_exists(f))
+
+  if (fs::file_access(f, mode = "execute")) return(TRUE)
+
+  return(FALSE)
+}
+
+# Automatically try to determine the best setting for knitr's dependson chunk
+# option based on the caching status of other chunks in the document.
+#
+# Usage: Set dependson=workflowr:::wflow_dependson() for a given chunk
+#
+# Desired behavior:
+#   * If any other cached chunks are invalidated and re-executed, this chunk
+#     should also be re-executed.
+#   * If all the cached chunks in a document are read from the cache, also read
+#     this chunk from the cache.
+#   * Avoid as many knitr warnings as possible about depending on non-cached
+#     chunks. These are harmless, but avoiding these demonstrates that the
+#     function is using dependson as it is intended to be used.
+#
+# Long term goal: Use this with the sessionInfo() chunk inserted by workflowr
+#
+# Warning: knitr caching is complicated. Make sure to test this function's
+# behavior for your setup before relying on it for anything important.
+#
+# https://yihui.name/knitr/options/#cache
+# https://yihui.name/knitr/demo/cache/
+# https://stackoverflow.com/a/47055058/2483477
+# https://stackoverflow.com/questions/25436389/dependson-option-does-not-work-in-knitr
+#
+wflow_dependson <- function() {
+
+  cache_global <- knitr::opts_chunk$get("cache")
+
+  # If cache=TRUE is set globally, depend on all chunks except those that are
+  # explicitly labeled cache=FALSE.
+  if (cache_global) {
+    labels_all <- knitr::all_labels()
+    labels_cache_false <- knitr::all_labels(expression(cache == FALSE))
+    labels <- setdiff(labels_all, labels_cache_false)
+    # Remove label of current chunk
+    label_self <- knitr::opts_current$get(name = "label")
+    labels <- setdiff(labels, label_self)
+    # Remove the set.seed chunk inserted by workflowr b/c it can't be cached
+    labels <- setdiff(labels, "seed-set-by-workflowr")
+    if (length(labels) > 0) return(labels)
+  }
+
+  # If specific chunks are cached, depend on these
+  labels_cache_true <- knitr::all_labels(expression(cache == TRUE))
+  if (length(labels_cache_true) > 0) return(labels_cache_true)
+
+  # If the document doesn't use caching, don't use dependson.
+  return(NULL)
+}
+
+# Ensure that Windows drive is capitalized
+#
+# Motivation: getwd() on winbuilder returns d:/ but tempdir() returns D:/. This
+# causes problems when creating relative paths.
+toupper_win_drive <- function(path) {
+  stringr::str_replace(path, "^([a-z]):/", toupper)
+}
+
+# Return the Windows drive. Called by relative().
+#
+# > get_win_drive(c("C:/a/b/c", "D:/a/b/c"))
+# [1] "C:" "D:"
+get_win_drive <- function(path) {
+  drive <- fs::path_split(path)
+  drive <- vapply(drive, function(x) x[1], FUN.VALUE = character(1))
+  return(drive)
 }

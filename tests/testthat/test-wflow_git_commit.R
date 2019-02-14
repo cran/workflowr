@@ -15,11 +15,11 @@ s <- wflow_status(project = site_dir)
 # Load helper function local_no_gitconfig()
 source("helpers.R", local = TRUE)
 
-# Test wflow_git_commit ------------------------------------------------------------
+# Test wflow_git_commit --------------------------------------------------------
 
 test_that("wflow_git_commit can commit one new file", {
   f1 <- file.path(site_dir, "f1.txt")
-  file.create(f1)
+  fs::file_create(f1)
   expect_silent(actual <- wflow_git_commit(f1, project = site_dir))
   expect_true(f1 %in% actual$commit_files)
   recent <- commits(r, n = 1)[[1]]
@@ -31,7 +31,7 @@ test_that("wflow_git_commit can commit one new file", {
 test_that("wflow_git_commit can commit multiple new files", {
   f2 <- file.path(site_dir, "f2.txt")
   f3 <- file.path(site_dir, "f3.txt")
-  file.create(f2, f3)
+  fs::file_create(c(f2, f3))
   expect_silent(actual <- wflow_git_commit(c(f2, f3), project = site_dir))
   expect_identical(actual$commit_files, c(f2, f3))
   recent <- commits(r, n = 1)[[1]]
@@ -67,8 +67,8 @@ test_that("wflow_git_commit can commit all tracked files", {
                        c("about.Rmd", "index.Rmd", "license.Rmd"))
   # Create a temporary untracked file that should not be committed
   untracked <- file.path(site_dir, "analysis", "untracked.Rmd")
-  file.create(untracked)
-  on.exit(file.remove(untracked))
+  fs::file_create(untracked)
+  on.exit(fs::file_delete(untracked))
   for (f in tracked)
     cat("edit\n", file = f, append = TRUE)
   expect_silent(actual <- wflow_git_commit(all = TRUE, project = site_dir))
@@ -80,8 +80,8 @@ test_that("wflow_git_commit can commit all tracked files", {
 test_that("wflow_git_commit does not affect Git repo if `dry_run = TRUE`", {
   before <- commits(r, n = 1)[[1]]
   tmp_file <- file.path(site_dir, "tmp.txt")
-  file.create(tmp_file)
-  on.exit(file.remove(tmp_file))
+  fs::file_create(tmp_file)
+  on.exit(fs::file_delete(tmp_file))
   expect_silent(wflow_git_commit(files = tmp_file, dry_run = TRUE,
                              project = site_dir))
   after <- commits(r, n = 1)[[1]]
@@ -115,7 +115,7 @@ test_that("wflow_git_commit_ can commit deleted files", {
   index <- file.path(s$analysis, "index.Rmd")
   about <- file.path(s$analysis, "about.Rmd")
   cat("edit\n", file = index, append = TRUE)
-  file.remove(about)
+  fs::file_delete(about)
   observed <- workflowr:::wflow_git_commit_(c(index, about),
                                             message = "Edit and delete",
                                             project = site_dir)
@@ -134,7 +134,7 @@ test_that("wflow_git_commit_ can commit deleted files from project root", {
   index <- "analysis/index.Rmd"
   about <- "analysis/about.Rmd"
   cat("edit\n", file = index, append = TRUE)
-  file.remove(about)
+  fs::file_delete(about)
   observed <- workflowr:::wflow_git_commit_(c(index, about),
                                             message = "Edit and delete")
   expect_true(index %in% observed$commit_files)
@@ -152,7 +152,7 @@ test_that("wflow_git_commit_ can commit deleted files from project subdir", {
   index <- "index.Rmd"
   about <- "about.Rmd"
   cat("edit\n", file = index, append = TRUE)
-  file.remove(about)
+  fs::file_delete(about)
   observed <- workflowr:::wflow_git_commit_(c(index, about),
                                             message = "Edit and delete")
   expect_true(index %in% observed$commit_files)
@@ -214,4 +214,33 @@ test_that("wflow_git_commit throws an error if user.name and user.email are not 
                "You must set your user.name and user.email for Git first")
   expect_error(wflow_git_commit(project = site_dir),
                "wflow_git_commit")
+})
+
+test_that("wflow_git_commit fails early if merge conflicts detected", {
+  x <- tempfile("test-merge-conflicts-")
+  suppressMessages(wflow_start(x, change_wd = FALSE, user.name = "Test Name",
+                               user.email = "test@email"))
+  x <- workflowr:::relative(x)
+  on.exit(unlink(x, recursive = TRUE, force = TRUE))
+  r <- repository(path = x)
+  s <- wflow_status(project = x)
+
+  # Edit index.Rmd on new branch
+  rmd <- file.path(s$analysis, "index.Rmd")
+  checkout(r, "b2", create = TRUE)
+  cat("\nedit on b2\n", file = rmd, append = TRUE)
+  add(r, rmd)
+  commit(r, "edit index.Rmd on b2")
+  # Edit index.Rmd on master branch
+  checkout(r, "master")
+  cat("\nedit on master\n", file = rmd, append = TRUE)
+  add(r, rmd)
+  commit(r, "edit index.Rmd on master")
+  # Generate merge conflict
+  workflowr:::git2r_merge(r, "b2")
+
+  skip_on_cran()
+
+  # Attempt to publish
+  expect_error(wflow_publish(rmd, project = x), rmd)
 })

@@ -1,5 +1,9 @@
 context("report")
 
+# Setup ------------------------------------------------------------------------
+
+source("setup.R")
+
 # Test get_versions and get_versions_fig ---------------------------------------
 
 test_that("get_versions and get_versions_fig insert GitHub URL if available", {
@@ -35,7 +39,7 @@ test_that("get_versions and get_versions_fig insert GitHub URL if available", {
   r <- git2r::repository(tmp_dir)
   blobs <- git2r::odb_blobs(r)
   output_dir <- workflowr:::get_output_dir(file.path(tmp_dir, "analysis/"))
-  github <- workflowr:::get_github_from_remote(tmp_dir)
+  github <- workflowr:::get_host_from_remote(tmp_dir)
   versions <- workflowr:::get_versions(input = rmd, output_dir, blobs, r, github)
   expect_true(any(stringr::str_detect(versions, github)))
   fig <- file.path(output_dir, "figure", basename(rmd), "chunkname-1.png")
@@ -47,7 +51,7 @@ test_that("get_versions and get_versions_fig insert GitHub URL if available", {
 # Test check_vc ----------------------------------------------------------------
 
 tmp_dir <- tempfile("test-check_vc")
-dir.create(tmp_dir)
+fs::dir_create(tmp_dir)
 tmp_dir <- workflowr:::absolute(tmp_dir)
 rmd <- file.path(tmp_dir, "file.Rmd")
 writeLines(letters, rmd)
@@ -71,7 +75,7 @@ test_that("check_vc reports Git repo even if no commits", {
                    "<strong>Repository version:</strong> No commits yet")
 })
 
-git2r::add(r, rmd)
+workflowr:::git2r_add(r, rmd)
 git2r::commit(r, "Add rmd")
 s <- git2r::status(r, ignored = TRUE)
 current_commit <- git2r_slot(git2r::commits(r)[[1]], "sha")
@@ -96,13 +100,13 @@ test_that("check_vc reports Git repo and can add GitHub URL", {
 
 test_that("check_vc ignores *html, *png, and site_libs", {
   fname_html <- file.path(tmp_dir, "file.html")
-  file.create(fname_html)
+  fs::file_create(fname_html)
   fname_png <- file.path(tmp_dir, "file.png")
-  file.create(fname_png)
+  fs::file_create(fname_png)
   site_libs <- file.path(tmp_dir, "site_libs")
-  dir.create(site_libs)
+  fs::dir_create(site_libs)
   site_libs_readme <- file.path(site_libs, "README.md")
-  file.create(site_libs_readme)
+  fs::file_create(site_libs_readme)
 
   observed <- workflowr:::check_vc(rmd, r = r, s = s, github = NA_character_)
 
@@ -114,7 +118,7 @@ test_that("check_vc ignores *html, *png, and site_libs", {
 })
 
 rmd2 <- file.path(tmp_dir, "file2.Rmd")
-file.create(rmd2)
+fs::file_create(rmd2)
 s <- git2r::status(r, ignored = TRUE)
 
 test_that("check_vc reports uncommitted Rmd files", {
@@ -130,7 +134,7 @@ rm(r, rmd, rmd2, s, tmp_dir, current_commit, commit_to_display)
 # Test check_sessioninfo -------------------------------------------------------
 
 rmd <- tempfile("check-sessioninfo-", fileext = ".Rmd")
-file.copy("files/example.Rmd", rmd)
+fs::file_copy("files/example.Rmd", rmd)
 
 test_that("check_sessioninfo reports sessioninfo reported as an option", {
   observed <- workflowr:::check_sessioninfo(rmd, "sessionInfo()")
@@ -208,10 +212,70 @@ test_that("check_environment reports non-empty environment", {
   expect_true(grepl("long_variable_name", observed$details))
 })
 
+# Test check_cache -------------------------------------------------------------
+
+test_that("check_cache passes if no cached chunks present", {
+  x <- fs::file_temp()
+  fs::dir_create(x)
+  on.exit(fs::dir_delete(x))
+
+  rmd <- file.path(x, "test.Rmd")
+  fs::file_create(rmd)
+
+  observed <- workflowr:::check_cache(rmd)
+  expect_true(observed$pass)
+  expect_identical(observed$summary, "<strong>Cache:</strong> none")
+})
+
+test_that("check_cache passes if empty cache directory", {
+  x <- fs::file_temp()
+  fs::dir_create(x)
+  on.exit(fs::dir_delete(x))
+
+  rmd <- file.path(x, "test.Rmd")
+  fs::file_create(rmd)
+
+  rmd_cache <- file.path(x, "test_cache")
+  fs::dir_create(rmd_cache)
+
+  observed <- workflowr:::check_cache(rmd)
+  expect_true(observed$pass)
+
+  rmd_cache_html <- file.path(rmd_cache, "html")
+  fs::dir_create(rmd_cache_html)
+
+  observed <- workflowr:::check_cache(rmd)
+  expect_true(observed$pass)
+})
+
+test_that("check_cache fails if cached chunks present", {
+  x <- fs::file_temp()
+  fs::dir_create(x)
+  on.exit(fs::dir_delete(x))
+
+  rmd <- file.path(x, "test.Rmd")
+  fs::file_create(rmd)
+
+  rmd_cache_html <- file.path(x, "test_cache/html")
+  fs::dir_create(rmd_cache_html, recursive = TRUE)
+
+  cached_chunk_1 <- file.path(rmd_cache_html, "chunk-name_29098n0b4h849.RData")
+  fs::file_create(cached_chunk_1)
+  cached_chunk_2 <- file.path(rmd_cache_html, "a_chunk_29098n0b4h849.RData")
+  fs::file_create(cached_chunk_2)
+
+  observed <- workflowr:::check_cache(rmd)
+  expect_false(observed$pass)
+  expect_identical(observed$summary, "<strong>Cache:</strong> detected")
+  expect_true(stringr::str_detect(observed$details, "<li>chunk-name</li>"))
+  expect_true(stringr::str_detect(observed$details, "<li>a_chunk</li>"))
+  expect_true(stringr::str_detect(observed$details, "<code>test_cache</code>"))
+})
+
 # Test check_rmd ---------------------------------------------------------------
 
 tmp_dir <- tempfile("test-check_rmd")
-dir.create(tmp_dir)
+fs::dir_create(tmp_dir)
 tmp_dir <- workflowr:::absolute(tmp_dir)
 git2r::init(tmp_dir)
 r <- git2r::repository(tmp_dir)
@@ -239,7 +303,7 @@ test_that("check_rmd reports an ignored Rmd file", {
   expect_true(grepl("ignored", observed$details))
 })
 
-git2r::add(r, rmd)
+workflowr:::git2r_add(r, rmd)
 s <- git2r::status(r, ignored = TRUE)
 
 test_that("check_rmd reports a staged Rmd file", {
@@ -274,6 +338,51 @@ test_that("check_rmd reports an unstaged Rmd file", {
 
 unlink(tmp_dir, recursive = TRUE)
 rm(r, rmd, s, tmp_dir)
+
+# Test create_report -----------------------------------------------------------
+
+test_that("create_report reports knit directory", {
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  input <- file.path(path, "analysis/index.Rmd")
+  output_dir <- file.path(path, "docs")
+  has_code <- TRUE
+  opts <- list(seed = 1, github = NA, sessioninfo = "sessionInfo()",
+               fig_path_ext = FALSE)
+
+  # In the project root
+  opts$knit_root_dir <- path
+  report <- create_report(input, output_dir, has_code, opts)
+  expected <- glue::glue("<code>{fs::path_file(path)}/</code>")
+  expect_true(stringr::str_detect(report, expected))
+
+  # In analysis
+  opts$knit_root_dir <- file.path(path, "analysis")
+  report <- create_report(input, output_dir, has_code, opts)
+  expected <- glue::glue("<code>{file.path(fs::path_file(path), \"analysis\")}/</code>")
+  expect_true(stringr::str_detect(report, expected))
+
+  # In code
+  opts$knit_root_dir <- file.path(path, "code")
+  report <- create_report(input, output_dir, has_code, opts)
+  expected <- glue::glue("<code>{file.path(fs::path_file(path), \"code\")}/</code>")
+  expect_true(stringr::str_detect(report, expected))
+
+  # In home directory
+  opts$knit_root_dir <- "~"
+  report <- create_report(input, output_dir, has_code, opts)
+  expected <- glue::glue("<code>~/</code>")
+  expect_true(stringr::str_detect(report, expected))
+
+  # In temp directory
+  opts$knit_root_dir <- fs::file_temp()
+  report <- create_report(input, output_dir, has_code, opts)
+  expected <- glue::glue("<code>{opts$knit_root_dir}/</code>")
+  expect_true(stringr::str_detect(report, expected))
+})
 
 # Test detect_code -------------------------------------------------------------
 
@@ -393,6 +502,41 @@ test_that("detect_code returns FALSE for file with nothing even resembling code"
   on.exit(unlink(fname))
   writeLines(lines, fname)
   expect_false(detect_code(fname))
+})
+
+# Test create_url_html ---------------------------------------------------------
+
+test_that("create_url_html returns CDN for GitHub.com", {
+  observed <- workflowr:::create_url_html("https://github.com/user/repo",
+                                          "path/file.html", "commit")
+  expected <- "<a href=\"https://rawcdn.githack.com/user/repo/commit/path/file.html\" target=\"_blank\">commit</a>"
+  expect_identical(observed, expected)
+
+  observed <- workflowr:::create_url_html("https://github.com/jdblischak/dc-bioc-limma",
+                                          "docs/index.html", "ef5ea09f1d2e12af8757d2d77a68e16466947a65")
+  expected <- "<a href=\"https://rawcdn.githack.com/jdblischak/dc-bioc-limma/ef5ea09f1d2e12af8757d2d77a68e16466947a65/docs/index.html\" target=\"_blank\">ef5ea09</a>"
+  expect_identical(observed, expected)
+})
+
+test_that("create_url_html returns CDN for GitLab.com", {
+  observed <- workflowr:::create_url_html("https://gitlab.com/user/repo",
+                                          "path/file.html", "commit")
+  expected <- "<a href=\"https://glcdn.githack.com/user/repo/raw/commit/path/file.html\" target=\"_blank\">commit</a>"
+  expect_identical(observed, expected)
+
+  observed <- workflowr:::create_url_html("https://gitlab.com/jdblischak/wflow-gitlab",
+                                          "public/index.html", "f3b96cfd498ad1b6fb177fa9ae5ad1a2e2ca7261")
+  expected <- "<a href=\"https://glcdn.githack.com/jdblischak/wflow-gitlab/raw/f3b96cfd498ad1b6fb177fa9ae5ad1a2e2ca7261/public/index.html\" target=\"_blank\">f3b96cf</a>"
+  expect_identical(observed, expected)
+})
+
+# https://git.rcc.uchicago.edu/ivy2/Graham_Introduction_to_Hadoop
+# https://git.rcc.uchicago.edu/user/repo
+test_that("create_url_html returns URL to repo for anything not standard GH/GL", {
+  observed <- workflowr:::create_url_html("https://git.rcc.uchicago.edu/user/repo",
+                                          "path/file.html", "commit")
+  expected <- "<a href=\"https://git.rcc.uchicago.edu/user/repo/blob/commit/path/file.html\" target=\"_blank\">commit</a>"
+  expect_identical(observed, expected)
 })
 
 # Test shorten_sha -------------------------------------------------------------

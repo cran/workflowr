@@ -85,7 +85,7 @@ wflow_git_commit <- function(files = NULL, message = NULL, all = FALSE,
     if (!(is.character(files) && length(files) > 0))
       stop("files must be NULL or a character vector of filenames")
     files <- glob(files)
-    if (!all(file.exists(files)))
+    if (!all(fs::file_exists(files)))
       stop("Not all files exist. Check the paths to the files")
     # Change filepaths to relative paths
     files <- relative(files)
@@ -112,7 +112,7 @@ wflow_git_commit <- function(files = NULL, message = NULL, all = FALSE,
   if (!(is.character(project) && length(project) == 1))
     stop("project must be a one-element character vector")
 
-  if (!dir.exists(project)) {
+  if (!fs::dir_exists(project)) {
     stop("project directory does not exist.")
   }
 
@@ -137,9 +137,14 @@ wflow_git_commit <- function(files = NULL, message = NULL, all = FALSE,
     # Files cannot be larger than 100MB
     sizes <- file.size(files) / 10^6
     if (any(sizes >= 100))
-      stop(wrap("All files to be committed must be less than 100 MB (this is
-      the max file size able to be pushed to GitHub). Run Git from the
-      commandline if you really want to commit these files."))
+      stop(wrap(
+      "All files to be committed must be less than 100 MB. This is the max
+      file size able to be pushed to GitHub, and is in general a good practice
+      to follow no matter what Git hosting service you are using. Large files
+      will make each push and pull take much longer and increase the risk of
+      the download timing out. Run Git directly in the Terminal if you really
+      want to commit these files."
+      ))
   }
 
   wflow_git_commit_(files = files, message = message, all = all,
@@ -163,10 +168,19 @@ wflow_git_commit_ <- function(files = NULL, message = NULL, all = FALSE,
   # Establish connection to Git repository
   r <- git2r::repository(s$git)
 
+  # Files cannot have merge conflicts
+  conflicted_files_all <- rownames(s$status)[s$status$conflicted]
+  conflicted_files <- files[files %in% conflicted_files_all]
+  if (length(conflicted_files) > 0) {
+    stop(call. = FALSE, wrap(
+      "Cannot proceed due to merge conflicts in the following file(s):"
+      ), "\n\n", paste(conflicted_files, collapse = "\n"))
+  }
+
   if (!dry_run) {
     # Add the specified files
     if (!is.null(files)) {
-      git2r::add(r, absolute(files), force = force)
+      git2r_add(r, files, force = force)
     }
     if (all) {
       # Temporary fix until git2r::commit can do `git commit -a`
@@ -176,7 +190,8 @@ wflow_git_commit_ <- function(files = NULL, message = NULL, all = FALSE,
       # bug that affects Ubuntu and Windows, but not macOS. Manually adding all
       # unstaged changes.
       unstaged <- unlist(git2r::status(r)$unstaged)
-      git2r::add(r, file.path(git2r_workdir(r), unstaged))
+      unstaged <- file.path(git2r_workdir(r), unstaged)
+      git2r_add(r, unstaged)
     }
     # Commit
     tryCatch(
@@ -184,10 +199,14 @@ wflow_git_commit_ <- function(files = NULL, message = NULL, all = FALSE,
       error = function(e) {
         if (stringr::str_detect(e$message, "Nothing added to commit")) {
           reason <- "Commit failed because no files were added."
+          if (!is.null(files)) {
+            reason <- c(reason, " Attempted to commit the following files:\n",
+                        paste(absolute(files), collapse = "\n"))
+          }
         } else {
           reason <- "Commit failed for unknown reason."
         }
-        stop(wrap(reason, " Any untracked files must manually specified even if
+        stop(wrap(reason, "\n\nAny untracked files must manually specified even if
                   `all = TRUE`."), call. = FALSE)
       }
     )
@@ -249,7 +268,7 @@ shorten_site_libs <- function(files) {
       out[i] <- paste(f_split[i, seq(col_site_libs + 1)],
                       collapse = .Platform$file.sep)
       # Add final / so that it is clear it's a directory
-      if (dir.exists(out[i])) {
+      if (fs::dir_exists(out[i])) {
         out[i] <- paste0(out[i], .Platform$file.sep)
       }
     }

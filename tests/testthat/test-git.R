@@ -9,7 +9,7 @@ source("helpers.R", local = TRUE)
 
 # Create temp Git directory
 dir_git <- tempfile("test-get_committed_files-")
-dir.create(dir_git)
+fs::dir_create(dir_git)
 dir_git <- workflowr:::absolute(dir_git)
 on.exit(unlink(dir_git, recursive = TRUE, force = TRUE))
 # Initialize Git repo
@@ -23,8 +23,8 @@ test_that("get_committed_files returns NA if no files have been committed", {
 
 # Commit some files in root commit
 f <- file.path(dir_git, c("a.txt", "b.txt"))
-file.create(f)
-git2r::add(r, f)
+fs::file_create(f)
+workflowr:::git2r_add(r, f)
 git2r::commit(r, message = "root commit")
 
 test_that("get_committed_files works on root commit", {
@@ -41,8 +41,8 @@ test_that("obtain_files_in_commit works on root commit", {
 
 # Commit more files
 f2 <- file.path(dir_git, c("c.txt", "d.txt"))
-file.create(f2)
-git2r::add(r, f2)
+fs::file_create(f2)
+workflowr:::git2r_add(r, f2)
 git2r::commit(r, message = "another commit")
 
 test_that("get_committed_files works on multiple commits", {

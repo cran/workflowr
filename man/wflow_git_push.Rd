@@ -5,7 +5,8 @@
 \title{Push files to remote repository}
 \usage{
 wflow_git_push(remote = NULL, branch = NULL, username = NULL,
-  password = NULL, force = FALSE, dry_run = FALSE, project = ".")
+  password = NULL, force = FALSE, set_upstream = TRUE,
+  dry_run = FALSE, project = ".")
 }
 \arguments{
 \item{remote}{character (default: NULL). The name of the remote repository.
@@ -15,15 +16,19 @@ See Details for the default behavior.}
 the remote repository. If \code{NULL}, the name of the current local branch
 is used.}
 
-\item{username}{character (default: NULL). GitHub username. The user is
-prompted if necessary.}
+\item{username}{character (default: NULL). Username for online Git hosting
+service (e.g. GitHub or GitLab). The user is prompted if necessary.}
 
-\item{password}{character (default: NULL). GitHub password. The user is
-prompted if necessary.}
+\item{password}{character (default: NULL). Password for online Git hosting
+service (e.g. GitHub or GitLab). The user is prompted if necessary.}
 
 \item{force}{logical (default: FALSE). Force the push to the remote
 repository. Do not use this if you are not 100\% sure of what it is doing.
 Equivalent to: \code{git push -f}}
+
+\item{set_upstream}{logical (default: TRUE). Set the current local branch to
+track the remote branch if it isn't already tracking one. This is likely
+what you want. Equivalent to: \code{git push -u remote branch}}
 
 \item{dry_run}{logical (default: FALSE). Preview the proposed action but do
 not actually push to the remote repository.}
@@ -42,7 +47,8 @@ An object of class \code{wflow_git_push}, which is a list with the
 
 \item \bold{branch}: The branch of the remote repository.
 
-\item \bold{username}: GitHub username.
+\item \bold{username}: Username for online Git hosting service (e.g. GitHub
+or GitLab).
 
 \item \bold{force}: The input argument \code{force}.
 
@@ -52,9 +58,10 @@ An object of class \code{wflow_git_push}, which is a list with the
 }
 \description{
 \code{wflow_git_push} pushes the local files on your machine to your remote
-repository on GitHub. This is a convenience function to run Git commands from
-the R console instead of the Terminal. The same functionality can be acheived
-by running \code{git push} in the Terminal.
+repository on a remote Git hosting service (e.g. GitHub or GitLab). This is a
+convenience function to run Git commands from the R console instead of the
+Terminal. The same functionality can be acheived by running \code{git push}
+in the Terminal.
 }
 \details{
 \code{wflow_git_push} tries to choose sensible defaults if the user does not

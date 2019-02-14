@@ -95,7 +95,7 @@ wflow_open <- function(files,
   if (any(non_standard))
     stop("R Markdown files must have the extension Rmd or rmd.")
 
-  files_new <- files[!file.exists(files)]
+  files_new <- files[!fs::file_exists(files)]
 
   # Determine knit directory ---------------------------------------------------
 
@@ -106,7 +106,7 @@ wflow_open <- function(files,
     # If project is set, find the knit directory
 
     # Confirm that project exists
-    if (!dir.exists(project)) {
+    if (!fs::dir_exists(project)) {
       stop("project does not exist: ", project)
     }
 
@@ -143,12 +143,7 @@ wflow_open <- function(files,
 
     # Throw error if Rmd files not saved in R Markdown directory
     if (.Platform$OS.type == "windows") {
-      # On CRAN Windows machines, sometimes the drive is uppercase and sometimes
-      # lowercase, which breaks this check. Even wrapping both in `absolute`
-      # doesn't fix it. Since filepaths are not case sensitive on Windows, e.g.
-      # `(dir.exists(tolower(getwd())))`, first make the paths lowercase.
-      non_analysis <- !tolower(absolute(dirname(files))) ==
-                       tolower(absolute(p$analysis))
+      non_analysis <- !absolute(dirname(files)) == absolute(p$analysis)
     } else {
       non_analysis <- !dirname(files) == absolute(p$analysis)
     }
@@ -211,7 +206,7 @@ wflow_open <- function(files,
                      "",
                      "```",
                      "")
-    dir.create(dirname(files_new[i]), showWarnings = FALSE, recursive = TRUE)
+    fs::dir_create(dirname(files_new[i]))
     writeLines(c(header, boilerplate), files_new[i])
   }
 

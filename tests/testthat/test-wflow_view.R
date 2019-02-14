@@ -14,7 +14,7 @@ p <- wflow_paths(project = site_dir)
 # Create some fake R Markdown files
 rmd <- file.path(p$analysis, paste0(1:3, ".Rmd"))
 for (i in 1:3) {
-  file.copy("files/example.Rmd", rmd[i])
+  fs::file_copy("files/example.Rmd", rmd[i])
 }
 # Expected html files
 html <- workflowr:::to_html(rmd, outdir = p$docs)
@@ -129,8 +129,8 @@ test_that("wflow_view sends warning for missing HTML file.", {
   skip_on_cran()
 
   rmd_wo_html <- file.path(p$analysis, "rmd_wo_html.Rmd")
-  on.exit(file.remove(rmd_wo_html))
-  file.create(rmd_wo_html)
+  on.exit(fs::file_delete(rmd_wo_html))
+  fs::file_create(rmd_wo_html)
 
   expected <- file.path(p$docs, "about.html")
   expect_warning(actual <- wflow_view(files = c(file.path(p$docs, "about.html"),
@@ -143,8 +143,8 @@ test_that("wflow_view sends warning for missing HTML file.", {
 test_that("wflow_view throws error if no files to view.", {
 
   rmd_wo_html <- file.path(p$analysis, "rmd_wo_html.Rmd")
-  on.exit(file.remove(rmd_wo_html))
-  file.create(rmd_wo_html)
+  on.exit(fs::file_delete(rmd_wo_html))
+  fs::file_create(rmd_wo_html)
 
   expect_error(suppressWarnings(wflow_view(files = rmd_wo_html,
                                            dry_run = TRUE, project = site_dir)),
@@ -157,7 +157,7 @@ test_that("wflow_view throws error if no files to view.", {
 
 test_that("wflow_view throws error if given directory input.", {
   d <- file.path(site_dir, "toplevel")
-  dir.create(d)
+  fs::dir_create(d)
   on.exit(unlink(d, recursive = TRUE, force = TRUE))
   expect_error(wflow_view(d, project = site_dir),
                "files cannot include a path to a directory")
@@ -169,8 +169,8 @@ test_that("wflow_view throws error if given non-workflowr files.", {
                   rmd_in_docs = file.path(p$docs, "file.Rmd"),
                   html_in_root = file.path(p$root, "file.html"),
                   html_in_analysis = file.path(p$analysis, "file.html"))
-  on.exit(lapply(invalid, file.remove))
-  lapply(invalid, file.create)
+  on.exit(lapply(invalid, fs::file_delete))
+  lapply(invalid, fs::file_create)
 
   for (f in invalid) {
     expect_error(wflow_view(f, dry_run = TRUE, project = site_dir))

@@ -157,6 +157,17 @@
 #' @param change_wd logical (default: \code{TRUE}). Change the working
 #'   directory to the \code{directory}.
 #'
+#' @param disable_remote logical (default: \code{FALSE}). Create a Git
+#'   \href{https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks}{pre-push
+#'   hook} that prevents pushing to a remote Git repository (i.e. using
+#'   \code{\link{wflow_git_push}}). This is useful for extremely confidential
+#'   projects that cannot be shared via an online Git hosting service (e.g.
+#'   GitHub or GitLab). The hook is saved in the file
+#'   \code{.git/hooks/pre-push}. If you change your mind and want to push the
+#'   repository, you can delete that file. Note that this option is only
+#'   available if \code{git = TRUE}. Note that this is currently only supported
+#'   for Linux and macOS.
+#'
 #' @param dry_run logical (default: \code{FALSE}). When \code{dry_run
 #'   = TRUE}, the actions are previewed without executing them.
 #'
@@ -192,6 +203,8 @@
 #'    \item{overwrite}{The input argument \code{overwrite}.}
 #'
 #'    \item{change_wd}{The input argument \code{change_wd}.}
+#'
+#'    \item{disable_remote}{The input argument \code{disable_remote}.}
 #'
 #'    \item{dry_run}{The input argument \code{dry_run}.}
 #'
@@ -232,6 +245,7 @@ wflow_start <- function(directory,
                         existing = FALSE,
                         overwrite = FALSE,
                         change_wd = TRUE,
+                        disable_remote = FALSE,
                         dry_run = FALSE,
                         user.name = NULL,
                         user.email = NULL) {
@@ -247,6 +261,8 @@ wflow_start <- function(directory,
     stop("overwrite must be a one element logical vector: ", overwrite)
   if (!is.logical(change_wd) | length(change_wd) != 1)
     stop("change_wd must be a one element logical vector: ", change_wd)
+  if (!is.logical(disable_remote) | length(disable_remote) != 1)
+    stop("disable_remote must be a one element logical vector: ", disable_remote)
   if (!is.logical(dry_run) | length(dry_run) != 1)
     stop("dry_run must be a one element logical vector: ", dry_run)
   if (!(is.null(user.name) | (is.character(user.name) | length(user.name) != 1)))
@@ -257,9 +273,9 @@ wflow_start <- function(directory,
       (!is.null(user.name) && is.null(user.email)))
     stop("Must specify both user.name and user.email, or neither.")
 
-  if (!existing & dir.exists(directory)) {
+  if (!existing & fs::dir_exists(directory)) {
     stop("Directory already exists. Set existing = TRUE if you wish to add workflowr files to an already existing project.")
-  } else if (existing & !dir.exists(directory)) {
+  } else if (existing & !fs::dir_exists(directory)) {
     stop("Directory does not exist. Set existing = FALSE to create a new directory for the workflowr files.")
   }
 
@@ -282,9 +298,19 @@ wflow_start <- function(directory,
     check_git_config(path = directory, "`wflow_start` with `git = TRUE`")
   }
 
+  # Do not allow git = FALSE and disable_remote = TRUE
+  if (!git && disable_remote) {
+    stop("disable_remote is only available if git=TRUE")
+  }
+
+  # Do not allow disable_remote = TRUE on Windows
+  if (disable_remote && .Platform$OS.type == "windows") {
+    stop("disable_remote is not available on Windows")
+  }
+
   # Create directory if it doesn't already exist
-  if (!existing && !dir.exists(directory) && !dry_run) {
-    dir.create(directory, recursive = TRUE)
+  if (!existing && !fs::dir_exists(directory) && !dry_run) {
+    fs::dir_create(directory)
   }
 
   # Convert to absolute path. Needs to be run again after creating the directory
@@ -302,21 +328,22 @@ wflow_start <- function(directory,
 
   # Add files ------------------------------------------------------------------
 
-  # Use templates defined in R/templates.R
+  # Use templates defined in R/infrastructure.R
   names(templates)[which(names(templates) == "Rproj")] <-
     glue::glue("{basename(directory)}.Rproj")
   names(templates) <- file.path(directory, names(templates))
   project_files <- names(templates)
 
   # Create subdirectories
-  dir.create.vectorized <- Vectorize(dir.create, vectorize.args = "path")
-  dir.create.vectorized(file.path(directory, c("analysis", "code", "data",
-                                               "docs", "output")),
-                        showWarnings = FALSE)
+  subdirs <- file.path(directory, c("analysis", "code", "data", "docs",
+                                    "output"))
+  if (!dry_run) {
+    fs::dir_create(subdirs)
+  }
 
   if (!dry_run) {
     for (fname in project_files) {
-      if (!file.exists(fname) || overwrite) {
+      if (!fs::file_exists(fname) || overwrite) {
         cat(glue::glue(templates[[fname]]), file = fname)
       }
     }
@@ -326,7 +353,7 @@ wflow_start <- function(directory,
   nojekyll <- file.path(directory, "docs", ".nojekyll")
   project_files <- c(project_files, nojekyll)
   if (!dry_run) {
-    file.create(nojekyll)
+    fs::file_create(nojekyll)
   }
 
   # Configure, initialize, and commit ------------------------------------------
@@ -341,9 +368,7 @@ wflow_start <- function(directory,
 
   # Configure Git repository
   if (git && !dry_run) {
-    if (git2r::in_repository(directory)) {
-      warning("A .git directory already exists in ", directory)
-    } else {
+    if (!git2r::in_repository(directory)) {
       git2r::init(directory)
     }
     repo <- git2r::repository(directory)
@@ -352,12 +377,23 @@ wflow_start <- function(directory,
       git2r::config(repo, user.name = user.name, user.email = user.email)
     }
     # Make the first workflowr commit
-    git2r::add(repo, project_files, force = TRUE)
+    git2r_add(repo, project_files, force = TRUE)
     status <- git2r::status(repo)
     if (length(status$staged) == 0) {
       warning("No new workflowr files were committed.")
     } else{
       commit <- git2r::commit(repo, message = "Start workflowr project.")
+    }
+    # Create pre-push hook to prevent pushing confidential projects
+    if (disable_remote) {
+      pre_push_file <- file.path(git2r_workdir(repo), ".git/hooks/pre-push")
+      if (!fs::file_exists(pre_push_file) || overwrite) {
+        # extras is a list defined in infrastructure.R
+        cat(glue::glue(extras[["disable_remote"]]), file = pre_push_file)
+      }
+      if (!file_is_executable(pre_push_file)) {
+        fs::file_chmod(pre_push_file, "a+x")
+      }
     }
   }
 
@@ -369,6 +405,7 @@ wflow_start <- function(directory,
             existing = existing,
             overwrite = overwrite,
             change_wd = change_wd,
+            disable_remote = disable_remote,
             dry_run = dry_run,
             user.name = user.name,
             user.email = user.email,
@@ -406,6 +443,9 @@ print.wflow_start <- function(x, ...) {
     } else {
       cat("- Files will not be commited with Git\n")
     }
+    if (x$disable_remote) {
+      cat("- Pushing to remote repository will be disabled\n")
+    }
   } else {
     cat("wflow_start:\n")
     if (x$existing) {
@@ -438,6 +478,9 @@ print.wflow_start <- function(x, ...) {
       }
     } else {
       cat("- No Git repo\n")
+    }
+    if (x$disable_remote) {
+      cat("- Pushing to remote repository is disabled\n")
     }
   }
 

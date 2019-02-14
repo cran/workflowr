@@ -6,9 +6,10 @@
 #' running \code{git config} in the Terminal.
 #'
 #' The main purpose of \code{wflow_git_config} is to set the user.name and
-#' user.email to use with Git commits (note that these do not need to match the
-#' name and email you used to register your GitHub account). However, it can
-#' also handle arbitrary Git settings (see examples below).
+#' user.email to use with Git commits. Note that these do not need to match the
+#' name and email you used to register your online account with a Git hosting
+#' service (e.g. GitHub or GitLab). However, it can also handle arbitrary Git
+#' settings (see examples below).
 #'
 #' There are two main limitations of \code{wflow_git_config} for the sake of
 #' simplicity. First, \code{wflow_git_config} only affects the global Git
@@ -84,8 +85,8 @@ wflow_git_config <- function(user.name = NULL, user.email = NULL, ...) {
       # https://cran.r-project.org/bin/windows/base/rw-FAQ.html#What-are-HOME-and-working-directories_003f
       user_home <- get_home()
       config_file <- file.path(user_home, ".gitconfig")
-      if (!file.exists(config_file)) {
-        file.create(config_file)
+      if (!fs::file_exists(config_file)) {
+        fs::file_create(config_file)
       }
     }
   }

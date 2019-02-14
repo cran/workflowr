@@ -18,28 +18,40 @@ test_that("wflow_status identifies root directory.", {
   expected <- site_dir
   actual <- s$root
   expect_identical(actual, expected)
-  expect_true(dir.exists(expected))
+  expect_true(fs::dir_exists(expected))
 })
 
 test_that("wflow_status identifies analysis directory.", {
   expected <- file.path(site_dir, "analysis")
   actual <- s$analysis
   expect_identical(actual, expected)
-  expect_true(dir.exists(expected))
+  expect_true(fs::dir_exists(expected))
 })
 
 test_that("wflow_status identifies docs directory.", {
   expected <- file.path(site_dir, "docs")
   actual <- s$docs
   expect_identical(actual, expected)
-  expect_true(dir.exists(expected))
+  expect_true(fs::dir_exists(expected))
 })
 
 test_that("wflow_status identifies Git directory.", {
   expected <- site_dir
   actual <- s$git
   expect_identical(actual, expected)
-  expect_true(dir.exists(expected))
+  expect_true(fs::dir_exists(expected))
+})
+
+test_that("wflow_status returns data frame of logical values on Rmd files.", {
+  expect_is(s$status, "data.frame")
+  for (column in colnames(s$status)) {
+    expect_is(s$status[, column], "logical")
+  }
+  expect_is(rownames(s$status), "character")
+  expect_identical(colnames(s$status),
+                   c("ignored", "mod_unstaged", "conflicted", "mod_staged",
+                     "tracked", "committed", "published", "mod_committed",
+                     "modified", "unpublished", "scratch"))
 })
 
 # Skip on CRAN. See ?testthat::skip_on_cran, which only works inside of unit
@@ -53,10 +65,10 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
   rmd_unp <- file.path(s$analysis, "license.Rmd")
   # Create a new untracked file that will have status Scr for Scratch
   rmd_scr <- file.path(s$analysis, "scratch.Rmd")
-  file.create(rmd_scr)
+  fs::file_create(rmd_scr)
   # Create a new file that will be published, modified, and then only committed
   rmd_mod_committed <- file.path(s$analysis, "mod-committed.Rmd")
-  file.create(rmd_mod_committed)
+  fs::file_create(rmd_mod_committed)
 
   # Publish index.Rmd, about.Rmd, and mod-committed.Rmd
   suppressMessages(wflow_publish(c(rmd_pub, rmd_mod, rmd_mod_committed),
@@ -170,7 +182,7 @@ test_that("wflow_status print method works", {
 
 test_that("wflow_status detects files with extension .rmd", {
   lowercase <- file.path(s$analysis, "lowercase.rmd")
-  file.create(lowercase)
+  fs::file_create(lowercase)
   on.exit(unlink(lowercase), add = TRUE)
   s_rmd <- wflow_status(lowercase, project = site_dir)
   expect_identical(rownames(s_rmd$status), lowercase)
@@ -180,7 +192,7 @@ test_that("wflow_status detects files with extension .rmd", {
 
 test_that("wflow_status throws error if not in workflowr project.", {
   non_project <- tempfile("non-project-")
-  dir.create(non_project, recursive = TRUE)
+  fs::dir_create(non_project)
   non_project <- workflowr:::absolute(non_project)
   on.exit(unlink(non_project, recursive = TRUE))
   expect_silent(s <- wflow_status(project = site_dir))
@@ -218,7 +230,7 @@ test_that("wflow_status throws error if no Git repository.", {
 
 test_that("wflow_status throws error if given directory input.", {
   d <- file.path(site_dir, "toplevel")
-  dir.create(d)
+  fs::dir_create(d)
   on.exit(unlink(d, recursive = TRUE, force = TRUE))
   expect_error(wflow_status(d, project = site_dir),
                "files cannot include a path to a directory")
@@ -243,4 +255,38 @@ test_that("wflow_paths returns NA if no Git repository and error_git = FALSE.", 
   file.rename(git_original, git_replace)
   expect_silent(p <- wflow_paths(project = site_dir))
   expect_identical(p$git, NA_character_)
+})
+
+test_that("wflow_paths is not confused by multiple similar _site.yml files in the same directory", {
+  p1 <- wflow_paths(project = site_dir)
+  spurious <- file.path(site_dir, "analysis", "_site.yml.bk")
+  on.exit(fs::file_delete(spurious))
+  fs::file_create(spurious)
+  expect_silent(p2 <- wflow_paths(project = site_dir))
+  expect_identical(p2, p1)
+})
+
+test_that("wflow_paths throws error if multiple _site.yml files in top-level directories", {
+  extra <- file.path(site_dir, "code", "_site.yml")
+  on.exit(fs::file_delete(extra))
+  fs::file_create(extra)
+  expect_error(wflow_paths(project = site_dir),
+               "Found more than one _site.yml file.")
+})
+
+test_that("wflow_paths throws error if output_dir field not set in _site.yml", {
+  site_yml <- file.path(site_dir, "analysis", "_site.yml")
+  site_yml_tmp <- file.path(tempdir(), "_site.yml")
+  on.exit(file.rename(site_yml_tmp, site_yml))
+  file.rename(site_yml, site_yml_tmp)
+  fs::file_create(site_yml)
+  expect_error(wflow_paths(project = site_dir), "output_dir")
+})
+
+test_that("wflow_paths does *not* throw warning if docs/ directory is missing", {
+  docs <- file.path(site_dir, "docs")
+  docs_tmp <- fs::file_temp("docs-")
+  on.exit(file.rename(docs_tmp, docs))
+  file.rename(docs, docs_tmp)
+  expect_silent(wflow_paths(project = site_dir))
 })

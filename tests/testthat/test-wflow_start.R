@@ -25,9 +25,9 @@ test_that("wflow_start copies files correctly", {
   site_dir <- workflowr:::absolute(site_dir)
 
   for (f in project_files) {
-    expect_true(file.exists(file.path(site_dir, f)))
+    expect_true(fs::file_exists(file.path(site_dir, f)))
   }
-  expect_true(file.exists(file.path(site_dir,
+  expect_true(fs::file_exists(file.path(site_dir,
                                     paste0(basename(site_dir), ".Rproj"))))
   unlink(site_dir, recursive = TRUE, force = TRUE)
 })
@@ -73,8 +73,8 @@ test_that("wflow_start creates docs/ directories and .nojekyll files", {
                              user.name = "Test Name", user.email = "test@email"))
   site_dir <- workflowr:::absolute(site_dir)
 
-  expect_true(dir.exists(file.path(site_dir, "docs")))
-  expect_true(file.exists(file.path(site_dir, "docs", ".nojekyll")))
+  expect_true(fs::dir_exists(file.path(site_dir, "docs")))
+  expect_true(fs::file_exists(file.path(site_dir, "docs", ".nojekyll")))
 
   unlink(site_dir, recursive = TRUE, force = TRUE)
 })
@@ -130,7 +130,7 @@ test_that("wflow_start does not overwrite files by default", {
 
   # start project in a tempdir
   site_dir <- tempfile()
-  dir.create(site_dir)
+  fs::dir_create(site_dir)
   site_dir <- workflowr:::absolute(site_dir)
   readme_file <- file.path(site_dir, "README.md")
   writeLines("original", con = readme_file)
@@ -151,7 +151,7 @@ test_that("wflow_start overwrites files when forced", {
 
   # start project in a tempdir
   site_dir <- tempfile()
-  dir.create(site_dir)
+  fs::dir_create(site_dir)
   site_dir <- workflowr:::absolute(site_dir)
   readme_file <- file.path(site_dir, "README.md")
   writeLines("original", con = readme_file)
@@ -173,19 +173,18 @@ test_that("wflow_start does not overwrite an existing .git directory and does no
 
   # start project in a tempdir
   site_dir <- tempfile()
-  dir.create(site_dir)
+  fs::dir_create(site_dir)
   site_dir <- workflowr:::absolute(site_dir)
   git2r::init(site_dir)
   r <- git2r::repository(site_dir)
   git2r::config(r, user.name = "Test Name", user.email = "test@email")
   fake_file <- file.path(site_dir, "file.txt")
-  file.create(fake_file)
-  git2r::add(r, fake_file)
+  fs::file_create(fake_file)
+  workflowr:::git2r_add(r, fake_file)
   git2r::commit(r, message = "The first commit")
   fake_untracked <- file.path(site_dir, "untracked.txt")
-  expect_warning(wflow_start(site_dir, existing = TRUE,
-                             change_wd = FALSE),
-                 "A .git directory already exists in")
+  expect_silent(wflow_start(site_dir, existing = TRUE,
+                            change_wd = FALSE))
   log <- git2r::commits(r)
   expect_true(length(log) == 2)
   expect_false(fake_untracked %in%
@@ -203,7 +202,7 @@ test_that("wflow_start throws an error if user.name and user.email are not set",
   site_dir <- tempfile()
   expect_error(wflow_start(site_dir, change_wd = FALSE),
                "You must set your user.name and user.email for Git first")
-  expect_false(dir.exists(site_dir))
+  expect_false(fs::dir_exists(site_dir))
   expect_error(wflow_start(site_dir, change_wd = FALSE),
                "`wflow_start` with `git = TRUE`")
 })
@@ -212,7 +211,7 @@ test_that("wflow_start can handle relative path to current directory: .", {
 
   # start project in a tempdir
   site_dir <- tempfile("test-start-")
-  dir.create(site_dir)
+  fs::dir_create(site_dir)
   site_dir <- workflowr:::absolute(site_dir)
   cwd <- getwd()
   setwd(site_dir)
@@ -222,7 +221,7 @@ test_that("wflow_start can handle relative path to current directory: .", {
   utils::capture.output(wflow_start(".", existing = TRUE, change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
 
-  expect_true(file.exists(paste0(basename(site_dir), ".Rproj")))
+  expect_true(fs::file_exists(paste0(basename(site_dir), ".Rproj")))
 })
 
 test_that("wflow_start can handle relative path to upstream directory: ..", {
@@ -230,7 +229,7 @@ test_that("wflow_start can handle relative path to upstream directory: ..", {
   # start project in a tempdir
   site_dir <- tempfile("test-start-")
   site_dir_subdir <- file.path(site_dir, "random-subdir")
-  dir.create(site_dir_subdir, recursive = TRUE)
+  fs::dir_create(site_dir_subdir)
   site_dir <- workflowr:::absolute(site_dir)
   cwd <- getwd()
   setwd(site_dir_subdir)
@@ -240,14 +239,14 @@ test_that("wflow_start can handle relative path to upstream directory: ..", {
   utils::capture.output(wflow_start("..", existing = TRUE, change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
 
-  expect_true(file.exists(file.path("..", paste0(basename(site_dir), ".Rproj"))))
+  expect_true(fs::file_exists(file.path("..", paste0(basename(site_dir), ".Rproj"))))
 })
 
 test_that("wflow_start can handle relative paths to non-existent directories", {
 
   # Create and move to a temp directory
   site_dir <- tempfile("test-start-relative-")
-  dir.create(site_dir)
+  fs::dir_create(site_dir)
   site_dir <- workflowr:::absolute(site_dir)
   cwd <- getwd()
   setwd(site_dir)
@@ -259,24 +258,23 @@ test_that("wflow_start can handle relative paths to non-existent directories", {
   # but it shouldn't break the code.
   utils::capture.output(wflow_start("./new", change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
-  expect_true(file.exists("./new/new.Rproj"))
+  expect_true(fs::file_exists("./new/new.Rproj"))
 
   # Create and move to an unrelated subdirectory
-  dir.create("unrelated")
+  fs::dir_create("unrelated")
   setwd("unrelated")
 
   # Start a new workflowr project in an upstream, non-existent directory
   utils::capture.output(wflow_start("../upstream", change_wd = FALSE,
                              user.name = "Test Name", user.email = "test@email"))
-  expect_true(file.exists("../upstream/upstream.Rproj"))
+  expect_true(fs::file_exists("../upstream/upstream.Rproj"))
 })
-
 
 test_that("wflow_start can handle deeply nested paths that need to be created", {
 
   # Create and move to a temp directory
   site_dir <- tempfile("test-deeply-nested-")
-  dir.create(site_dir)
+  fs::dir_create(site_dir)
   site_dir <- workflowr:::absolute(site_dir)
   cwd <- getwd()
   setwd(site_dir)
@@ -289,14 +287,14 @@ test_that("wflow_start can handle deeply nested paths that need to be created", 
                                        user.name = "Test Name",
                                        user.email = "test@email"))
   expect_identical(actual$directory, expected)
-  expect_true(file.exists(file.path(expected, "z.Rproj")))
+  expect_true(fs::file_exists(file.path(expected, "z.Rproj")))
 })
 
 test_that("wflow_start can handle deeply nested paths that need to be created and begin with ./", {
 
   # Create and move to a temp directory
   site_dir <- tempfile("test-deeply-nested-plus-cwd-")
-  dir.create(site_dir)
+  fs::dir_create(site_dir)
   site_dir <- workflowr:::absolute(site_dir)
   cwd <- getwd()
   setwd(site_dir)
@@ -310,14 +308,14 @@ test_that("wflow_start can handle deeply nested paths that need to be created an
                                        user.name = "Test Name",
                                        user.email = "test@email"))
   expect_identical(actual$directory, expected)
-  expect_true(file.exists(file.path(expected, "z.Rproj")))
+  expect_true(fs::file_exists(file.path(expected, "z.Rproj")))
 })
 
 test_that("wflow_start can handle deeply nested paths that need to be created and use relative paths", {
 
   # Create and move to a temp directory
   site_dir <- tempfile("test-deeply-nested-plus-relative-")
-  dir.create(site_dir)
+  fs::dir_create(site_dir)
   site_dir <- workflowr:::absolute(site_dir)
   cwd <- getwd()
   setwd(site_dir)
@@ -326,7 +324,7 @@ test_that("wflow_start can handle deeply nested paths that need to be created an
 
   # Create and move to a nested directory
   dir_unrelated <- "1/2/3/4/5/6"
-  dir.create(dir_unrelated, recursive = TRUE)
+  fs::dir_create(dir_unrelated)
   setwd(dir_unrelated)
 
   # Start workflowr project in a highly nested upstream directory
@@ -336,14 +334,14 @@ test_that("wflow_start can handle deeply nested paths that need to be created an
                                        user.name = "Test Name",
                                        user.email = "test@email"))
   expect_identical(actual$directory, expected)
-  expect_true(file.exists(file.path(expected, "z.Rproj")))
+  expect_true(fs::file_exists(file.path(expected, "z.Rproj")))
 })
 
 test_that("wflow_start throws error when given a deeply nested path that needs to be created, uses relative paths, and is contained within a Git repository", {
 
   # Create and move to a temp directory
   site_dir <- tempfile("test-deeply-nested-plus-relative-git-")
-  dir.create(site_dir)
+  fs::dir_create(site_dir)
   site_dir <- workflowr:::absolute(site_dir)
   cwd <- getwd()
   setwd(site_dir)
@@ -355,7 +353,7 @@ test_that("wflow_start throws error when given a deeply nested path that needs t
 
   # Create and move to a nested directory
   dir_unrelated <- "1/2/3/4/5/6"
-  dir.create(dir_unrelated, recursive = TRUE)
+  fs::dir_create(dir_unrelated)
   setwd(dir_unrelated)
 
   # Start workflowr project in a highly nested upstream directory
@@ -364,7 +362,7 @@ test_that("wflow_start throws error when given a deeply nested path that needs t
   expect_error(wflow_start(dir_test, change_wd = FALSE,
                            user.name = "Test Name", user.email = "test@email"),
                site_dir)
-  expect_false(dir.exists(file.path(site_dir, "a/b/c/x/y/z")))
+  expect_false(fs::dir_exists(file.path(site_dir, "a/b/c/x/y/z")))
 })
 
 test_that("wflow_start changes to workflowr directory by default", {
@@ -385,7 +383,7 @@ test_that("wflow_start changes to workflowr directory by default", {
 test_that("wflow_start fails early if directory exists and `existing = FALSE`", {
 
   site_dir <- tempfile("test-start-")
-  dir.create(site_dir)
+  fs::dir_create(site_dir)
   site_dir <- workflowr:::absolute(site_dir)
   on.exit(unlink(site_dir, recursive = TRUE, force = TRUE))
 
@@ -402,9 +400,48 @@ test_that("wflow_start fails early if directory does not exist and `existing = T
   expect_error(wflow_start(site_dir, existing = TRUE, change_wd = FALSE,
                            user.name = "Test Name", user.email = "test@email"),
                "Directory does not exist. Set existing = FALSE to create a new directory for the workflowr files.")
-  expect_false(dir.exists(site_dir))
+  expect_false(fs::dir_exists(site_dir))
 
 })
+
+test_that("wflow_start creates a pre-push hook when disable_remote = TRUE", {
+
+  if (.Platform$OS.type == "windows")
+    skip("disable_remote not available on Windows")
+
+  # start project in a tempdir
+  site_dir <- tempfile("test-start-")
+  cwd <- getwd()
+  on.exit(setwd(cwd))
+  on.exit(unlink(site_dir, recursive = TRUE, force = TRUE), add = TRUE)
+
+  wflow_start(site_dir, disable_remote = TRUE,
+              user.name = "Test Name", user.email = "test@email")
+  site_dir <- workflowr:::absolute(site_dir)
+
+  pre_push_file <- ".git/hooks/pre-push"
+  expect_true(fs::file_exists(pre_push_file))
+  expect_true(workflowr:::file_is_executable(pre_push_file))
+
+  # Confirm the pre-push hook stops execution
+  remote <- wflow_use_github("user", "repo")
+  expect_error(wflow_git_push(username = "username", password = "password"),
+               glue::glue("Execution stopped by {pre_push_file}"))
+})
+
+test_that("wflow_start throws error for disable_remote = TRUE on Windows", {
+
+  if (.Platform$OS.type != "windows") skip("Only relevant on Windows")
+
+  # start project in a tempdir
+  site_dir <- tempfile("test-start-")
+  on.exit(unlink(site_dir, recursive = TRUE, force = TRUE), add = TRUE)
+
+  expect_error(wflow_start(site_dir, change_wd = FALSE, disable_remote = TRUE,
+                           user.name = "Test Name", user.email = "test@email"),
+               "disable_remote is not available on Windows")
+})
+
 
 # Test print.wflow_start -------------------------------------------------------
 
@@ -485,7 +522,7 @@ test_that("print.wflow_start works with change_wd = FALSE and git = FALSE", {
 test_that("print.wflow_start works with change_wd = FALSE and existing = TRUE", {
   tmp_dir <- tempfile()
   on.exit(unlink(tmp_dir, recursive = TRUE))
-  dir.create(tmp_dir)
+  fs::dir_create(tmp_dir)
   tmp_dir <- workflowr:::absolute(tmp_dir)
 
   # Dry run
@@ -526,13 +563,13 @@ test_that("print.wflow_start works with change_wd = FALSE and existing = TRUE", 
 test_that("print.wflow_start works with existing Git repo", {
   tmp_dir <- tempfile()
   on.exit(unlink(tmp_dir, recursive = TRUE))
-  dir.create(tmp_dir)
+  fs::dir_create(tmp_dir)
   tmp_dir <- workflowr:::absolute(tmp_dir)
   repo <- git2r::init(tmp_dir)
   config(repo, user.name = "Test Name", user.email = "test@email")
   f <- file.path(tmp_dir, "file")
-  file.create(f)
-  git2r::add(repo, f)
+  fs::file_create(f)
+  workflowr:::git2r_add(repo, f)
   git2r::commit(repo, "initial commit")
 
   # Dry run
@@ -552,8 +589,7 @@ test_that("print.wflow_start works with existing Git repo", {
   expect_identical(p_dry_run[6], "- Files will be commited with Git")
 
   # Actual run
-  actual_run <- expect_warning(wflow_start(tmp_dir, existing = TRUE, change_wd = FALSE),
-                               paste("A .git directory already exists in", tmp_dir))
+  actual_run <- expect_silent(wflow_start(tmp_dir, existing = TRUE, change_wd = FALSE))
   p_actual_run <- utils::capture.output(actual_run)
   expect_identical(p_actual_run[1], "wflow_start:")
   expect_identical(p_actual_run[2],

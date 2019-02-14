@@ -26,3 +26,14 @@ opts_chunk$set(eval = FALSE)
 #  library("workflowr")
 #  wflow_start("~/projects/my-package", existing = TRUE)
 
+## ------------------------------------------------------------------------
+#  # Install the latest version from CRAN
+#  install.packages("workflowr")
+#  library("workflowr")
+#  # Preview the files that would be changed
+#  wflow_update()
+#  # Update the files
+#  wflow_update(dry_run = FALSE)
+#  # Republish your analyses with the latest features
+#  wflow_publish(republish = TRUE)
+

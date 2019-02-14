@@ -40,8 +40,8 @@ wflow_paths <- function(error_git = FALSE, project = ".") {
 
   # Analysis directory with _site.yml
   top_level_files <- list.files(path = o$root, full.names = TRUE)
-  subdirs <- top_level_files[dir.exists(top_level_files)]
-  site_file <- list.files(path = subdirs, pattern = "_site.yml",
+  subdirs <- top_level_files[fs::dir_exists(top_level_files)]
+  site_file <- list.files(path = subdirs, pattern = "^_site.yml$",
                           full.names = TRUE)
   if (length(site_file) == 0) {
     stop(wrap("Unable to find the file _site.yml in the analysis directory.
@@ -61,9 +61,6 @@ wflow_paths <- function(error_git = FALSE, project = ".") {
               variable output_dir in the file _site.yml"),
          call. = FALSE)
   o$docs <- absolute(file.path(o$analysis, output_dir))
-  if (!dir.exists(o$docs)) {
-    warning("Unable to locate docs directory. Run wflow_build() to create it.")
-  }
 
   # Git repository
   r <- try(git2r::repository(o$root, discover = TRUE), silent = TRUE)

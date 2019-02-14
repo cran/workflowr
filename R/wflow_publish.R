@@ -70,6 +70,7 @@ wflow_publish <- function(
   update = FALSE,
   republish = FALSE,
   view = interactive(),
+  delete_cache = FALSE,
   seed = 12345,
   verbose = FALSE,
   # general
@@ -87,7 +88,7 @@ wflow_publish <- function(
     if (!(is.character(files) && length(files) > 0))
       stop("files must be NULL or a character vector of filenames")
     files <- glob(files)
-    if (!all(file.exists(files)))
+    if (!all(fs::file_exists(files)))
       stop("Not all files exist. Check the paths to the files")
     # Change filepaths to relative paths
     files <- relative(files)
@@ -117,6 +118,9 @@ wflow_publish <- function(
   if (!(is.logical(view) && length(view) == 1))
     stop("view must be a one-element logical vector")
 
+  if (!(is.logical(delete_cache) && length(delete_cache) == 1))
+    stop("delete_cache must be a one-element logical vector")
+
   if (!(is.numeric(seed) && length(seed) == 1))
     stop("seed must be a one element numeric vector")
 
@@ -129,7 +133,7 @@ wflow_publish <- function(
   if (!(is.character(project) && length(project) == 1))
     stop("project must be a one-element character vector")
 
-  if (!dir.exists(project)) {
+  if (!fs::dir_exists(project)) {
     stop("project directory does not exist.")
   }
 
@@ -204,21 +208,24 @@ wflow_publish <- function(
   if (length(files_to_build) > 0) {
     # Create a backup copy of the docs/ directory. If either step 2 (build the
     # HTML) or step 3 (commit the HTML) fails, delete docs/ and restore backup
-    docs_backup <- tempfile(pattern = sprintf("docs-backup-%s-",
-                                              format(Sys.time(),
-                                                     "%Y-%m-%d-%Hh-%Mm-%Ss")))
-    dir.create(docs_backup)
-    docs_backup <- absolute(docs_backup)
-    file.copy(from = file.path(s1$docs, "."), to = docs_backup,
-              recursive = TRUE, copy.date = TRUE)
-    on.exit(unlink(s1$docs, recursive = TRUE), add = TRUE)
-    on.exit(dir.create(s1$docs), add = TRUE)
-    on.exit(file.copy(from = file.path(docs_backup, "."), to = s1$docs,
-                      recursive = TRUE, copy.date = TRUE), add = TRUE)
+    if (fs::dir_exists(s1$docs) && !dry_run) {
+      docs_backup <- tempfile(pattern = sprintf("docs-backup-%s-",
+                                                format(Sys.time(),
+                                                       "%Y-%m-%d-%Hh-%Mm-%Ss")))
+      fs::dir_create(docs_backup)
+      docs_backup <- absolute(docs_backup)
+      file.copy(from = file.path(s1$docs, "."), to = docs_backup,
+                recursive = TRUE, copy.date = TRUE)
+      on.exit(unlink(s1$docs, recursive = TRUE), add = TRUE)
+      on.exit(fs::dir_create(s1$docs), add = TRUE)
+      on.exit(file.copy(from = file.path(docs_backup, "."), to = s1$docs,
+                        recursive = TRUE, copy.date = TRUE), add = TRUE)
+    }
 
     step2 <- wflow_build(files = files_to_build, make = FALSE,
                          update = update, republish = republish,
-                         view = view, seed = seed,
+                         view = view, clean_fig_files = TRUE,
+                         delete_cache = delete_cache, seed = seed,
                          local = FALSE, verbose = verbose,
                          dry_run = dry_run, project = project)
     s2 <- wflow_status(project = project)
@@ -231,10 +238,17 @@ wflow_publish <- function(
 
   # Step 3 only needs to be performed if files were built in step 2.
   if (length(step2$built) > 0) {
-    dir_figure <- file.path(s2$docs, "figure", basename(step2$built))
+
+    # Have to loop on step2$built as an underlying git2r function requires a
+    # length 1 character vector
+    figs_path <- vapply(step2$built, create_figure_path, character(1))
+    dir_figure <- file.path(s2$docs, figs_path)
     site_libs <- file.path(s2$docs, "site_libs")
     docs_nojekyll <- file.path(s2$docs, ".nojekyll")
-    files_to_commit <- c(step2$html, dir_figure, site_libs, docs_nojekyll)
+    docs_css <- list.files(path = s2$docs, pattern = "css$", full.names = TRUE)
+    docs_js <- list.files(path = s2$docs, pattern = "js$", full.names = TRUE)
+    files_to_commit <- c(step2$html, dir_figure, site_libs, docs_nojekyll,
+                         docs_css, docs_js)
 
     # Call directly to internal function `wflow_git_commit_` to bypass input checks.
     # In a dry run, some files may not actually exist yet. Also, not every Rmd

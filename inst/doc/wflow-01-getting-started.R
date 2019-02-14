@@ -30,8 +30,9 @@ if (!rmarkdown::pandoc_available()) {
 .tmp <- tempfile("wflow-01-getting-started-")
 .tmp <- workflowr:::absolute(.tmp)
 .project <- file.path(.tmp, "myproject")
-dir.create(.project, recursive = TRUE)
+fs::dir_create(.project)
 opts_knit$set(root.dir = .project)
+opts_chunk$set(collapse = TRUE)
 
 ## ----load-workflowr------------------------------------------------------
 library("workflowr")
@@ -82,8 +83,8 @@ wflow_publish(c("analysis/index.Rmd", "analysis/about.Rmd", "analysis/license.Rm
 ## ----wflow-status-post-publish-------------------------------------------
 wflow_status()
 
-## ----wflow-remotes-------------------------------------------------------
-wflow_git_remote("origin", "myname", "myproject")
+## ----wflow-use-github----------------------------------------------------
+wflow_use_github("myname", "myproject")
 
 ## ----wflow-git-push------------------------------------------------------
 wflow_git_push(dry_run = TRUE)

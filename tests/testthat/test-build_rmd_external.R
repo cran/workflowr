@@ -7,7 +7,7 @@ tmp_dir <- tempfile("build_rmd_external-")
 cwd <- getwd()
 on.exit(setwd(cwd))
 on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE), add = TRUE)
-dir.create(tmp_dir)
+fs::dir_create(tmp_dir)
 tmp_dir <- workflowr:::absolute(tmp_dir)
 
 # Copy test files
@@ -15,8 +15,8 @@ file.copy("files/test-wflow_build/.", tmp_dir, recursive = TRUE)
 
 # Create empty website files to satisfy rmarkdown::render_site (called by
 # build_rmd). HTML files written to _site/
-file.create(file.path(tmp_dir, "_site.yml"))
-file.create(file.path(tmp_dir, "index.Rmd"))
+fs::file_create(file.path(tmp_dir, "_site.yml"))
+fs::file_create(file.path(tmp_dir, "index.Rmd"))
 
 # Directory to write log files
 l <- "../log"
@@ -33,7 +33,7 @@ test_that("log_dir is created if non-existent", {
   on.exit(unlink(l, recursive = TRUE, force = TRUE))
   expect_message(build_rmd_external("seed.Rmd", seed = 1, log_dir = l),
                  sprintf("log directory created: %s", l))
-  expect_true(dir.exists(l))
+  expect_true(fs::dir_exists(l))
 })
 
 test_that("log files are created", {
@@ -71,7 +71,10 @@ test_that("An error stops execution, does not create file,
   expect_error(utils::capture.output(
     build_rmd_external("error.Rmd", seed = 1, log_dir = l)),
                "There was an error")
-  expect_false(file.exists("_site/error.html"))
+  expect_false(fs::file_exists("_site/error.html"))
+
+  skip("callr 3.0.0 doesn't write the error message to stderr")
+  # https://github.com/r-lib/callr/issues/80
   stderr_lines <- readLines(Sys.glob(file.path(l, "error.Rmd-*-err.txt")))
   expect_true(any(grepl("There was an error", stderr_lines)))
 })
@@ -81,9 +84,9 @@ test_that("A warning does not cause any problem", {
   skip_on_cran()
 
   on.exit(unlink(l, recursive = TRUE, force = TRUE))
-  dir.create(l)
+  fs::dir_create(l)
   expect_silent(build_rmd_external("warning.Rmd", seed = 1, log_dir = l))
-  expect_true(file.exists("_site/warning.html"))
+  expect_true(fs::file_exists("_site/warning.html"))
 })
 
 test_that("verbose displays build log directly in R console", {
@@ -91,7 +94,7 @@ test_that("verbose displays build log directly in R console", {
   skip_on_cran()
 
   on.exit(unlink(l, recursive = TRUE, force = TRUE))
-  dir.create(l)
+  fs::dir_create(l)
 
   observed <- utils::capture.output(
     build_rmd_external("warning.Rmd", seed = 1, log_dir = l, verbose = TRUE))

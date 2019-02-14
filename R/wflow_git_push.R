@@ -1,9 +1,10 @@
 #' Push files to remote repository
 #'
 #' \code{wflow_git_push} pushes the local files on your machine to your remote
-#' repository on GitHub. This is a convenience function to run Git commands from
-#' the R console instead of the Terminal. The same functionality can be acheived
-#' by running \code{git push} in the Terminal.
+#' repository on a remote Git hosting service (e.g. GitHub or GitLab). This is a
+#' convenience function to run Git commands from the R console instead of the
+#' Terminal. The same functionality can be acheived by running \code{git push}
+#' in the Terminal.
 #'
 #' \code{wflow_git_push} tries to choose sensible defaults if the user does not
 #' explicitly specify the remote repository and/or the remote branch:
@@ -31,13 +32,16 @@
 #' @param branch character (default: NULL). The name of the branch to push to in
 #'   the remote repository. If \code{NULL}, the name of the current local branch
 #'   is used.
-#' @param username character (default: NULL). GitHub username. The user is
-#'   prompted if necessary.
-#' @param password character (default: NULL). GitHub password. The user is
-#'   prompted if necessary.
+#' @param username character (default: NULL). Username for online Git hosting
+#'   service (e.g. GitHub or GitLab). The user is prompted if necessary.
+#' @param password character (default: NULL). Password for online Git hosting
+#'   service (e.g. GitHub or GitLab). The user is prompted if necessary.
 #' @param force logical (default: FALSE). Force the push to the remote
 #'   repository. Do not use this if you are not 100\% sure of what it is doing.
 #'   Equivalent to: \code{git push -f}
+#' @param set_upstream logical (default: TRUE). Set the current local branch to
+#'   track the remote branch if it isn't already tracking one. This is likely
+#'   what you want. Equivalent to: \code{git push -u remote branch}
 #' @param dry_run logical (default: FALSE). Preview the proposed action but do
 #'   not actually push to the remote repository.
 #' @param project character (default: ".") By default the function assumes the
@@ -53,7 +57,8 @@
 #'
 #' \item \bold{branch}: The branch of the remote repository.
 #'
-#' \item \bold{username}: GitHub username.
+#' \item \bold{username}: Username for online Git hosting service (e.g. GitHub
+#' or GitLab).
 #'
 #' \item \bold{force}: The input argument \code{force}.
 #'
@@ -73,7 +78,8 @@
 #' @export
 wflow_git_push <- function(remote = NULL, branch = NULL,
                        username = NULL, password = NULL,
-                       force = FALSE, dry_run = FALSE, project = ".") {
+                       force = FALSE, set_upstream = TRUE,
+                       dry_run = FALSE, project = ".") {
 
   # Check input arguments ------------------------------------------------------
 
@@ -92,13 +98,16 @@ wflow_git_push <- function(remote = NULL, branch = NULL,
   if (!(is.logical(force) && length(force) == 1))
     stop("force must be a one-element logical vector")
 
+  if (!(is.logical(set_upstream) && length(set_upstream) == 1))
+    stop("set_upstream must be a one-element logical vector")
+
   if (!(is.logical(dry_run) && length(dry_run) == 1))
     stop("dry_run must be a one-element logical vector")
 
   if (!(is.character(project) && length(project) == 1))
     stop("project must be a one-element character vector")
 
-  if (!dir.exists(project)) {
+  if (!fs::dir_exists(project)) {
     stop("project directory does not exist.")
   }
 
@@ -142,6 +151,20 @@ wflow_git_push <- function(remote = NULL, branch = NULL,
   # Push! ----------------------------------------------------------------------
 
   if (!dry_run) {
+    # First check for and execute any pre-push hooks. libgit2 does not support
+    # this. Only supported on unix-alike systems.
+    pre_push_file <- file.path(git2r_workdir(r), ".git/hooks/pre-push")
+    pre_push_file_rel <- fs::path_rel(pre_push_file, start = getwd())
+    if (fs::file_exists(pre_push_file) && .Platform$OS.type != "windows") {
+      message(glue::glue("Executing pre-push hook in {pre_push_file_rel}"))
+      hook <- suppressWarnings(system(pre_push_file, intern = TRUE))
+      message(hook)
+      if (attributes(hook)$status != 0) {
+        stop(glue::glue("Execution stopped by {pre_push_file_rel}"),
+             call. = FALSE)
+      }
+    }
+
     tryCatch(git2r::push(r, name = remote,
                          refspec = paste0("refs/heads/", branch),
                          force = force, credentials = credentials),
@@ -181,6 +204,12 @@ wflow_git_push <- function(remote = NULL, branch = NULL,
                stop(wrap(reason), call. = FALSE)
              }
     )
+    # Set upstream tracking branch if it doesn't exist and `set_upstream=TRUE`
+    local_branch_object <- git2r_head(r)
+    if (is.null(git2r::branch_get_upstream(local_branch_object)) && set_upstream) {
+      git2r::branch_set_upstream(branch = local_branch_object,
+                                 name = paste(remote, branch, sep = "/"))
+    }
   }
 
   # Prepare output -------------------------------------------------------------
