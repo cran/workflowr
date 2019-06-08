@@ -10,13 +10,11 @@ test_that("get_versions and get_versions_fig insert GitHub URL if available", {
 
   skip_on_cran()
 
-  tmp_dir <- tempfile()
-  tmp_start <- wflow_start(tmp_dir, change_wd = FALSE, user.name = "Test Name",
-                             user.email = "test@email")
-  tmp_dir <- workflowr:::absolute(tmp_dir)
-  on.exit(unlink(tmp_dir, recursive = TRUE))
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
 
-  rmd <- file.path(tmp_dir, "analysis", "file.Rmd")
+  rmd <- file.path(path, "analysis", "file.Rmd")
   lines <- c("---",
              "output: workflowr::wflow_html",
              "---",
@@ -28,18 +26,18 @@ test_that("get_versions and get_versions_fig insert GitHub URL if available", {
 
   # Add remote
   tmp_remote <- wflow_git_remote("origin", "testuser", "testrepo",
-                                 verbose = FALSE, project = tmp_dir)
+                                 verbose = FALSE, project = path)
 
   # Go through a few commit cycles
   for (i in 1:3) {
     cat("edit", file = rmd, append = TRUE)
-    tmp_publish <- wflow_publish(rmd, view = FALSE, project = tmp_dir)
+    tmp_publish <- wflow_publish(rmd, view = FALSE, project = path)
   }
 
-  r <- git2r::repository(tmp_dir)
+  r <- git2r::repository(path)
   blobs <- git2r::odb_blobs(r)
-  output_dir <- workflowr:::get_output_dir(file.path(tmp_dir, "analysis/"))
-  github <- workflowr:::get_host_from_remote(tmp_dir)
+  output_dir <- workflowr:::get_output_dir(file.path(path, "analysis/"))
+  github <- workflowr:::get_host_from_remote(path)
   versions <- workflowr:::get_versions(input = rmd, output_dir, blobs, r, github)
   expect_true(any(stringr::str_detect(versions, github)))
   fig <- file.path(output_dir, "figure", basename(rmd), "chunkname-1.png")
@@ -47,6 +45,69 @@ test_that("get_versions and get_versions_fig insert GitHub URL if available", {
   expect_true(any(stringr::str_detect(versions_fig, github)))
 })
 
+test_that("get_versions_fig converts spaces to dashes for HTML ID", {
+
+  skip_on_cran()
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  rmd <- file.path(path, "analysis", "file.Rmd")
+  lines <- c("---",
+             "output: workflowr::wflow_html",
+             "---",
+             "",
+             "```{r chunk-name}",
+             "plot(1:10)",
+             "```",
+             "",
+             "```{r chunk name}",
+             "plot(11:20)",
+             "```")
+  writeLines(lines, rmd)
+
+  # Add remote
+  tmp_remote <- wflow_git_remote("origin", "testuser", "testrepo",
+                                 verbose = FALSE, project = path)
+
+  # Commit twice so that past versions table is generated
+  tmp_publish <- wflow_publish(rmd, view = FALSE, project = path)
+  tmp_publish <- wflow_publish(rmd, view = FALSE, project = path)
+
+  r <- git2r::repository(path)
+  output_dir <- workflowr:::get_output_dir(file.path(path, "analysis/"))
+  github <- workflowr:::get_host_from_remote(path)
+
+  # The figure file without spaces should be displayed as normal
+  fig <- file.path(output_dir, "figure", basename(rmd), "chunk-name-1.png")
+  versions_fig <- get_versions_fig(fig, r, github)
+  versions_fig_lines <- stringr::str_split(versions_fig, "\\n")[[1]]
+  data_target <- stringr::str_subset(versions_fig_lines,
+                                      'data-target=\"#fig-chunk-name-1\"')
+  expect_true(length(data_target) == 1)
+  div_id <- stringr::str_subset(versions_fig_lines,
+                                'id=\"fig-chunk-name-1\"')
+  expect_true(length(div_id) == 1)
+  fig_display_name <- stringr::str_subset(versions_fig_lines,
+                                          ' chunk-name-1.png')
+  expect_true(length(fig_display_name) == 1)
+
+  # The figure file with spaces should be quoted and have spaces replaced with
+  # dashes for data-target and id.
+  fig <- file.path(output_dir, "figure", basename(rmd), "chunk name-1.png")
+  versions_fig <- get_versions_fig(fig, r, github)
+  versions_fig_lines <- stringr::str_split(versions_fig, "\\n")[[1]]
+  data_target <- stringr::str_subset(versions_fig_lines,
+                                     'data-target=\"#fig-no-spaces-chunk-name-1\"')
+  expect_true(length(data_target) == 1)
+  div_id <- stringr::str_subset(versions_fig_lines,
+                                'id=\"fig-no-spaces-chunk-name-1\"')
+  expect_true(length(div_id) == 1)
+  fig_display_name <- stringr::str_subset(versions_fig_lines,
+                                          ' &quot;chunk name-1.png&quot;')
+  expect_true(length(fig_display_name) == 1)
+})
 
 # Test check_vc ----------------------------------------------------------------
 
@@ -257,7 +318,7 @@ test_that("check_cache fails if cached chunks present", {
   fs::file_create(rmd)
 
   rmd_cache_html <- file.path(x, "test_cache/html")
-  fs::dir_create(rmd_cache_html, recursive = TRUE)
+  fs::dir_create(rmd_cache_html)
 
   cached_chunk_1 <- file.path(rmd_cache_html, "chunk-name_29098n0b4h849.RData")
   fs::file_create(cached_chunk_1)
@@ -551,4 +612,302 @@ test_that("shorten_sha is vectorized", {
   observed <- workflowr:::shorten_sha(c("123456789", "abcdefghi"))
   expected <- c("1234567", "abcdefg")
   expect_identical(observed, expected)
+})
+
+# Test workflowr:::detect_abs_path ---------------------------------------------------------
+
+test_that("workflowr:::detect_abs_path detects absolute file paths in quotations", {
+  # double quotes
+  expect_identical(
+    workflowr:::detect_abs_path(c("x <- readLines(\"/home/jdb-work/repos/workflowr/R/git.R\")",
+                      "files <- c(\"/a/b/c\", \"/d/e/f\", \"/h/i/j\")")),
+    c("/home/jdb-work/repos/workflowr/R/git.R", "/a/b/c", "/d/e/f", "/h/i/j"))
+
+  # single quotes
+  expect_identical(
+    workflowr:::detect_abs_path(c("x <- readLines('/home/jdb-work/repos/workflowr/R/git.R\')",
+                      "files <- c('/a/b/c', '/d/e/f', '/h/i/j')")),
+    c("/home/jdb-work/repos/workflowr/R/git.R", "/a/b/c", "/d/e/f", "/h/i/j"))
+
+})
+
+test_that("workflowr:::detect_abs_path ignores relative paths", {
+  expect_identical(
+    workflowr:::detect_abs_path(c("x <- readLines(\"R/git.R\")",
+                      "files <- c(\"a/b/c\", \"./d/e/f\", \"../h/i/j\")")),
+    character(0))
+})
+
+test_that("workflowr:::detect_abs_path detects absolute file paths with tilde in quotations", {
+  # double quotes
+  expect_identical(
+    workflowr:::detect_abs_path(c("x <- readLines(\"/home/jdb-work/repos/workflowr/R/git.R\")",
+                      "files <- c(\"/a/b/c\", \"/d/e/f\", \"/h/i/j\")")),
+    c("/home/jdb-work/repos/workflowr/R/git.R", "/a/b/c", "/d/e/f", "/h/i/j"))
+
+  # single quotes
+  expect_identical(
+    workflowr:::detect_abs_path(c("x <- readLines('/home/jdb-work/repos/workflowr/R/git.R\')",
+                      "files <- c('/a/b/c', '/d/e/f', '/h/i/j')")),
+    c("/home/jdb-work/repos/workflowr/R/git.R", "/a/b/c", "/d/e/f", "/h/i/j"))
+
+})
+
+test_that("workflowr:::detect_abs_path detects Windows absolute file paths in quotations", {
+  # double quotes
+  expect_identical(
+    workflowr:::detect_abs_path(c("x <- readLines(\"C:/home/jdb-work/repos/workflowr/R/git.R\")",
+                      "files <- c(\"C:/a/b/c\", \"c:\\d\\e\\f\", \"D:/h/i/j\")")),
+    c("C:/home/jdb-work/repos/workflowr/R/git.R", "C:/a/b/c", "c:\\d\\e\\f", "D:/h/i/j"))
+
+  # single quotes
+  expect_identical(
+    workflowr:::detect_abs_path(c("x <- readLines('/home/jdb-work/repos/workflowr/R/git.R\')",
+                      "files <- c('/a/b/c', '/d/e/f', '/h/i/j')")),
+    c("/home/jdb-work/repos/workflowr/R/git.R", "/a/b/c", "/d/e/f", "/h/i/j"))
+
+})
+
+test_that("workflowr:::detect_abs_path ignores non-paths", {
+  expect_identical(
+    workflowr:::detect_abs_path(c("the volume is about \"~1 mL\"",
+                      "Just a letter and a colon 'a:'")),
+    character(0))
+})
+
+test_that("workflowr:::detect_abs_path ignores non-paths", {
+  expect_identical(
+    workflowr:::detect_abs_path(c("the volume is about \"~1 mL\"",
+                                  "Just a letter and a colon 'a:'")),
+    character(0))
+})
+
+test_that("workflowr:::detect_abs_path distinguishes paths from non-paths", {
+  # Using my particular definition of paths to detect (e.g. has to be in
+  # quotation marks)
+
+  expect_setequal(
+    workflowr:::detect_abs_path(
+      c("\"/a/b/c\"", "'/a/b/c'", "\"~/a/b/c\"", "\"~\\a\\b\\c\"", "\"C:/a/b/c\"", "\"C:\\a\\b\\c\"")),
+    c("/a/b/c", "/a/b/c", "~/a/b/c", "~\\a\\b\\c", "C:/a/b/c", "C:\\a\\b\\c"))
+
+  # Non-paths to ignore
+  expect_identical(
+    workflowr:::detect_abs_path(c("/a/b/c", "\"~a\"", "\"C:a/b/c\"", "\"~\"")),
+    character(0))
+
+})
+
+
+# Test get_proj_dir ------------------------------------------------------------
+
+test_that("get_proj_dir find project directory", {
+
+  path <- fs::file_temp()
+  fs::dir_create(path)
+  on.exit(test_teardown(path))
+
+  # Create nested subdirectories, and progressively add root files
+  subdir1 <- file.path(path, "subdir1")
+  subdir2 <- file.path(subdir1, "subdir2")
+  subdir3 <- file.path(subdir2, "subdir3")
+  subdir4 <- file.path(subdir3, "subdir4")
+  fs::dir_create(subdir4)
+  # Resolve macOS symlinks now that directories exist
+  subdir1 <- workflowr:::absolute(subdir1)
+  subdir2 <- workflowr:::absolute(subdir2)
+  subdir3 <- workflowr:::absolute(subdir3)
+  subdir4 <- workflowr:::absolute(subdir4)
+
+  # If no proj files, return same directory
+  expected <- subdir4
+  observed <- workflowr:::get_proj_dir(subdir4)
+  expect_identical(observed, expected)
+
+  # If _workflowr.yml in subdir1, return subdir1
+  wflow_yml_file <- file.path(subdir1, "_workflowr.yml")
+  fs::file_create(wflow_yml_file)
+  expected <- subdir1
+  observed <- workflowr:::get_proj_dir(subdir4)
+  expect_identical(observed, expected)
+
+  # If .git/ in subdir2, return subdir2
+  git_dir <- file.path(subdir2, ".git/")
+  fs::dir_create(git_dir)
+  expected <- subdir2
+  observed <- workflowr:::get_proj_dir(subdir4)
+  expect_identical(observed, expected)
+
+  # If *Rproj in subdir3, return subdir3
+  rproj_file <- file.path(subdir3, "subdir3.Rproj")
+  fs::file_create(rproj_file)
+  # Criteria includes "contents matching `^Version: ` in the first line"
+  writeLines("Version: ", con = rproj_file)
+  expected <- subdir3
+  observed <- workflowr:::get_proj_dir(subdir4)
+  expect_identical(observed, expected)
+})
+
+# Test check_paths -------------------------------------------------------------
+
+test_that("check_paths detects absolute paths", {
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  f <- file.path(path, "data/test.txt")
+
+  rmd <- file.path(path, "analysis", "file.Rmd")
+  lines <- glue::glue("
+                      ---
+                      output: workflowr::wflow_html
+                      ---
+
+                      ```{{r chunkname}}
+                      x <- read.table(\"{f}\")
+                      ```")
+  writeLines(lines, rmd)
+
+  observed <- workflowr:::check_paths(input = rmd, knit_root_dir = path)
+  expect_false(observed$pass)
+  expect_true(stringr::str_detect(observed$details, "\\bdata/test.txt\\b"))
+})
+
+test_that("check_paths ignores relative paths", {
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  f <- file.path(path, "data/test.txt")
+  f <- workflowr:::relative(f, start = path)
+
+  rmd <- file.path(path, "analysis", "file.Rmd")
+  lines <- glue::glue("
+                      ---
+                      output: workflowr::wflow_html
+                      ---
+
+                      ```{{r chunkname}}
+                      x <- read.table(\"{f}\")
+                      ```")
+  writeLines(lines, rmd)
+
+  observed <- workflowr:::check_paths(input = rmd, knit_root_dir = path)
+  expect_true(observed$pass)
+})
+
+test_that("check_paths suggests paths relative to knit_root_dir", {
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  f_data <- file.path(path, "data/test.txt")
+  f_html <- file.path(path, "docs/index.html")
+  f_code <- file.path(path, "analysis/code.R")
+
+  rmd <- file.path(path, "analysis", "file.Rmd")
+  lines <- glue::glue("
+                      ---
+                      output: workflowr::wflow_html
+                      ---
+
+                      [Home]({f_html})
+
+                      ```{{r chunkname}}
+                      source(\"{f_code}\")
+                      x <- read.table(\"{f_data}\")
+                      ```
+                      ")
+  writeLines(lines, rmd)
+
+  observed <- workflowr:::check_paths(input = rmd, knit_root_dir = path)
+  expect_false(observed$pass)
+  expect_true(stringr::str_detect(observed$details, " data/test.txt "))
+  expect_false(stringr::str_detect(observed$details, " docs/index.html "))
+  expect_true(stringr::str_detect(observed$details, " analysis/code.R "))
+  # Change knit_root_dir to analysis
+  observed <- workflowr:::check_paths(input = rmd,
+                                      knit_root_dir = fs::path_dir(rmd))
+  expect_false(observed$pass)
+  expect_true(stringr::str_detect(observed$details, " \\.\\./data/test.txt "))
+  expect_false(stringr::str_detect(observed$details, " \\.\\./docs/index.html "))
+  expect_true(stringr::str_detect(observed$details, " code.R "))
+})
+
+test_that("check_paths displays original formatting of paths", {
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  f_data <- file.path(path, "data/test.txt")
+  # Add extra trailing slashes
+  f_data <- paste0(f_data, "////")
+
+  rmd <- file.path(path, "analysis", "file.Rmd")
+  lines <- glue::glue("
+                      ---
+                      output: workflowr::wflow_html
+                      ---
+
+                      ```{{r chunkname}}
+                      x <- read.table(\"{f_data}\")
+                      ```
+                      ")
+  writeLines(lines, rmd)
+
+  observed <- workflowr:::check_paths(input = rmd, knit_root_dir = path)
+  expect_false(observed$pass)
+  expect_true(stringr::str_detect(observed$details, f_data))
+  expect_true(stringr::str_detect(observed$details, " data/test.txt "))
+})
+
+test_that("check_paths displays original formatting of Windows paths", {
+
+  if (.Platform$OS.type != "windows") skip("Only relevant on Windows")
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  f_data <- file.path(path, "data/test.txt")
+  # Make the drive lowercase
+  f_data <- paste0(tolower(stringr::str_sub(f_data, 1, 1)),
+                   stringr::str_sub(f_data, 2))
+  f_code <- file.path(path, "analysis/code.R")
+  # Use backslashes (getting it to actually display \\ in the Rmd is a pain)
+  f_code <- stringr::str_replace_all(f_code, "/", "\\\\\\\\")
+
+  rmd <- file.path(path, "analysis", "file.Rmd")
+  lines <- glue::glue("
+                      ---
+                      output: workflowr::wflow_html
+                      ---
+
+                      ```{{r chunkname, eval=FALSE}}
+                      source(\"{f_code}\")
+                      x <- read.table(\"{f_data}\")
+                      ```
+                      ")
+  writeLines(lines, rmd)
+
+  observed <- workflowr:::check_paths(input = rmd, knit_root_dir = path)
+  expect_false(observed$pass)
+  expect_true(stringr::str_detect(observed$details, f_data))
+  expect_true(stringr::str_detect(observed$details, " data/test.txt "))
+  # Because using \ in a regex is a pain, always have to double it
+  f_code_regex <- stringr::str_replace_all(f_code, "\\\\", "\\\\\\\\\\\\\\\\")
+  expect_true(stringr::str_detect(observed$details, f_code_regex))
+  expect_true(stringr::str_detect(observed$details, " analysis\\\\\\\\\\\\\\\\code.R "))
+
+  skip_on_cran()
+
+  # Make sure wflow_html() can render this (not actually execute the code chunk
+  # though, since those files don't exist). I've had some sporadic pandoc errors
+  # that are difficult to reproduce.
+  expect_silent(html <- rmarkdown::render(rmd, quiet = TRUE))
+  expect_true(fs::file_exists(html))
 })

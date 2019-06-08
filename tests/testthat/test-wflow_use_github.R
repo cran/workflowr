@@ -12,7 +12,8 @@ test_that("wflow_use_github automates local GitHub configuration", {
   username <- "testuser"
   repository <- "testrepo"
 
-  x <- wflow_use_github(username, repository, project = path)
+  x <- wflow_use_github(username, repository, create_on_github = FALSE,
+                        project = path)
 
   # The website directory is still docs/
   s <- wflow_status(project = path)
@@ -57,7 +58,8 @@ test_that("wflow_use_github can be used post GitLab", {
   published <- wflow_publish(file.path(s$analysis, "*Rmd"), view = FALSE,
                              project = path)
 
-  x <- wflow_use_github(username, repository, project = path)
+  x <- wflow_use_github(username, repository, create_on_github = FALSE,
+                        project = path)
 
   # Renames the website directory from public/ to docs/
   s <- wflow_status(project = path)
@@ -87,26 +89,77 @@ test_that("wflow_use_github can be used post GitLab", {
                     basename(recent_commit_files)))
 })
 
-test_that("wflow_use_github throws error if username/repository not set", {
+test_that("wflow_use_github throws error if username not set", {
   path <- test_setup()
   on.exit(test_teardown(path))
   username <- "testuser"
   repository <- "testrepo"
 
   expect_error(
-    wflow_use_github(username = NULL, repository = repository, project = path),
-    "You must specify the arguments username and repository."
+    wflow_use_github(create_on_github = FALSE, project = path),
+    "Unable to guess username. Please specify this argument."
   )
 
   expect_error(
-    wflow_use_github(username = username, repository = NULL, project = path),
-    "You must specify the arguments username and repository."
+    wflow_use_github(username = NULL, repository = repository,
+                     create_on_github = FALSE,  project = path),
+    "Unable to guess username. Please specify this argument."
   )
+})
 
-  expect_error(
-    wflow_use_github(project = path),
-    "You must specify the arguments username and repository."
-  )
+test_that("wflow_use_github sets correct username", {
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  # Use value for remote named "origin"
+  wflow_git_remote(remote = "origin", user = "testuser", repo = "testrepo",
+                   project = path)
+  x1 <- wflow_use_github(create_on_github = FALSE, project = path)
+  expect_identical(x1$username, "testuser")
+  origin <- wflow_git_remote(project = path)["origin"]
+  expect_equivalent(origin, sprintf("https://github.com/%s/%s.git",
+                                    x1$username, x1$repository))
+
+  # Will override based on input argument
+  x2 <- wflow_use_github(username = "argument", create_on_github = FALSE,
+                         project = path)
+  expect_identical(x2$username, "argument")
+  origin <- wflow_git_remote(project = path)["origin"]
+  expect_equivalent(origin, sprintf("https://github.com/%s/%s.git",
+                                    x2$username, x2$repository))
+})
+
+test_that("wflow_use_github sets correct repository", {
+  path <- test_setup()
+  on.exit(test_teardown(path))
+  username <- "testuser"
+
+  # Default is to use name or root workflowr directory
+  x1 <- wflow_use_github(username = username, create_on_github = FALSE,
+                         project = path)
+  expect_identical(x1$repository, fs::path_file(path))
+  origin <- wflow_git_remote(project = path)["origin"]
+  expect_equivalent(origin, sprintf("https://github.com/%s/%s.git",
+                            username, x1$repository))
+
+  # Will override with value for remote named "origin"
+  wflow_git_remote(remote = "origin", user = username,
+                   repo = "not-the-same-as-project-root-dir",
+                   action = "set_url", project = path)
+  x2 <- wflow_use_github(username = username, create_on_github = FALSE,
+                         project = path)
+  expect_identical(x2$repository, "not-the-same-as-project-root-dir")
+  origin <- wflow_git_remote(project = path)["origin"]
+  expect_equivalent(origin, sprintf("https://github.com/%s/%s.git",
+                                    username, x2$repository))
+
+  # Will override based on input argument
+  x3 <- wflow_use_github(username = username, repository = "testrepo",
+                         create_on_github = FALSE, project = path)
+  expect_identical(x3$repository, "testrepo")
+  origin <- wflow_git_remote(project = path)["origin"]
+  expect_equivalent(origin, sprintf("https://github.com/%s/%s.git",
+                                    username, x3$repository))
 })
 
 test_that("wflow_use_github can disable navbar_link", {
@@ -115,7 +168,8 @@ test_that("wflow_use_github can disable navbar_link", {
   username <- "testuser"
   repository <- "testrepo"
 
-  x <- wflow_use_github(username, repository, navbar_link = FALSE, project = path)
+  x <- wflow_use_github(username, repository, navbar_link = FALSE,
+                        create_on_github = FALSE, project = path)
 
   s <- wflow_status(project = path)
   site_yml_fname <- file.path(s$analysis, "_site.yml")
@@ -137,7 +191,8 @@ test_that("wflow_use_github works when site has been published", {
   published <- wflow_publish(file.path(s$analysis, "*Rmd"), view = FALSE,
                              project = path)
 
-  x <- wflow_use_github(username, repository, project = path)
+  x <- wflow_use_github(username, repository, create_on_github = FALSE,
+                        project = path)
 
   # The website directory is still docs/
   s <- wflow_status(project = path)
@@ -170,8 +225,10 @@ test_that("wflow_use_github can be run twice", {
   username <- "testuser"
   repository <- "testrepo"
 
-  x1 <- wflow_use_github(username, repository, project = path)
-  x2 <- wflow_use_github(username, repository, project = path)
+  x1 <- wflow_use_github(username, repository, create_on_github = FALSE,
+                         project = path)
+  x2 <- wflow_use_github(username, repository, create_on_github = FALSE,
+                         project = path)
 
   expect_identical(x2$renamed, NA)
   expect_null(x2$files_git)
@@ -190,7 +247,7 @@ test_that("wflow_use_github can be run after wflow_git_remote", {
                                action = "add", domain = "github.com",
                                verbose = FALSE, project = path)
   # Purposefully have it guess username and repository from remote "origin"
-  x <- wflow_use_github(project = path)
+  x <- wflow_use_github(create_on_github = FALSE, project = path)
 
   expect_identical(x$config_remote, NA)
   remotes2 <- wflow_git_remote(verbose = FALSE, project = path)
@@ -207,7 +264,8 @@ test_that("wflow_use_github can be run after using GitLab remote", {
                                repo = repository, protocol = "https",
                                action = "add", domain = "gitlab.com",
                                verbose = FALSE, project = path)
-  x <- wflow_use_github(username, repository, project = path)
+  x <- wflow_use_github(username, repository, create_on_github = FALSE,
+                        project = path)
 
   remotes2 <- wflow_git_remote(verbose = FALSE, project = path)
   expect_equivalent(remotes2["origin"], sprintf("https://github.com/%s/%s.git",
@@ -220,7 +278,8 @@ test_that("wflow_use_github works with ssh protocol", {
   username <- "testuser"
   repository <- "testrepo"
 
-  x <- wflow_use_github(username, repository, protocol = "ssh", project = path)
+  x <- wflow_use_github(username, repository, protocol = "ssh",
+                        create_on_github = FALSE, project = path)
 
   remotes <- wflow_git_remote(verbose = FALSE, project = path)
   expect_equivalent(remotes["origin"], sprintf("git@github.com:%s/%s.git",
@@ -234,10 +293,29 @@ test_that("wflow_use_github works with different domain", {
   repository <- "testrepo"
 
   x <- wflow_use_github(username, repository, domain = "git.rcc.uchicago.edu",
-                        project = path)
+                        create_on_github = FALSE, project = path)
 
   remotes <- wflow_git_remote(verbose = FALSE, project = path)
   expect_equivalent(remotes["origin"],
                     sprintf("https://git.rcc.uchicago.edu/%s/%s.git",
                             username, repository))
+})
+
+test_that("wflow_use_github does not create repository for custom domain", {
+  path <- test_setup()
+  on.exit(test_teardown(path))
+  username <- "testuser"
+  repository <- "testrepo"
+  domain <- "git.rcc.uchicago.edu"
+
+  expect_message(
+    wflow_use_github(username, repository, domain = domain, project = path),
+    sprintf("To do: Create %s/%s at %s", username, repository, domain)
+  )
+
+  expect_warning(
+    wflow_use_github(username, repository, domain = domain,
+                     create_on_github = TRUE, project = path),
+    "workflowr can only create a repository on github.com"
+  )
 })

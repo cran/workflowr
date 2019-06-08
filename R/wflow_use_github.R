@@ -2,9 +2,9 @@
 #'
 #' \code{wflow_use_github} automates all the local configuration necessary to
 #' deploy your workflowr project with \href{https://pages.github.com/}{GitHub
-#' Pages}. However, you will need to manually login to your account and create
-#' the new repository on GitHub. The final step is to run \code{wflow_git_push}
-#' in the R console.
+#' Pages}. Optionally, it can also create the new repository on GitHub and push
+#' the files to GitHub (only applies to public repositories hosted on
+#' github.com).
 #'
 #' \code{wflow_use_github} performs the following steps and then commits the
 #' changes:
@@ -13,7 +13,8 @@
 #'
 #' \item Adds a link to the GitHub repository in the navigation bar
 #'
-#' \item Configures the Git remote settings to use GitHub
+#' \item Configures the Git remote settings to use GitHub (via
+#' \code{\link{wflow_git_remote}})
 #'
 #' \item (Only if necessary) Renames the website directory to \code{docs/}
 #'
@@ -22,18 +23,57 @@
 #'
 #' }
 #'
-#' For more details, read the documentation provided by
-#' \href{https://pages.github.com/}{GitHub Pages}.
+#' Furthermore, \code{wflow_use_github} will prompt you to request permission to
+#' perform the following steps:
 #'
-#' @param username character (default: NULL). The GitHub username for the remote
-#'   repository. If not specified, workflowr will attempt to guess this from the
-#'   current remote named "origin" if it had previously been configured.
+#' \itemize{
+#'
+#' \item (Optional) Creates the new repository on GitHub. If you accept, your
+#' browser will open for you to provide authorization. If you are not logged
+#' into GitHub, you will be prompted to login. Then you will be asked to give
+#' permission to the workflowr-oauth-app to create the new repository for you on
+#' your behalf. This will allow \code{wflow_use_github}, running on your own
+#' machine, to create your new repository. Once \code{wflow_use_github}
+#' finishes, workflowr can no longer access your GitHub account.
+#'
+#' \item (Optional) Pushes the files to GitHub (via
+#' \code{\link{wflow_git_push}}). Don't worry if this step fails. If it does,
+#' run \code{git push origin master} in your terminal.
+#'
+#' }
+#'
+#' If you choose to not allow workflowr to create the repository for you, then
+#' you will have to complete these final two steps manually. First, login to
+#' your account and create the new repository on GitHub. Second, run
+#' \code{wflow_git_push} in the R console or \code{git push origin master}.
+#'
+#' @param username character (default: NULL). The GitHub account associated with
+#'   the GitHub repository. This is likely your personal GitHub username, but it
+#'   could also be the name of a GitHub organization you belong to. It will be
+#'   combined with the arguments \code{repository} and \code{domain} to
+#'   determine the URL of the new repository, e.g. the default is
+#'   https://github.com/username/repository. It will be combined with the
+#'   arguments \code{repository}, \code{domain}, and \code{protocol} to
+#'   determine the URL for Git to use to push and pull from GitHub, e.g. the
+#'   default is https://github.com/username/repository.git. If \code{username}
+#'   is not specified, \code{wflow_use_github} will first attempt to guess it
+#'   from the current setting for the remote URL named "origin". If you haven't
+#'   previously configured a remote for this workflowr project (or you are
+#'   unsure what that means), then you should specify your GitHub username when
+#'   calling this function.
 #' @param repository character (default: NULL). The name of the remote
-#'   repository on GitHub. If not specified, workflowr will attempt to guess
-#'   this from the current remote named "origin" if it had previously been
-#'   configured.
+#'   repository on GitHub. If not specified, workflowr will guess the name of
+#'   the repository. First, it will check the current setting for the remote URL
+#'   named "origin". Second, it will use the name of the root directory of the
+#'   workflowr project.
 #' @param navbar_link logical (default: TRUE). Insert a link to the GitHub
 #'   repository into the navigation bar.
+#' @param create_on_github logical (default: NULL). Should workflowr create the
+#'   repository on GitHub? This requires logging into your GitHub account to
+#'   authenticate workflowr to act on your behalf. The default behavior is to
+#'   ask the user. Note that this only works for public repositories on
+#'   github.com. If you want to create a private repository or are using GitHub
+#'   Enterprise, you will need to manually create the repository.
 #' @param protocol character (default: "https"). The protocol for communicating
 #'   with GitHub. Must be either "https" or "ssh".
 #' @param domain character (default: "github.com"). The domain of the remote
@@ -61,6 +101,7 @@
 #'@export
 wflow_use_github <- function(username = NULL, repository = NULL,
                              navbar_link = TRUE,
+                             create_on_github = NULL,
                              protocol = "https",
                              domain = "github.com",
                              project = ".") {
@@ -78,6 +119,10 @@ wflow_use_github <- function(username = NULL, repository = NULL,
   if (!(is.logical(navbar_link) && length(navbar_link) == 1))
     stop("navbar_link must be a one-element logical vector")
 
+  if (!is.null(create_on_github))
+    if (!(is.logical(create_on_github) && length(create_on_github) == 1))
+      stop("create_on_github must be NULL or a one element character vector: ", create_on_github)
+
   if (!(is.character(project) && length(project) == 1))
     stop("project must be a one-element character vector")
 
@@ -86,23 +131,6 @@ wflow_use_github <- function(username = NULL, repository = NULL,
   }
 
   project <- absolute(project)
-
-  # If username and/or repository are NULL, make sure that it can be guessed
-  # from current remote "origin"
-  host <- get_host_from_remote(path = project)
-  if (is.null(username) || is.null(repository)) {
-    if (is.na(host)) {
-      stop("You must specify the arguments username and repository.")
-    } else {
-      host_parts <- stringr::str_split(host, "/")[[1]]
-      username <- host_parts[length(host_parts) - 1]
-      repository <- host_parts[length(host_parts)]
-      message("username: ", username)
-      message("respository: ", repository)
-    }
-  }
-
-  message("Summary from wflow_use_github():")
 
   # Status ---------------------------------------------------------------------
 
@@ -113,6 +141,33 @@ wflow_use_github <- function(username = NULL, repository = NULL,
 
   r <- git2r::repository(path = s$git)
   remotes <- wflow_git_remote(verbose = FALSE, project = project)
+
+  message("Summary from wflow_use_github():")
+
+  # Determine username and repository ------------------------------------------
+
+  # guess based on current remote "origin"
+  host <- get_host_from_remote(path = project) # returns NA if unavailable
+  host_parts <- stringr::str_split(host, "/")[[1]]
+
+  if (is.null(username)) {
+    if (is.na(host)) {
+      stop("Unable to guess username. Please specify this argument.")
+    } else {
+      username <- host_parts[length(host_parts) - 1]
+    }
+  }
+  message("username: ", username)
+
+  if (is.null(repository)) {
+    if (is.na(host)) {
+      # Use root directory name
+       repository <- fs::path_file(absolute(s$root))
+    } else {
+      repository <- host_parts[length(host_parts)]
+    }
+  }
+  message("respository: ", repository)
 
   # Rename docs/ to public/ ----------------------------------------------------
 
@@ -159,7 +214,7 @@ wflow_use_github <- function(username = NULL, repository = NULL,
                                       repo = repository, protocol = protocol,
                                       action = "set_url", domain = domain,
                                       verbose = FALSE, project = project)
-    message("* Changed remote \"origin\" to ", config_remote["origin"])
+    message("* Overwrote previous remote \"origin\" to ", config_remote["origin"])
   } else {
     config_remote <- wflow_git_remote(remote = "origin", user = username,
                                       repo = repository, protocol = protocol,
@@ -193,16 +248,112 @@ wflow_use_github <- function(username = NULL, repository = NULL,
     commit <- NA
   }
 
+  # Create GitHub repository ---------------------------------------------------
+
+  repo_created <- FALSE
+
+  # Do not create repo if the domain is not github.com
+  if (domain != "github.com") {
+    if (isTRUE(create_on_github))
+      warning("workflowr can only create a repository on github.com",
+              call. = FALSE, immediate. = TRUE)
+    create_on_github <- FALSE
+  }
+
+  if (is.null(create_on_github) && interactive()) {
+    cat("\n", wrap(glue::glue(
+      "The GitHub repository {repository} can be automatically created for the
+      account {username} if you authorize workflowr to do so. This requires
+      logging into GitHub and enabling the workflowr-oauth-app access to the
+      account."
+    )), "\n", sep = "")
+    ans <- readline(glue::glue(
+      "Enable workflowr to create {username}/{repository}? (y/n) "))
+    if (tolower(ans) == "y") {
+      create_on_github <- TRUE
+    }
+  }
+
+  if (is.null(create_on_github)) create_on_github <- FALSE
+
+  if (create_on_github) {
+    repo_url <- create_gh_repo(username, repository)
+    if (check_browser()) utils::browseURL(repo_url)
+    repo_created <- TRUE
+    message(glue::glue("*  Created {username}/{repository}"))
+  }
 
   # Prepare output -------------------------------------------------------------
 
-  o <- list(renamed = renamed, files_git = files_git, commit = commit,
+  o <- list(username = username, repository = repository,
+            renamed = renamed, files_git = files_git, commit = commit,
             config_remote = config_remote)
   class(o) <- "wflow_use_github"
 
-  message("\nGitHub configuration successful!\n")
-  message("To do: Create new repository at ", domain)
-  message("To do: Run wflow_git_push() to send your project to GitHub")
+  if (!repo_created) {
+    message(glue::glue("To do: Create {username}/{repository} at {domain} (if it doesn't already exist)"))
+  }
+
+  message("To do: Run wflow_git_push() to push your project to GitHub")
 
   return(invisible(o))
+}
+
+# Create GitHub repository
+create_gh_repo <- function(username, repository) {
+
+  # Authenticate with GitHub
+  app <- httr::oauth_app("github",
+                         key = "341566cfd0c8017ba5ac",
+                         secret = "ac5e6d52e3bf71e4535149622f053b9f00f2e155")
+
+  # Set user agent
+  ua <- httr::user_agent("https://github.com/jdblischak/workflowr")
+
+  message(glue::glue(
+    "Requesting authorization for workflowr app to access GitHub account {username}"))
+  oauth_token <- httr::oauth2.0_token(httr::oauth_endpoints("github"),
+                                      app,
+                                      scope = c("public_repo"),
+                                      cache = FALSE)
+  token <- httr::config(token =  oauth_token)
+
+  # Ensure they haven't exceeded their rate limit
+  req_rate <- httr::GET("https://api.github.com/rate_limit", token, ua)
+  httr::stop_for_status(req_rate)
+  content_rate <- httr::content(req_rate)
+  if (content_rate$resources$core$remaining < 5) {
+    warning("You've exceeded your rate limit for the GitHub API.",
+            " Please try again later.")
+    return(NULL)
+  }
+
+  # Confirm the repository doesn't exist
+  req_exist <- httr::GET(glue::glue("https://api.github.com/repos/{username}/{repository}"),
+                         token, ua)
+  status_exist <- httr::http_status(req_exist)
+  if (status_exist$reason != "Not Found") {
+    warning(glue::glue("Repository {repository} already exists for user {username}"),
+            call. = FALSE, immediate. = TRUE)
+    return(glue::glue("https://github.com/{username}/{repository}"))
+  }
+
+  # Create the repository
+  message(glue::glue("Creating repository {repository}"))
+  req_create <- httr::POST("https://api.github.com/user/repos", token, ua,
+                           body = list(name = repository), encode = "json")
+  httr::stop_for_status(req_create)
+
+  # Confirm the repository exists
+  req_confirm <- httr::GET(glue::glue("https://api.github.com/repos/{username}/{repository}"),
+                           token, ua)
+  status_confirm <- httr::http_status(req_confirm)
+  if (status_confirm$category != "Success") {
+    warning(glue::glue("Failed to create repository {repository}. Reason: {status_confirm$reason}"))
+    return(NULL)
+  }
+
+  # Return the full URL to new repository
+  content_confirm <- httr::content(req_confirm)
+  return(content_confirm$html_url)
 }

@@ -14,7 +14,8 @@ wflow_build(files = NULL, make = is.null(files), update = FALSE,
 the analysis directory with the extension Rmd or rmd. If \code{files} is
 \code{NULL}, the default behavior is to build all outdated files (see
 argument \code{make} below). Supports file
-\href{https://en.wikipedia.org/wiki/Glob_(programming)}{globbing}.}
+\href{https://en.wikipedia.org/wiki/Glob_(programming)}{globbing}.
+The files are always built in the order they are listed.}
 
 \item{make}{logical (default: \code{is.null(files)}). When \code{make =
 TRUE}, build any files that have been modified more recently than their
@@ -152,7 +153,7 @@ Under the hood, \code{wflow_build} is a wrapper for
 \examples{
 \dontrun{
 
-# Build any files which have modified
+# Build any files which have been modified
 wflow_build() # equivalent to wflow_build(make = TRUE)
 # Build a single file
 wflow_build("file.Rmd")

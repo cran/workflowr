@@ -83,8 +83,12 @@ wflow_publish(c("analysis/index.Rmd", "analysis/about.Rmd", "analysis/license.Rm
 ## ----wflow-status-post-publish-------------------------------------------
 wflow_status()
 
-## ----wflow-use-github----------------------------------------------------
-wflow_use_github("myname", "myproject")
+## ----wflow-use-github, eval=FALSE----------------------------------------
+#  wflow_use_github("myname")
+
+## ----wflow-use-github-hidden, echo=FALSE---------------------------------
+# Don't want to try to authenticate on GitHub
+wflow_use_github("myname", create_on_github = FALSE)
 
 ## ----wflow-git-push------------------------------------------------------
 wflow_git_push(dry_run = TRUE)

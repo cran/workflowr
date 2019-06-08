@@ -12,7 +12,7 @@
 
 <meta name="author" content="John Blischak" />
 
-<meta name="date" content="2019-04-15" />
+<meta name="date" content="2019-06-08" />
 
 <title>Getting started with workflowr</title>
 
@@ -94,9 +94,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Getting started with workflowr</h1>
-<h3 class="subtitle">workflowr version 1.3.0</h3>
+<h3 class="subtitle">workflowr version 1.4.0</h3>
 <h4 class="author">John Blischak</h4>
-<h4 class="date">2019-04-15</h4>
+<h4 class="date">2019-06-08</h4>
 
 
 <div id="TOC">
@@ -128,7 +128,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h2>Start the project</h2>
 <p>To start a new project, open R (or RStudio) and load the workflowr package (note that all the code in this vignette should be run directly in the R console, i.e. do <strong>not</strong> try to run workflowr functions inside of R Markdown documents).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;workflowr&quot;</span>)
-## This is workflowr version 1.3.0
+## This is workflowr version 1.4.0
 ## Run ?workflowr for help getting started</code></pre></div>
 <p>If you have never created a Git repository on your computer before, you need to run the following command to tell Git your name and email. Git uses this information to assign the changes you make to the code to you (analogous to how Track Changes in a Microsoft Office Word document assigns your changes to you). You do not need to use the exact same name and email as you used for your account on GitHub or GitLab. Also, you only need to run this command once per computer, and all subsequent workflowr projects will use this information (you can also update it at any time by re-running the command with different input).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Replace the example text with your information</span>
@@ -136,11 +136,11 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Now you are ready to start your first workflowr project! <code>wflow_start(&quot;myproject&quot;)</code> creates a directory called <code>myproject/</code> that contains all the files to get started. It also changes the working directory to <code>myproject/</code><a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> and initializes a Git repository with the initial commit already made.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_start</span>(<span class="st">&quot;myproject&quot;</span>)</code></pre></div>
 <pre><code>## wflow_start:
-## - New directory created at /tmp/RtmpoviZI9/wflow-01-getting-started-31de4f698a59/myproject
+## - New directory created at /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject
 ## - Project name is &quot;myproject&quot;
-## - Working directory changed to /tmp/RtmpoviZI9/wflow-01-getting-started-31de4f698a59/myproject
-## - Git repo initiated at /tmp/RtmpoviZI9/wflow-01-getting-started-31de4f698a59/myproject
-## - Files were committed in version bf07aed</code></pre>
+## - Working directory changed to /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject
+## - Git repo initiated at /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject
+## - Files were committed in version d6a967e</code></pre>
 <p><code>wflow_start()</code> created the following directory structure in <code>myproject/</code>:</p>
 <pre><code>myproject/
 ├── .gitignore
@@ -183,7 +183,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>You will notice that the <code>docs/</code> directory is currently empty. That is because we have not yet generated the website from the <code>analysis/</code> files. This is what we will do next.</p>
 <p>To build the website, run the function <code>wflow_build()</code> in the R console:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_build</span>()</code></pre></div>
-<pre><code>## Current working directory: /tmp/RtmpoviZI9/wflow-01-getting-started-31de4f698a59/myproject
+<pre><code>## Current working directory: /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject
 ## Building 3 file(s):
 ## Building analysis/about.Rmd
 ## Building analysis/index.Rmd
@@ -200,7 +200,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## docs/index.html
 ## docs/license.html
 ## 
-## Log files saved in /tmp/RtmpoviZI9/workflowr</code></pre>
+## Log files saved in /tmp/RtmpeLsJPL/workflowr</code></pre>
 <p>This command builds all the R Markdown files in <code>analysis/</code> and saves the corresponding HTML files in <code>docs/</code>. It sets the same seed before running every file so that any function that generates random data (e.g. permutations) is reproducible. Furthermore, each file is built in its own external R session to avoid any potential conflicts between analyses (e.g. accidentally sharing a variable with the same name across files). Lastly, it displays the website in the RStudio Viewer or default web browser.</p>
 <p>The default action of <code>wflow_build()</code> is to behave similar to a <a href="https://swcarpentry.github.io/make-novice">Makefile</a> (<code>make = TRUE</code> is the default when no input files are provided), i.e. it only builds R Markdown files that have been modified more recently than their corresponding HTML files. Thus if you run it again, no files are built (and no files are displayed).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_build</span>()
@@ -239,7 +239,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>This alerts us that our project has 3 R Markdown files, and they are all unpublished (“Unp”). Furthermore, it instructs how to publish them: use <code>wflow_publish()</code>. The first argument to <code>wflow_publish()</code> is a character vector of the R Markdown files to publish <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>. The second is a message that will be recorded by the version control system Git when it commits (i.e. saves a snapshot of) these files. The more informative the commit message the better (so that future you knows what you were trying to accomplish).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_publish</span>(<span class="kw">c</span>(<span class="st">&quot;analysis/index.Rmd&quot;</span>, <span class="st">&quot;analysis/about.Rmd&quot;</span>, <span class="st">&quot;analysis/license.Rmd&quot;</span>),
               <span class="st">&quot;Publish the initial files for myproject&quot;</span>)</code></pre></div>
-<pre><code>## Current working directory: /tmp/RtmpoviZI9/wflow-01-getting-started-31de4f698a59/myproject
+<pre><code>## Current working directory: /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject
 ## Building 3 file(s):
 ## Building analysis/index.Rmd
 ## Building analysis/about.Rmd
@@ -255,7 +255,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   $ git add analysis/index.Rmd analysis/about.Rmd analysis/license.Rmd 
 ##   $ git commit -m &quot;Publish the initial files for myproject&quot; 
 ## 
-## The following file(s) were included in commit 0f409cf:
+## The following file(s) were included in commit 2987669:
 ## analysis/about.Rmd
 ## analysis/index.Rmd
 ## analysis/license.Rmd
@@ -274,7 +274,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## docs/about.html
 ## docs/license.html
 ## 
-## Log files saved in /tmp/RtmpoviZI9/workflowr
+## Log files saved in /tmp/RtmpeLsJPL/workflowr
 ## 
 ## **Step 3: Commit HTML files**
 ## 
@@ -285,7 +285,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   $ git add docs/index.html docs/about.html docs/license.html docs/figure/index.Rmd docs/figure/about.Rmd docs/figure/license.Rmd docs/site_libs docs/.nojekyll 
 ##   $ git commit -m &quot;Build site.&quot; 
 ## 
-## The following file(s) were included in commit a7df19c:
+## The following file(s) were included in commit 18419f1:
 ## docs/about.html
 ## docs/index.html
 ## docs/license.html
@@ -312,26 +312,26 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="deploy-the-website" class="section level2">
 <h2>Deploy the website</h2>
 <p>At this point you have built a version-controlled website that exists on your local computer. The next step is to put your code on GitHub so that it can serve your website online. If you are using GitLab, switch to the vignette <a href="wflow-06-gitlab.html">Hosting workflowr websites using GitLab</a> and then continue with the next section.</p>
-<p>First, you need to configure your local project for use use with GitHub. Pass your GitHub username and desired repository name to the workflowr function <code>wflow_use_github()</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_use_github</span>(<span class="st">&quot;myname&quot;</span>, <span class="st">&quot;myproject&quot;</span>)
-## Summary from wflow_use_github():
+<p>All the required setup can be performed by the workflowr function <code>wflow_use_github()</code>. The only required argument is your GitHub username<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_use_github</span>(<span class="st">&quot;myname&quot;</span>)</code></pre></div>
+<pre><code>## Summary from wflow_use_github():
+## username: myname
+## respository: myproject
 ## * The website directory is already named docs/
 ## * Output directory is already set to docs/
 ## * Set remote &quot;origin&quot; to https://github.com/myname/myproject.git
 ## * Added GitHub link to navigation bar
 ## * Committed the changes to Git
-## 
-## GitHub configuration successful!
-## To do: Create new repository at github.com
-## To do: Run wflow_git_push() to send your project to GitHub</code></pre></div>
-<p>This had two main effects: 1) it configured Git to communicate with your future GitHub repository, and 2) it inserted a link to your future GitHub repository into the navigation bar (you’ll need to run <code>wflow_build()</code> or <code>wflow_publish()</code> to observe this change).</p>
-<p>Second, you need to create the GitHub repository (you can skip this step if you’ve already created it). To do this, login to your account on GitHub and create a new repository following these <a href="https://help.github.com/articles/creating-a-new-repository/">instructions</a>. The screenshot below shows the menu in the topright of the webpage.</p>
+## To do: Create myname/myproject at github.com (if it doesn't already exist)
+## To do: Run wflow_git_push() to push your project to GitHub</code></pre>
+<p>This has two main effects on your local machine: 1) it configures Git to communicate with your future GitHub repository, and 2) it inserts a link to your future GitHub repository into the navigation bar (you’ll need to run <code>wflow_build()</code> or <code>wflow_publish()</code> to observe this change). Furthermore, <code>wflow_use_github()</code> will prompt you to ask if you’d like to authorize workflowr to automatically create the repository on GitHub. If you agree, a browser tab will open, and you will need to authenticate with your username and password, and then give permission to the “workflowr-oauth-app” to access your account<a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a>.</p>
+<p>If you decline the offer from <code>wflow_use_github()</code> to automatically create the GitHub repository, you need to manually create it. To do this, login to your account on GitHub and create a new repository following these <a href="https://help.github.com/articles/creating-a-new-repository/">instructions</a>. The screenshot below shows the menu in the topright of the webpage.</p>
 <p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALMAAACoCAYAAACrBd+rAAAAbnpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjaVYzdDYAwCITfmcIRrhQpjFMTTdzA8cVK0vRLgOP4ofO5L9oGTUj2ZuqqCMTFuYcw/DBQGAU1dEkvq7o1yOyJFSv8RXzzuXTUnNXV7zbPaKQXtrIgfc+2tzMAAAoGaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/Pgo8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA0LjQuMC1FeGl2MiI+CiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIKICAgIHhtbG5zOnRpZmY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vdGlmZi8xLjAvIgogICBleGlmOlBpeGVsWERpbWVuc2lvbj0iMTc5IgogICBleGlmOlBpeGVsWURpbWVuc2lvbj0iMTY4IgogICB0aWZmOkltYWdlV2lkdGg9IjE3OSIKICAgdGlmZjpJbWFnZUhlaWdodD0iMTY4IgogICB0aWZmOk9yaWVudGF0aW9uPSIxIi8+CiA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAg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" alt="Create a new repository on GitHub." style="display: block; margin: auto; border: black 1px solid"></p>
 <p class="caption" style="text-align: center;">
 Create a new repository on GitHub.
 </p>
 <p>Note that in this tutorial the GitHub repository also has the name “myproject.” This isn’t strictly necessary (you can name your GitHub repository whatever you like), but it’s generally good organizational practice to use the same name for both your GitHub repository and the local directory on your computer.</p>
-<p>Third, you need to send your files to GitHub. Push your files to GitHub with the function <code>wflow_git_push()</code>:<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></p>
+<p>Next, you need to send your files to GitHub. Push your files to GitHub with the function <code>wflow_git_push()</code>:<a href="#fn7" class="footnoteRef" id="fnref7"><sup>7</sup></a></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_git_push</span>(<span class="dt">dry_run =</span> <span class="ot">TRUE</span>)
 ## Summary from wflow_git_push
 ## 
@@ -341,8 +341,8 @@ Create a new repository on GitHub.
 ## The following Git command would be run:
 ## 
 ##   $ git push origin master</code></pre></div>
-<p>Using <code>dry_run = TRUE</code> previews what the function will do. Remove this argument to actually push to GitHub. You will be prompted to enter your GitHub username and password for authentication<a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a>. Each time you make changes to your project, e.g. run <code>wflow_publish()</code>, you will need to run <code>wflow_git_push()</code> to send the changes to GitHub.</p>
-<p>Fourth, now that your code is on GitHub, you need to tell GitHub that you want the files in <code>docs/</code> to be published as a website. Go to Settings -&gt; GitHub Pages and choose “master branch docs/ folder” as the Source (<a href="https://help.github.com/articles/configuring-a-publishing-source-for-github-pages/#publishing-your-github-pages-site-from-a-docs-folder-on-your-master-branch">instructions</a>). Using the hypothetical names above, the repository would be hosted at the URL <code>myname.github.io/myproject/</code><a href="#fn7" class="footnoteRef" id="fnref7"><sup>7</sup></a>. If you scroll back down to the GitHub Pages section of the Settings page, you can click on the URL there.</p>
+<p>Using <code>dry_run = TRUE</code> previews what the function will do. Remove this argument to actually push to GitHub. You will be prompted to enter your GitHub username and password for authentication<a href="#fn8" class="footnoteRef" id="fnref8"><sup>8</sup></a>. Each time you make changes to your project, e.g. run <code>wflow_publish()</code>, you will need to run <code>wflow_git_push()</code> to send the changes to GitHub.</p>
+<p>Lastly, now that your code is on GitHub, you need to tell GitHub that you want the files in <code>docs/</code> to be published as a website. Go to Settings -&gt; GitHub Pages and choose “master branch docs/ folder” as the Source (<a href="https://help.github.com/articles/configuring-a-publishing-source-for-github-pages/#publishing-your-github-pages-site-from-a-docs-folder-on-your-master-branch">instructions</a>). Using the hypothetical names above, the repository would be hosted at the URL <code>myname.github.io/myproject/</code><a href="#fn9" class="footnoteRef" id="fnref9"><sup>9</sup></a>. If you scroll back down to the GitHub Pages section of the Settings page, you can click on the URL there.</p>
 </div>
 <div id="add-a-new-analysis-file" class="section level2">
 <h2>Add a new analysis file</h2>
@@ -350,8 +350,8 @@ Create a new repository on GitHub.
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_open</span>(<span class="st">&quot;analysis/first-analysis.Rmd&quot;</span>)</code></pre></div>
 <pre><code>## wflow_open:
 ## - New file(s):
-##   /tmp/RtmpoviZI9/wflow-01-getting-started-31de4f698a59/myproject/analysis/first-analysis.Rmd
-## - Same working directory: /tmp/RtmpoviZI9/wflow-01-getting-started-31de4f698a59/myproject</code></pre>
+##   /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject/analysis/first-analysis.Rmd
+## - Same working directory: /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject</code></pre>
 <p>Now you are ready to start writing! Go ahead and add some example code. If you are using RStudio, press the Knit button to build the file and see a preview in the Viewer pane. Alternatively from the R console, you can run <code>wflow_build()</code> again (this function can be run from the base directory of your project or any subdirectory).</p>
 <p>Check out your new file <code>first-analysis.html</code>. Near the top you will see the workflowr reproducibility report. If you click on the button, the full menu will drop down. Click around to learn more about the reproducibility safety checks, why their important, and whether or not the file passed or failed each one. You’ll notice that the first check failed because the R Markdown file had uncommitted changes. This is OK now since the file is a draft. Once you are ready to publish it to share with others, you can use <code>wflow_publish()</code> to ensure that any changes to the R Markdown file are committed to the Git repository prior to generating the results.</p>
 <p>In order to make it easier to navigate to your new file, you can include a link to it on the main index page. First open <code>analysis/index.Rmd</code> (optionally using <code>wflow_open()</code>). Second paste the following line into <code>index.Rmd</code>:</p>
@@ -380,7 +380,7 @@ Create a new repository on GitHub.
 <p>To publish the new analysis and the updated index page, again use <code>wflow_publish()</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_publish</span>(<span class="kw">c</span>(<span class="st">&quot;analysis/index.Rmd&quot;</span>, <span class="st">&quot;analysis/first-analysis.Rmd&quot;</span>),
               <span class="st">&quot;Add my first analysis&quot;</span>)</code></pre></div>
-<pre><code>## Current working directory: /tmp/RtmpoviZI9/wflow-01-getting-started-31de4f698a59/myproject
+<pre><code>## Current working directory: /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject
 ## Building 2 file(s):
 ## Building analysis/index.Rmd
 ## Building analysis/first-analysis.Rmd
@@ -395,7 +395,7 @@ Create a new repository on GitHub.
 ##   $ git add analysis/index.Rmd analysis/first-analysis.Rmd 
 ##   $ git commit -m &quot;Add my first analysis&quot; 
 ## 
-## The following file(s) were included in commit c16240a:
+## The following file(s) were included in commit f5a298e:
 ## analysis/first-analysis.Rmd
 ## analysis/index.Rmd
 ## 
@@ -412,7 +412,7 @@ Create a new repository on GitHub.
 ## docs/index.html
 ## docs/first-analysis.html
 ## 
-## Log files saved in /tmp/RtmpoviZI9/workflowr
+## Log files saved in /tmp/RtmpeLsJPL/workflowr
 ## 
 ## **Step 3: Commit HTML files**
 ## 
@@ -423,17 +423,17 @@ Create a new repository on GitHub.
 ##   $ git add docs/index.html docs/first-analysis.html docs/figure/index.Rmd docs/figure/first-analysis.Rmd docs/site_libs docs/.nojekyll 
 ##   $ git commit -m &quot;Build site.&quot; 
 ## 
-## The following file(s) were included in commit d4a76ff:
+## The following file(s) were included in commit c6b4be1:
 ## docs/first-analysis.html
 ## docs/index.html
 ## docs/site_libs/font-awesome-5.1.0/
 ## docs/site_libs/jqueryui-1.11.4/
 ## docs/site_libs/tocify-1.9.1/</code></pre>
-<p>Lastly, push the changes to GitHub or GitLab with <code>wflow_git_push()</code><a href="#fn8" class="footnoteRef" id="fnref8"><sup>8</sup></a> to deploy these latest changes to the website.</p>
+<p>Lastly, push the changes to GitHub or GitLab with <code>wflow_git_push()</code><a href="#fn10" class="footnoteRef" id="fnref10"><sup>10</sup></a> to deploy these latest changes to the website.</p>
 </div>
 <div id="the-workflow" class="section level2">
 <h2>The workflow</h2>
-<p>This is the general workflow:<a href="#fn9" class="footnoteRef" id="fnref9"><sup>9</sup></a></p>
+<p>This is the general workflow:<a href="#fn11" class="footnoteRef" id="fnref11"><sup>11</sup></a></p>
 <ol style="list-style-type: decimal">
 <li><p>Open a new or existing R Markdown file in <code>analysis/</code> (optionally using <code>wflow_open()</code>)</p></li>
 <li><p>Perform your analysis in the R Markdown file (For RStudio users: to quickly develop the code I recommend executing the code in the R console via Ctrl-Enter to send one line or Ctrl-Alt-C to execute the entire code chunk)</p></li>
@@ -506,11 +506,13 @@ Create a new repository on GitHub.
 <li id="fn2"><p>If you’re using RStudio, you can alternatively create a new workflowr project using the RStudio project template. Go to <code>File</code> -&gt; <code>New Project...</code> and select <code>workflowr project</code> from the list of project types. In the future you can return to your project by choosing <code>Open Project...</code> and selecting the file <code>myproject.Rproj</code>. This will set the correct working directory in the R console, switch the file navigator to the project, and configure the Git pane.<a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p>Because of this requirement, you can’t customize the knitr option <code>fig.path</code> (which controls where figure files are saved) in any R Markdown file that is part of a workflowr project. If you do set it, it will be ignored and workflowr will insert a warning into the HTML file to alert you.<a href="#fnref3">↩</a></p></li>
 <li id="fn4"><p>Instead of listing each file individually, you can also pass <a href="https://en.wikipedia.org/wiki/Glob_(programming)">file globs</a> as input to any workflowr function, e.g. <code>wflow_publish(&quot;analysis/*Rmd&quot;, &quot;Publish the initial files for myproject&quot;)</code>.<a href="#fnref4">↩</a></p></li>
-<li id="fn5"><p>Unfortunately this can fail for many different reasons. If you already regularly use <code>git push</code> in the Terminal, you will probably want to continue using this. If you don’t have Git installed on your computer and thus must use <code>wflow_git_push()</code>, you can search the <a href="https://github.com/ropensci/git2r/issues">git2r Issues</a> for troubleshooting ideas.<a href="#fnref5">↩</a></p></li>
-<li id="fn6"><p>If you’d prefer to use SSH keys for authentication, please see the section <a href="wflow-02-customization.html#setup-ssh-keys">Setup SSH keys</a>.<a href="#fnref6">↩</a></p></li>
-<li id="fn7"><p>It may take a few minutes for the site to be rendered.<a href="#fnref7">↩</a></p></li>
-<li id="fn8"><p>Alternatively you can run <code>git push</code> in the Terminal or use the RStudio Git Pane.<a href="#fnref8">↩</a></p></li>
-<li id="fn9"><p>Note that some workflowr functions are also available as <a href="https://rstudio.github.io/rstudioaddins/">RStudio Addins</a>. You may prefer these compared to running the commands in the R console, especially since you can <a href="https://rstudio.github.io/rstudioaddins/#keyboard-shorcuts">bind the addins to keyboard shortcuts</a>.<a href="#fnref9">↩</a></p></li>
+<li id="fn5"><p>The default is to name the GitHub repository using the same name as the directory that contains the workflowr project. This is likely what you used with <code>wflow_start()</code>, which in this case was <code>&quot;myproject&quot;</code>. If you’d prefer the GitHub repository to have a different name, you can pass the argument <code>repository = &quot;other-name&quot;</code>.<a href="#fnref5">↩</a></p></li>
+<li id="fn6"><p>This sounds scarier than it actually is. The “workflowr-oauth-app” is simply a formality for GitHub to grant authorization. The “app” itself is the R code running on your local machine. Once <code>wflow_use_github()</code> finishes, the authorization is deleted, and nothing (and no one) can access your account<a href="#fnref6">↩</a></p></li>
+<li id="fn7"><p>Unfortunately this can fail for many different reasons. If you already regularly use <code>git push</code> in the Terminal, you will probably want to continue using this. If you don’t have Git installed on your computer and thus must use <code>wflow_git_push()</code>, you can search the <a href="https://github.com/ropensci/git2r/issues">git2r Issues</a> for troubleshooting ideas.<a href="#fnref7">↩</a></p></li>
+<li id="fn8"><p>If you’d prefer to use SSH keys for authentication, please see the section <a href="wflow-02-customization.html#setup-ssh-keys">Setup SSH keys</a>.<a href="#fnref8">↩</a></p></li>
+<li id="fn9"><p>It may take a few minutes for the site to be rendered.<a href="#fnref9">↩</a></p></li>
+<li id="fn10"><p>Alternatively you can run <code>git push</code> in the Terminal or use the RStudio Git Pane.<a href="#fnref10">↩</a></p></li>
+<li id="fn11"><p>Note that some workflowr functions are also available as <a href="https://rstudio.github.io/rstudioaddins/">RStudio Addins</a>. You may prefer these compared to running the commands in the R console, especially since you can <a href="https://rstudio.github.io/rstudioaddins/#keyboard-shorcuts">bind the addins to keyboard shortcuts</a>.<a href="#fnref11">↩</a></p></li>
 </ol>
 </div>
 

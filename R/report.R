@@ -33,6 +33,9 @@ create_report <- function(input, output_dir, has_code, opts) {
 
     # Check caching
     checks$cache <- check_cache(input)
+
+    # Check for absolute paths
+    checks$paths <- check_paths(input, opts$knit_root_dir)
   }
 
   # Check version control
@@ -261,6 +264,17 @@ get_versions_fig <- function(fig, r, github) {
   blobs_file <- blobs_file[order(blobs_file$Date, decreasing = TRUE), ]
   blobs_file$Date <- as.Date(blobs_file$Date)
 
+  fig <- basename(fig)
+  id <- paste0("fig-", tools::file_path_sans_ext(basename(fig)))
+  # An HTML ID cannot contain spaces. If filename has spaces, quote the figure
+  # name and convert spaces in ID to dashes. Also insert text in case there is a
+  # similar chunk name that already uses dashes instead of spaces.
+  if (stringr::str_detect(fig, "\\s")) {
+    fig <- paste0('"', fig, '"')
+    id <- stringr::str_replace_all(id, "\\s", "-")
+    id <- stringr::str_replace(id, "fig-", "fig-no-spaces-")
+  }
+
   template <-
     "
   <p>
@@ -293,8 +307,7 @@ get_versions_fig <- function(fig, r, github) {
   </div>
   </div>
   "
-  data <- list(fig = basename(fig),
-               id = paste0("fig-", tools::file_path_sans_ext(basename(fig))),
+  data <- list(fig = fig, id = id,
                blobs_file = unname(whisker::rowSplit(blobs_file)))
   text <- whisker::whisker.render(template, data)
 
@@ -456,16 +469,15 @@ For reproduciblity it's best to always run the code in an empty environment.
     summary <- "<strong>Environment:</strong> objects present"
     details <-
 "
-The global environment had objects present when the code in the R Markdown
+<p>The global environment had objects present when the code in the R Markdown
 file was run. These objects can affect the analysis in your R Markdown file in
 unknown ways. For reproduciblity it's best to always run the code in an empty
 environment. Use <code>wflow_publish</code> or <code>wflow_build</code> to
-ensure that the code is always run in an empty environment.
+ensure that the code is always run in an empty environment.</p>
 "
     objects_table <- create_objects_table(envir)
     details <- paste(collapse = "\n",
                      details,
-                     "<br><br>",
                      "<p>The following objects were defined in the global
                      environment when these results were created:</p>",
                      objects_table)
@@ -482,10 +494,13 @@ create_objects_table <- function(env) {
                   function(x) format(utils::object.size(env[[x]]), units = "auto"),
                   character(1))
   df <- data.frame(Name = objects, Class = classes, Size = sizes)
-  table <- knitr::kable(df, format = "html", row.names = FALSE)
-  # Add table formatting
-  table <- stringr::str_replace(table, "<table>",
-            "<table class=\"table table-condensed table-hover\">")
+  table <- convert_df_to_html_table(df)
+  return(table)
+}
+
+convert_df_to_html_table <- function(df) {
+  table <- knitr::kable(df, format = "html", row.names = FALSE,
+                        table.attr = "class=\"table table-condensed table-hover\"")
   return(as.character(table))
 }
 
@@ -689,4 +704,130 @@ create_url_html <- function(url_repo, html, sha) {
 
 shorten_sha <- function(sha) {
   stringr::str_sub(sha, 1, 7)
+}
+
+# Detect absolute file paths in a character vector
+#
+# Detects Unix and Windows file paths. Paths must be surrounded by quotations
+# as they would appear in R code.
+#
+# Returns a character vector of all potential absolute paths
+#
+# Returns: "/a/b/c", '/a/b/c', "~/a/b/c", "~\\a\\b\\c", "C:/a/b/c", "C:\\a\\b\\c"
+# Ignores: /a/b/c, "~a", "C:a/b/c", "~"
+#
+# **Warning:** The identified paths may not be returned in the input order
+# because the order depends on the order of the regexes that are used to search
+# for paths.
+#
+# Note: Since this checks the entire document, including non-code, I made it
+# stringent. For example, it ignores "~" and "C:". These are technically valid
+# paths, but it's unlikely that workflowr will be able to provide useful advice
+# if these are actually being used as paths. Also, they could be in non-code
+# sections. A potential way to improve this check is to first extract the code
+# from the document and/or remove comments.
+detect_abs_path <- function(string) {
+  path_regex <- c("[\",\'](/.+?)[\",\']", # Unix path surrounded by ' or "
+                  "[\",\']([a-z,A-Z]:[/,\\\\].+?)[\",\']", # Windows path surrounded by ' or "
+                  "[\",\'](~[/,\\\\].+?)[\",\']" # Path with tilde surrounded by ' or "
+  )
+  paths <- list()
+  for (re in path_regex) {
+    paths <- c(paths, stringr::str_match_all(string, re))
+  }
+  paths <- Reduce(rbind, paths)[, 2]
+
+  return(paths)
+}
+
+# Check for absolute paths that should be relative paths
+#
+# Looks for absolute paths between quotation marks (to detect strings in code)
+# and between parentheses (to detect links in Markdown syntax). The paths have
+# to be within the same project.
+check_paths <- function(input, knit_root_dir) {
+
+  # Can't assume a workflowr just because they are using wflow_html().
+  proj_dir <- get_proj_dir(knit_root_dir)
+
+  lines <- readLines(input)
+  paths <- detect_abs_path(lines)
+  # Because fs doesn't remove the ~
+  paths_original <- paths
+  paths <- absolute(paths)
+  names(paths) <- paths_original
+  # Remove any duplicates
+  paths <- paths[!duplicated(paths)]
+
+  if (length(paths) > 0) {
+    internal <- vapply(paths, fs::path_has_parent, logical(1),
+                       parent = proj_dir)
+    paths <- paths[internal]
+  }
+
+  if (length(paths) == 0) {
+    pass <- TRUE
+    summary <- "<strong>File paths:</strong> relative"
+    details <-
+      "
+Great job! Using relative paths to the files within your workflowr project
+makes it easier to run your code on other machines.
+"
+  } else {
+    pass <- FALSE
+    summary <- "<strong>File paths:</strong> absolute"
+    # List the absolute paths and the suggested relative paths (need to be
+    # relative to knit_root_dir)
+    paths_df <- data.frame(absolute = names(paths),
+                           relative = relative(paths, start = knit_root_dir),
+                           stringsAsFactors = FALSE)
+    # If the original absolute path uses backslashes on Windows, use backslashes
+    # for the suggested relative path. Also display double backslashes as it
+    # would appear in R code.
+    paths_w_backslash <- stringr::str_detect(paths_df$absolute, "\\\\")
+    paths_df$relative[paths_w_backslash] <- stringr::str_replace_all(paths_df$relative[paths_w_backslash],
+                                                                     "/", "\\\\\\\\\\\\\\\\")
+    paths_df$absolute[paths_w_backslash] <- stringr::str_replace_all(paths_df$absolute[paths_w_backslash],
+                                                                     "\\\\\\\\", "\\\\\\\\\\\\\\\\")
+    paths_df_html <- convert_df_to_html_table(paths_df)
+    details <- glue::glue("
+<p>Using absolute paths to the files within your workflowr project makes it
+difficult for you and others to run your code on a different machine. Change
+the absolute path(s) below to the suggested relative path(s) to make your code
+more reproducible.</p>
+{paths_df_html}
+")
+  }
+
+  return(list(pass = pass, summary = summary, details = details))
+}
+
+# If uncertain if this is a workflowr project, search for these files in the
+# following order to attempt to find root of current project.
+#
+# *.Rproj
+# .git/
+# _workflowr.yml
+#
+# If none of these are present, return the input directory.
+get_proj_dir <- function(directory) {
+
+  # RStudio project file, .Rproj
+  proj_dir <- try(rprojroot::find_rstudio_root_file(path = directory),
+                silent = TRUE)
+  if (class(proj_dir) != "try-error") return(proj_dir)
+
+  # .git/
+  proj_dir <- try(rprojroot::find_root_file(criterion = rprojroot::is_git_root,
+                                            path = directory),
+                  silent = TRUE)
+  if (class(proj_dir) != "try-error") return(proj_dir)
+
+  # _workflowr.yml file
+  proj_dir <- try(rprojroot::find_root(rprojroot::has_file("_workflowr.yml"),
+                                       path = directory),
+                  silent = TRUE)
+  if (class(proj_dir) != "try-error") return(proj_dir)
+
+  return(directory)
 }
