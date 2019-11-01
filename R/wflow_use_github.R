@@ -2,9 +2,10 @@
 #'
 #' \code{wflow_use_github} automates all the local configuration necessary to
 #' deploy your workflowr project with \href{https://pages.github.com/}{GitHub
-#' Pages}. Optionally, it can also create the new repository on GitHub and push
-#' the files to GitHub (only applies to public repositories hosted on
-#' github.com).
+#' Pages}. Optionally, it can also create the new repository on GitHub (only
+#' applies to public repositories hosted on github.com). Afterwards, you will
+#' need to run \code{wflow_git_push} in the R console (or \code{git push} in the
+#' terminal) to push the code to GitHub.
 #'
 #' \code{wflow_use_github} performs the following steps and then commits the
 #' changes:
@@ -23,12 +24,13 @@
 #'
 #' }
 #'
-#' Furthermore, \code{wflow_use_github} will prompt you to request permission to
-#' perform the following steps:
+#' Furthermore, you have two options for creating the remote repository on GitHub.
+#' In an interactive R session, you will be prompted to choose one of the options
+#' below. To bypass the prompt, you can set the argument \code{create_on_github}.
 #'
 #' \itemize{
 #'
-#' \item (Optional) Creates the new repository on GitHub. If you accept, your
+#' \item 1. Have workflowr create the new repository on GitHub. If you accept, your
 #' browser will open for you to provide authorization. If you are not logged
 #' into GitHub, you will be prompted to login. Then you will be asked to give
 #' permission to the workflowr-oauth-app to create the new repository for you on
@@ -36,16 +38,17 @@
 #' machine, to create your new repository. Once \code{wflow_use_github}
 #' finishes, workflowr can no longer access your GitHub account.
 #'
-#' \item (Optional) Pushes the files to GitHub (via
-#' \code{\link{wflow_git_push}}). Don't worry if this step fails. If it does,
-#' run \code{git push origin master} in your terminal.
+#' \item 2. Create the remote repository yourself by going to
+#' \url{https://github.com/new} and entering the Repository name that matches
+#' the name of the directory of your workflowr project (if you used the argument
+#' \code{repository} to make it a different name, make sure to instead use that
+#' one).
 #'
 #' }
 #'
-#' If you choose to not allow workflowr to create the repository for you, then
-#' you will have to complete these final two steps manually. First, login to
-#' your account and create the new repository on GitHub. Second, run
-#' \code{wflow_git_push} in the R console or \code{git push origin master}.
+#' Once the GitHub repository has been created either by \code{wflow_use_github}
+#' or yourself, run \code{wflow_git_push} in the R console (or \code{git push
+#' origin master} in the terminal) to push your code to GitHub.
 #'
 #' @param username character (default: NULL). The GitHub account associated with
 #'   the GitHub repository. This is likely your personal GitHub username, but it
@@ -87,6 +90,30 @@
 #'   currently for internal use only. Please open an Issue if you'd like to use
 #'   this information.
 #'
+#' @section  Troubleshooting:
+#'
+#' The feature to automatically create the GitHub repository for you may fail
+#' since it involves using your web browser to authenticate with your GitHub
+#' account. If it fails for any reason, it'd probably be easier to manually
+#' login to GitHub and create the repository yourself
+#' (\href{https://help.github.com/articles/creating-a-new-repository/}{instructions from GitHub}).
+#' However, if you have time, please file an
+#' \href{https://github.com/jdblischak/workflowr/issues/new/choose}{Issue on
+#' GitHub} to report what happened, and importantly include which web browser
+#' you were using.
+#'
+#' We have observed the following problems before:
+#'
+#' \itemize{
+#'
+#' \item The green button to approve the authentication of the workflowr GitHub
+#' app to create the repository on your behalf is grayed out, and unable to be
+#' clicked. This is likely a JavaScript problem. Make sure you don't have
+#' JavaScript disabled in your web browser. Also, you can try using a different
+#' browser.
+#'
+#' }
+#'
 #' @seealso \code{\link{wflow_git_push}}, \code{\link{wflow_git_remote}},
 #'          \code{\link{wflow_use_gitlab}}
 #'
@@ -98,7 +125,8 @@
 #' wflow_git_push()
 #' }
 #'
-#'@export
+#' @importFrom httpuv startServer
+#' @export
 wflow_use_github <- function(username = NULL, repository = NULL,
                              navbar_link = TRUE,
                              create_on_github = NULL,
@@ -261,16 +289,27 @@ wflow_use_github <- function(username = NULL, repository = NULL,
   }
 
   if (is.null(create_on_github) && interactive()) {
+    cat("\nTo proceed, you have two options:\n")
+
     cat("\n", wrap(glue::glue(
-      "The GitHub repository {repository} can be automatically created for the
-      account {username} if you authorize workflowr to do so. This requires
+      "1. Have workflowr attempt to automatically create the repository \"{repository}\" on GitHub.
+      This requires
       logging into GitHub and enabling the workflowr-oauth-app access to the
-      account."
+      account \"{username}\"."
     )), "\n", sep = "")
-    ans <- readline(glue::glue(
-      "Enable workflowr to create {username}/{repository}? (y/n) "))
-    if (tolower(ans) == "y") {
+
+    cat("\n", wrap(glue::glue(
+      "2. Create the repository \"{repository}\" yourself by going to https://github.com/new and entering \"{repository}\" for the Repository name. This is the default option."
+    )), "\n", sep = "")
+
+    ans <- readline("\nEnter your choice (1 or 2): ")
+    if (ans == "1") {
       create_on_github <- TRUE
+      cat("You chose option 1: have workflowr attempt to create repo\n")
+    } else if (ans == "2") {
+      cat("You chose option 2: create the repo yourself\n")
+    } else {
+      cat("Invalid input. Defaulting to option 2: create the repo yourself\n")
     }
   }
 
@@ -287,7 +326,7 @@ wflow_use_github <- function(username = NULL, repository = NULL,
 
   o <- list(username = username, repository = repository,
             renamed = renamed, files_git = files_git, commit = commit,
-            config_remote = config_remote)
+            config_remote = config_remote, repo_created = repo_created)
   class(o) <- "wflow_use_github"
 
   if (!repo_created) {

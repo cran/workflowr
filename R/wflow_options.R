@@ -15,7 +15,8 @@ wflow_options <- function(file) {
                      seed = 12345,
                      github = get_host_from_remote(dirname(file)),
                      sessioninfo = "sessionInfo()",
-                     fig_path_ext = FALSE)
+                     fig_path_ext = FALSE,
+                     suppress_report = FALSE)
 
   # Get options from a potential _workflowr.yml file
   wflow_root <- try(rprojroot::find_root(rprojroot::has_file("_workflowr.yml"),
@@ -29,7 +30,14 @@ wflow_options <- function(file) {
     # If knit_root_dir is a relative path, interpret it as relative to the
     # location of _workflowr.yml
     if (!is.null(wflow_opts$knit_root_dir)) {
-      if (!fs::is_absolute_path(wflow_opts$knit_root_dir)) {
+      if (fs::is_absolute_path(wflow_opts$knit_root_dir)) {
+        m <-
+          "The value of knit_root_dir in _workflowr.yml is an absolute path.
+          This means that the workflowr project will only execute on your
+          current computer. To facilitate reproducibility on other machines,
+          change it to a relative path."
+        warning(wrap(m), call. = FALSE)
+      } else {
         wflow_opts$knit_root_dir <- absolute(file.path(wflow_root,
                                                        wflow_opts$knit_root_dir))
       }

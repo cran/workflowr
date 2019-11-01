@@ -21,6 +21,7 @@ git2r::config(r, user.name = "Test Name", user.email = "test@email")
 
 test_that("get_committed_files returns NA if no files have been committed", {
   expect_identical(workflowr:::get_committed_files(r), NA)
+  expect_identical(workflowr:::get_committed_files(r, sysgit = ""), NA)
 })
 
 # Commit some files in root commit
@@ -31,8 +32,8 @@ git2r::commit(r, message = "root commit")
 
 test_that("get_committed_files works on root commit", {
   expected <- f
-  actual <- workflowr:::get_committed_files(r)
-  expect_identical(actual, expected)
+  expect_identical(workflowr:::get_committed_files(r), expected)
+  expect_identical(workflowr:::get_committed_files(r, sysgit = ""), expected)
 })
 
 test_that("obtain_files_in_commit works on root commit", {
@@ -49,8 +50,8 @@ git2r::commit(r, message = "another commit")
 
 test_that("get_committed_files works on multiple commits", {
   expected <- c(f, f2)
-  actual <- workflowr:::get_committed_files(r)
-  expect_identical(actual, expected)
+  expect_identical(workflowr:::get_committed_files(r), expected)
+  expect_identical(workflowr:::get_committed_files(r, sysgit = ""), expected)
 })
 
 test_that("obtain_files_in_commit works on standard commit", {
@@ -59,14 +60,23 @@ test_that("obtain_files_in_commit works on standard commit", {
   expect_identical(actual, expected)
 })
 
+test_that("get_committed_files can be passed a specific commit", {
+  expected <- f
+  expect_identical(
+    workflowr:::get_committed_files(r, commit =  git2r::commits(r)[[2]]),
+    expected)
+  # Note: Testing with `sysgit = ""` is unnecessary here b/c libgit2 is always
+  # used to retreive the files present at a given commit.
+})
+
 # Remove a file
 git2r::rm_file(r, basename(f[1]))
 git2r::commit(r, message = "remove a file")
 
 test_that("get_committed_files stops reporting files after they are removed", {
   expected <- c(f[2], f2)
-  actual <- workflowr:::get_committed_files(r)
-  expect_identical(actual, expected)
+  expect_identical(workflowr:::get_committed_files(r), expected)
+  expect_identical(workflowr:::get_committed_files(r, sysgit = ""), expected)
 })
 
 test_that("obtain_files_in_commit reports a deleted file", {
@@ -101,10 +111,39 @@ test_that("check_git_lock throws error only when Git repository is locked", {
   r <- git2r::repository(path)
 
   expect_silent(workflowr:::check_git_lock(r))
-  index_lock <- file.path(workflowr:::git2r_workdir(r), ".git/index.lock")
+  index_lock <- file.path(git2r::workdir(r), ".git/index.lock")
   fs::file_create(index_lock)
   expect_error(workflowr:::check_git_lock(r), "The Git repository is locked")
   expect_error(workflowr:::check_git_lock(r), index_lock)
   fs::file_delete(index_lock)
   expect_silent(workflowr:::check_git_lock(r))
+})
+
+# Test commits(path) -----------------------------------------------------------
+
+test_that("commits(path) returns commits in reverse chronological order", {
+
+  # Uses the workflowr git log for testing
+  if (!git2r::in_repository()) skip("Requires the workflowr Git repository")
+
+  r <- git2r::repository()
+
+  first_commit <- git2r::commits(r, reverse = TRUE, n = 1)
+  if (length(first_commit) == 0) skip("Requires the workflowr Git repository")
+  first_sha <- first_commit[[1]]$sha
+  if (!first_sha == "dc396e923537ced01babc9f893e691dababee89b")
+    skip("Requires the workflowr Git repository")
+
+  files <- c("README.md", "vignettes/wflow-07-common-code.Rmd")
+  files <- file.path(git2r::workdir(r), files)
+
+  for (f in files) {
+    commits_path <- git2r::commits(r, path = f)
+    date <- vapply(commits_path, function(x) as.character(x$author$when),
+                   character(1))
+    date <- as.POSIXct(date)
+
+    expect_true(all(date[seq_len(length(date) - 1)] >= date[seq(2, length(date))]))
+  }
+
 })

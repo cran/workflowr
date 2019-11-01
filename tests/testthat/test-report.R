@@ -4,6 +4,109 @@ context("report")
 
 source("setup.R")
 
+# Test get_versions_df ---------------------------------------------------------
+
+# My previous mistake was converting git_time to character first, which stripped
+# it of its timezone information.
+test_that("Conversion of git_time to character string of date is correct", {
+
+  path <- fs::file_temp()
+  fs::dir_create(path)
+  on.exit(test_teardown(path))
+  r <- git2r::init(path)
+  git2r::config(r, user.name = "Test User", user.email = "testing")
+
+  f1 <- file.path(path, "f1.txt")
+  cat("line 1\n", file = f1)
+  git2r::add(r, f1)
+  c1 <- git2r::commit(r, "The first commit to f1")
+
+  expect_identical(
+    as.character(Sys.Date()),
+    as.character(as.Date(as.POSIXct(c1$author$when)))
+  )
+})
+
+test_that("get_versions_df returns data frame of commits for file(s)", {
+
+  path <- fs::file_temp()
+  fs::dir_create(path)
+  on.exit(test_teardown(path))
+  r <- git2r::init(path)
+  git2r::config(r, user.name = "Test User", user.email = "testing")
+
+  f1 <- file.path(path, "f1.txt")
+  f2 <- file.path(path, "f2.txt")
+
+  cat("line 1\n", file = f1)
+  git2r::add(r, f1)
+  c1 <- git2r::commit(r, "The first commit to f1")
+  Sys.sleep(1)
+
+  cat("line 1\n", file = f2)
+  git2r::add(r, f2)
+  c2 <- git2r::commit(r, "The first commit to f2")
+  Sys.sleep(1)
+
+  cat("line 2\n", file = f1, append = TRUE)
+  git2r::add(r, f1)
+  c3 <- git2r::commit(r, "The second commit to f1")
+  Sys.sleep(1)
+
+  cat("line 2\n", file = f2, append = TRUE)
+  git2r::add(r, f2)
+  c4 <- git2r::commit(r, "The second commit to f2")
+  Sys.sleep(1)
+
+  versions_f1 <- workflowr:::get_versions_df("f1.txt", r)
+
+  expect_true(all(versions_f1$File == "f1.txt"))
+  expect_identical(versions_f1$Version, c(c3$sha, c1$sha))
+  expect_true(all(versions_f1$Author == "Test User"))
+  expect_identical(
+    versions_f1$Date,
+    as.character(c(as.Date(as.POSIXct(c3$author$when)),
+                   as.Date(as.POSIXct(c1$author$when))))
+  )
+  expect_identical(versions_f1$Message, c(c3$message, c1$message))
+
+  versions_f2 <- workflowr:::get_versions_df("f2.txt", r)
+
+  expect_true(all(versions_f2$File == "f2.txt"))
+  expect_identical(versions_f2$Version, c(c4$sha, c2$sha))
+  expect_true(all(versions_f2$Author == "Test User"))
+  expect_identical(
+    versions_f2$Date,
+    as.character(c(as.Date(as.POSIXct(c4$author$when)),
+                   as.Date(as.POSIXct(c2$author$when))))
+  )
+  expect_identical(versions_f2$Message, c(c4$message, c2$message))
+
+  versions_f1_f2 <- workflowr:::get_versions_df(c("f1.txt", "f2.txt"), r)
+
+  expect_true(all(versions_f1_f2$File == c("f2.txt", "f1.txt", "f2.txt", "f1.txt")))
+  expect_identical(versions_f1_f2$Version, c(c4$sha, c3$sha, c2$sha, c1$sha))
+  expect_true(all(versions_f1_f2$Author == "Test User"))
+  expect_identical(
+    versions_f1_f2$Date,
+    as.character(c(as.Date(as.POSIXct(c4$author$when)),
+                   as.Date(as.POSIXct(c3$author$when)),
+                   as.Date(as.POSIXct(c2$author$when)),
+                   as.Date(as.POSIXct(c1$author$when))))
+  )
+  expect_identical(versions_f1_f2$Message, c(c4$message, c3$message,
+                                             c2$message, c1$message))
+
+  # Reversing the input file order should have no effect
+  versions_f2_f1 <- workflowr:::get_versions_df(c("f2.txt", "f1.txt"), r)
+  expect_identical(versions_f2_f1, versions_f1_f2)
+
+  expect_identical(workflowr:::get_versions_df("non-existent", r), data.frame())
+
+  expect_error(workflowr:::get_versions_df(f1, r),
+               "File paths must be relative")
+})
+
 # Test get_versions and get_versions_fig ---------------------------------------
 
 test_that("get_versions and get_versions_fig insert GitHub URL if available", {
@@ -35,13 +138,12 @@ test_that("get_versions and get_versions_fig insert GitHub URL if available", {
   }
 
   r <- git2r::repository(path)
-  blobs <- git2r::odb_blobs(r)
   output_dir <- workflowr:::get_output_dir(file.path(path, "analysis/"))
   github <- workflowr:::get_host_from_remote(path)
-  versions <- workflowr:::get_versions(input = rmd, output_dir, blobs, r, github)
+  versions <- workflowr:::get_versions(input = rmd, output_dir, r, github)
   expect_true(any(stringr::str_detect(versions, github)))
   fig <- file.path(output_dir, "figure", basename(rmd), "chunkname-1.png")
-  versions_fig <- get_versions_fig(fig, r, github)
+  versions_fig <- workflowr:::get_versions_fig(fig, r, github)
   expect_true(any(stringr::str_detect(versions_fig, github)))
 })
 
@@ -81,7 +183,7 @@ test_that("get_versions_fig converts spaces to dashes for HTML ID", {
 
   # The figure file without spaces should be displayed as normal
   fig <- file.path(output_dir, "figure", basename(rmd), "chunk-name-1.png")
-  versions_fig <- get_versions_fig(fig, r, github)
+  versions_fig <- workflowr:::get_versions_fig(fig, r, github)
   versions_fig_lines <- stringr::str_split(versions_fig, "\\n")[[1]]
   data_target <- stringr::str_subset(versions_fig_lines,
                                       'data-target=\"#fig-chunk-name-1\"')
@@ -96,7 +198,7 @@ test_that("get_versions_fig converts spaces to dashes for HTML ID", {
   # The figure file with spaces should be quoted and have spaces replaced with
   # dashes for data-target and id.
   fig <- file.path(output_dir, "figure", basename(rmd), "chunk name-1.png")
-  versions_fig <- get_versions_fig(fig, r, github)
+  versions_fig <- workflowr:::get_versions_fig(fig, r, github)
   versions_fig_lines <- stringr::str_split(versions_fig, "\\n")[[1]]
   data_target <- stringr::str_subset(versions_fig_lines,
                                      'data-target=\"#fig-no-spaces-chunk-name-1\"')
@@ -116,9 +218,12 @@ fs::dir_create(tmp_dir)
 tmp_dir <- workflowr:::absolute(tmp_dir)
 rmd <- file.path(tmp_dir, "file.Rmd")
 writeLines(letters, rmd)
+output_dir <- file.path(tmp_dir, "website")
+fs::dir_create(output_dir)
 
 test_that("check_vc reports lack of Git repo", {
-  observed <- workflowr:::check_vc(rmd, r = NULL, s = NULL, github = NA_character_)
+  observed <- workflowr:::check_vc(rmd, r = NULL, s = NULL,
+                                   github = NA_character_, output_dir = output_dir)
   expect_false(observed$pass)
   expect_identical(observed$summary,
                    "<strong>Repository version:</strong> no version control")
@@ -130,7 +235,8 @@ git2r::config(r, user.name = "Test Name", user.email = "test@email")
 s <- git2r::status(r, ignored = TRUE)
 
 test_that("check_vc reports Git repo even if no commits", {
-  observed <- workflowr:::check_vc(rmd, r = r, s = s, github = NA_character_)
+  observed <- workflowr:::check_vc(rmd, r = r, s = s, github = NA_character_,
+                                   output_dir = output_dir)
   expect_true(observed$pass)
   expect_identical(observed$summary,
                    "<strong>Repository version:</strong> No commits yet")
@@ -139,11 +245,12 @@ test_that("check_vc reports Git repo even if no commits", {
 workflowr:::git2r_add(r, rmd)
 git2r::commit(r, "Add rmd")
 s <- git2r::status(r, ignored = TRUE)
-current_commit <- git2r_slot(git2r::commits(r)[[1]], "sha")
+current_commit <- git2r::commits(r)[[1]]$sha
 commit_to_display <- workflowr:::shorten_sha(current_commit)
 
 test_that("check_vc reports Git repo", {
-  observed <- workflowr:::check_vc(rmd, r = r, s = s, github = NA_character_)
+  observed <- workflowr:::check_vc(rmd, r = r, s = s, github = NA_character_,
+                                   output_dir = output_dir)
   expect_true(observed$pass)
   expect_identical(observed$summary,
                    sprintf("<strong>Repository version:</strong> %s",
@@ -152,7 +259,8 @@ test_that("check_vc reports Git repo", {
 
 test_that("check_vc reports Git repo and can add GitHub URL", {
   github <- "https://github.com/jdblischak/workflowr"
-  observed <- workflowr:::check_vc(rmd, r = r, s = s, github = github)
+  observed <- workflowr:::check_vc(rmd, r = r, s = s, github = github,
+                                   output_dir = output_dir)
   expect_true(observed$pass)
   expect_identical(observed$summary,
                    sprintf("<strong>Repository version:</strong> <a href=\"%s/tree/%s\" target=\"_blank\">%s</a>",
@@ -169,7 +277,8 @@ test_that("check_vc ignores *html, *png, and site_libs", {
   site_libs_readme <- file.path(site_libs, "README.md")
   fs::file_create(site_libs_readme)
 
-  observed <- workflowr:::check_vc(rmd, r = r, s = s, github = NA_character_)
+  observed <- workflowr:::check_vc(rmd, r = r, s = s, github = NA_character_,
+                                   output_dir = output_dir)
 
   expect_true(observed$pass)
   expect_false(grepl(basename(fname_html), observed$details))
@@ -183,7 +292,8 @@ fs::file_create(rmd2)
 s <- git2r::status(r, ignored = TRUE)
 
 test_that("check_vc reports uncommitted Rmd files", {
-  observed <- workflowr:::check_vc(rmd, r = r, s = s, github = NA_character_)
+  observed <- workflowr:::check_vc(rmd, r = r, s = s, github = NA_character_,
+                                   output_dir = output_dir)
 
   expect_true(observed$pass)
   expect_true(grepl(basename(rmd2), observed$details))
@@ -412,7 +522,7 @@ test_that("create_report reports knit directory", {
   output_dir <- file.path(path, "docs")
   has_code <- TRUE
   opts <- list(seed = 1, github = NA, sessioninfo = "sessionInfo()",
-               fig_path_ext = FALSE)
+               fig_path_ext = FALSE, suppress_report = FALSE)
 
   # In the project root
   opts$knit_root_dir <- path
@@ -443,6 +553,12 @@ test_that("create_report reports knit directory", {
   report <- create_report(input, output_dir, has_code, opts)
   expected <- glue::glue("<code>{opts$knit_root_dir}/</code>")
   expect_true(stringr::str_detect(report, expected))
+
+  # Suppress the reports
+  opts$suppress_report <- TRUE
+  report <- create_report(input, output_dir, has_code, opts)
+  expected <- '<div id="workflowr-report" class="collapse">'
+  expect_false(stringr::str_detect(report, expected))
 })
 
 # Test detect_code -------------------------------------------------------------
@@ -910,4 +1026,162 @@ test_that("check_paths displays original formatting of Windows paths", {
   # that are difficult to reproduce.
   expect_silent(html <- rmarkdown::render(rmd, quiet = TRUE))
   expect_true(fs::file_exists(html))
+})
+
+# Test scrub_status ------------------------------------------------------------
+
+status_empty <- structure(
+  list(staged = structure(list(), .Names = character(0)),
+       unstaged = structure(list(), .Names = character(0)),
+       untracked = structure(list(), .Names = character(0))),
+  class = "git_status")
+
+
+
+
+test_that("scrub_status can return a clean working directory", {
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  r <- git2r::repository(path = path)
+  s <- git2r::status(r)
+  output_dir <- workflowr:::wflow_paths(project = path)$docs
+
+  observed <- workflowr:::scrub_status(s, r, output_dir = output_dir)
+  expected <- s
+  expect_identical(observed, expected)
+})
+
+test_that("scrub_status scrubs website directory when run outside project", {
+
+  skip_on_cran()
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  r <- git2r::repository(path = path)
+  output_dir <- workflowr:::wflow_paths(project = path)$docs
+  wflow_build(view = FALSE, project = path)
+  s <- git2r::status(r)
+
+  observed <- workflowr:::scrub_status(s, r, output_dir = output_dir)
+  expected <- status_empty
+  expect_identical(observed, expected)
+})
+
+test_that("scrub_status scrubs website directory when run from project root", {
+
+  skip_on_cran()
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  withr::local_dir(path)
+
+  r <- git2r::repository()
+  output_dir <- workflowr:::wflow_paths()$docs
+  wflow_build(view = FALSE)
+  s <- git2r::status(r)
+
+  observed <- workflowr:::scrub_status(s, r, output_dir = output_dir)
+  expected <- status_empty
+  expect_identical(observed, expected)
+})
+
+test_that("scrub_status scrubs website directory when run from project subdir", {
+
+  skip_on_cran()
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  withr::local_dir(file.path(path, "analysis"))
+
+  r <- git2r::repository()
+  output_dir <- workflowr:::wflow_paths()$docs
+  wflow_build(view = FALSE)
+  s <- git2r::status(r)
+
+  observed <- workflowr:::scrub_status(s, r, output_dir = output_dir)
+  expected <- status_empty
+  expect_identical(observed, expected)
+})
+
+test_that("scrub_status scrubs website directory when run from website subdir", {
+
+  skip_on_cran()
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  withr::local_dir(file.path(path, "docs"))
+
+  r <- git2r::repository()
+  output_dir <- workflowr:::wflow_paths()$docs
+  wflow_build(view = FALSE)
+  s <- git2r::status(r)
+
+  observed <- workflowr:::scrub_status(s, r, output_dir = output_dir)
+  expected <- status_empty
+  expect_identical(observed, expected)
+})
+
+
+test_that("scrub_status can remove ignored files", {
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  r <- git2r::repository(path = path)
+  output_dir <- workflowr:::wflow_paths(project = path)$docs
+
+  ignored <- file.path(path, "ignored.txt")
+  fs::file_create(ignored)
+  cat("ignored*\n", file = file.path(path, ".gitignore"), append = TRUE)
+  s <- git2r::status(r, ignored = TRUE)
+
+  observed_include_ignore <- workflowr:::scrub_status(s, r, output_dir = output_dir)
+  expected_include_ignore <- s
+  expect_identical(observed_include_ignore, expected_include_ignore)
+
+  observed_remove_ignore <- workflowr:::scrub_status(s, r, output_dir = output_dir,
+                                                     remove_ignored = TRUE)
+  expected_remove_ignore <- structure(
+    list(staged = structure(list(), .Names = character(0)),
+    unstaged = list(modified = ".gitignore"),
+    untracked = structure(list(), .Names = character(0))),
+    class = "git_status")
+  expect_identical(observed_remove_ignore, expected_remove_ignore)
+})
+
+test_that("scrub_status preserves non-website files", {
+
+  skip_on_cran()
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  r <- git2r::repository(path = path)
+  output_dir <- workflowr:::wflow_paths(project = path)$docs
+
+  index <- file.path(path, "analysis", "index.Rmd")
+  cat("edit\n", file = index, append = TRUE)
+  wflow_build(index, view = FALSE, project = path)
+  s <- git2r::status(r)
+
+  observed <- workflowr:::scrub_status(s, r, output_dir = output_dir)
+  expected <- structure(
+    list(staged = structure(list(), .Names = character(0)),
+    unstaged = list(modified = "analysis/index.Rmd"),
+    untracked = structure(list(), .Names = character(0))),
+    class = "git_status")
+  expect_identical(observed, expected)
 })

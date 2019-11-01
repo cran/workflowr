@@ -16,6 +16,11 @@
 # non-existing.
 #
 obtain_existing_path <- function(path) {
+  if (length(path) > 1) stop("Invalid input: the vector should only have element")
+  if (is.null(path)) stop("Invalid input: NULL")
+  if (is.na(path)) stop("Invalid input: NA")
+  if (!is.character(path)) stop("Invalid input: ", path)
+
   if (fs::dir_exists(path)) {
     return(absolute(path))
   } else {
@@ -70,7 +75,11 @@ absolute <- function(path) {
   # Ensure Windows Drive is uppercase
   newpath <- toupper_win_drive(newpath)
   # Resolve symlinks
-  newpath <- resolve_symlink(newpath)
+  if (.Platform$OS.type == "windows") {
+    newpath <- resolve_symlink(newpath)
+  } else {
+    newpath <- fs::path_real(newpath)
+  }
   newpath <- as.character(newpath)
 
   return(newpath)
@@ -379,4 +388,31 @@ check_browser <- function() {
   if (nchar(browser_opt) > 0) return(TRUE)
 
   return(FALSE)
+}
+
+# Only return the first line of a multi-line string(s)
+get_first_line <- function(x) {
+  split <- stringr::str_split(x, "\n")
+  first_lines <- vapply(split, function(x) x[1], character(1))
+  return(first_lines)
+}
+
+# Check for `site: workflowr::wflow_site` in index.Rmd
+check_site_generator <- function(index) {
+  if (!fs::file_exists(index))
+    stop(glue::glue("Unable to find index.Rmd. Expected to find {index}"),
+         call. = FALSE)
+
+  header <- rmarkdown::yaml_front_matter(index)
+
+  if (is.null(header$site)) return(FALSE)
+
+  if (header$site == "workflowr::wflow_site") return(TRUE)
+
+  return(FALSE)
+}
+
+is_rmd <- function(path) {
+  extensions <- fs::path_ext(path)
+  stringr::str_detect(extensions, "^[Rr]md$")
 }

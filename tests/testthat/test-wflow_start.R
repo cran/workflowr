@@ -119,9 +119,14 @@ test_that("wflow_start commits all the project files", {
   # Rproj file
   expect_true(file.path(site_dir, paste0(basename(site_dir), ".Rproj")) %in% committed)
   # hidden files
+  expect_true(file.path(site_dir, ".gitattributes") %in% committed)
   expect_true(file.path(site_dir, ".gitignore") %in% committed)
   expect_true(file.path(site_dir, ".Rprofile") %in% committed)
   expect_true(file.path(site_dir, "docs/.nojekyll") %in% committed)
+  # note: I'm pretty sure the above tests for hidden files are no longer
+  # necessary now that wflow_start() uses the list `templates` instead of actual
+  # files. But they are a useful regression check in case I return to a
+  # file-based strategy.
 
   unlink(site_dir, recursive = TRUE, force = TRUE)
 })
@@ -480,10 +485,10 @@ test_that("print.wflow_start works with change_wd = FALSE", {
   expect_identical(p_actual_run[4],
                    paste("- Working directory continues to be", getwd()))
   expect_identical(p_actual_run[5],
-                   paste("- Git repo initiated at", git2r_workdir(r)))
+                   paste("- Git repo initiated at", git2r::workdir(r)))
   expect_identical(p_actual_run[6],
                    paste("- Files were committed in version",
-                         workflowr:::shorten_sha(git2r::branch_target(git2r_head(r)))))
+                         workflowr:::shorten_sha(git2r::branch_target(git2r::repository_head(r)))))
 })
 
 test_that("print.wflow_start works with change_wd = FALSE and git = FALSE", {
@@ -554,10 +559,10 @@ test_that("print.wflow_start works with change_wd = FALSE and existing = TRUE", 
   expect_identical(p_actual_run[4],
                    paste("- Working directory continues to be", getwd()))
   expect_identical(p_actual_run[5],
-                   paste("- Git repo initiated at", git2r_workdir(r)))
+                   paste("- Git repo initiated at", git2r::workdir(r)))
   expect_identical(p_actual_run[6],
                    paste("- Files were committed in version",
-                         workflowr:::shorten_sha(git2r::branch_target(git2r_head(r)))))
+                         workflowr:::shorten_sha(git2r::branch_target(git2r::repository_head(r)))))
 })
 
 test_that("print.wflow_start works with existing Git repo", {
@@ -585,7 +590,7 @@ test_that("print.wflow_start works with existing Git repo", {
   expect_identical(p_dry_run[4],
                    paste("- Working directory will continue to be", getwd()))
   expect_identical(p_dry_run[5],
-                   paste("- Git repo already present at", git2r_workdir(r)))
+                   paste("- Git repo already present at", git2r::workdir(r)))
   expect_identical(p_dry_run[6], "- Files will be committed with Git")
 
   # Actual run
@@ -599,10 +604,10 @@ test_that("print.wflow_start works with existing Git repo", {
   expect_identical(p_actual_run[4],
                    paste("- Working directory continues to be", getwd()))
   expect_identical(p_actual_run[5],
-                   paste("- Git repo already present at", git2r_workdir(r)))
+                   paste("- Git repo already present at", git2r::workdir(r)))
   expect_identical(p_actual_run[6],
                    paste("- Files were committed in version",
-                         workflowr:::shorten_sha(git2r::branch_target(git2r_head(r)))))
+                         workflowr:::shorten_sha(git2r::branch_target(git2r::repository_head(r)))))
 })
 
 test_that("print.wflow_start works with change_wd = TRUE", {
@@ -641,8 +646,8 @@ test_that("print.wflow_start works with change_wd = TRUE", {
   expect_identical(p_actual_run[4],
                    paste("- Working directory changed to", tmp_dir))
   expect_identical(p_actual_run[5],
-                   paste("- Git repo initiated at", git2r_workdir(r)))
+                   paste("- Git repo initiated at", git2r::workdir(r)))
   expect_identical(p_actual_run[6],
                    paste("- Files were committed in version",
-                         workflowr:::shorten_sha(git2r::branch_target(git2r_head(r)))))
+                         workflowr:::shorten_sha(git2r::branch_target(git2r::repository_head(r)))))
 })

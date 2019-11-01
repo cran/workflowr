@@ -107,6 +107,92 @@ get pushed to GitHub):
 1. Run `wflow_publish()` on the R Markdown file that contains the external
 image file(s)
 
+## How can I save a figure in a vector graphics format (e.g. PDF)?
+
+The default file format is PNG. This is ideal for displaying figure files on a
+web page. However, you might need to import a figure into a vector graphics
+editor (e.g. Illustrator, Inkscape) for final editing for a manuscript. There
+are multiple options for achieving this.
+
+One option is to switch to the file format SVG. It is a vector graphics format
+that is also well supported by web browsers. The code chunk below saves the
+figure file as an SVG:
+
+````
+```{r plot-for-paper, dev='svg'}`r ''`
+library(ggplot2)
+data(mtcars)
+p <- ggplot(mtcars, aes(x = mpg, y = disp)) + geom_point()
+p
+```
+````
+
+To apply this to every figure file in a particular document, you can create a
+"setup" chunk at the beginning of the document that sets the [knitr chunk
+option](https://yihui.name/knitr/options/) globally:
+
+````
+```{r setup, dev='svg'}`r ''`
+knitr::opts_chunk$set(dev = 'svg')
+```
+````
+
+Another option is to simultaneously create a PNG for display in the web page and
+a PDF for further editing. The example code below saves both a PNG and PDF
+version of the figure, but inserts the PNG into the web page:
+
+````
+```{r plot-for-paper, dev=c('png', 'pdf')}`r ''`
+library(ggplot2)
+data(mtcars)
+p <- ggplot(mtcars, aes(x = mpg, y = disp)) + geom_point()
+p
+```
+````
+
+The main advantage of the above approaches is that the figure files are still
+saved in an organized fashion (i.e. the file path is still something like
+`docs/figure/file.Rmd/chunk-name.ext`). Furthermore, `wflow_publish()` will
+automatically version the figure files regardless of the file extension.
+
+A similar option to the one above is to have two separate code chunks. The
+advantage of this more verbose option is that you can specify different chunk
+names (and thus different filenames) and also set different `fig.width` and
+`fig.height` for the website and paper versions. By setting `include=FALSE` for
+the second chunk, neither the code nor the PDF figure file is displayed in the
+web page.
+
+````
+```{r plot-for-paper}`r ''`
+library(ggplot2)
+data(mtcars)
+p <- ggplot(mtcars, aes(x = mpg, y = disp)) + geom_point()
+p
+```
+````
+
+````
+```{r figure1A, include=FALSE, dev='pdf', fig.height=3, fig.width=9}`r ''`
+p
+```
+````
+
+However, for the most control, you can always save the figure manually, e.g.
+using `ggsave()`. For example, the example chunk below creates a 10x10 inch PNG
+file that is automatically versioned by workflowr, but also uses `ggsave()` to
+save a 5x5 inch PDF file in the subdirectory `paper/` (which would need to be
+manually committed by the user, e.g. with `wflow_git_commit()`):
+
+````
+```{r plot-for-paper, fig.width=10, fig.height=10}`r ''`
+library(ggplot2)
+data(mtcars)
+p <- ggplot(mtcars, aes(x = mpg, y = disp)) + geom_point()
+p
+ggsave("paper/plot-to-edit.pdf", width = 5, height = 5)
+```
+````
+
 ## Can I include Shiny apps in my website?
 
 No, at least not in the standard setup. The website is hosted with GitHub pages,
@@ -123,6 +209,30 @@ Almost certainly yes, but some things are easier to customize than others. The
 vignette [Customize your research website](wflow-02-customization.html) provides
 some ideas that are simple to implement. Check out the documentation for
 [rmarkdown][] and [Twitter Bootstrap][Bootstrap] for inspiration.
+
+## How can I suppress the workflowr report?
+
+To suppress the insertion of the workflowr report for all of the files in your
+project, activate the option `suppress_report` in the `_workflowr.yml` file by
+adding the following line:
+
+```
+suppress_report: TRUE
+```
+
+And then republishing your project:
+
+```
+wflow_publish("_workflowr.yml", republish = TRUE)
+```
+
+To suppress the workflowr report only for a specific file, add the following
+lines to its YAML header:
+
+```
+workflowr:
+  suppress_report: TRUE
+```
 
 ## Why am I not getting the same result with wflow_build() as with the RStudio Knit HTML button?
 
@@ -284,8 +394,15 @@ output:
 
 ## How should I pronounce and spell workflowr?
 
-You can say "workflowr + er" or "workflowr + R", whichever is more natural to
-you.
+There are multiple options for pronouncing workflowr:
+
+1. workflow + er
+1. workflow + R
+1. work + flower
+
+I (John) started primarily saying "workflow + er" but have more recently
+transitioned to saying "workflow + R" more often. You can choose whichever is
+most natural to you.
 
 Workflowr should be capitalized at the beginning of a sentence, but otherwise
 the lowercase workflowr should be the preferred option.

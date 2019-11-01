@@ -1,5 +1,9 @@
 context("utility")
 
+# Setup ------------------------------------------------------------------------
+
+source("setup.R")
+
 # Test to_html -----------------------------------------------------------------
 
 test_that("to_html converts file extension Rmd", {
@@ -308,7 +312,7 @@ test_that("relative handles NA and NULL with Windows drives", {
   expect_identical(actual, expected)
 })
 
-# Test resolve_symlink ---------------------------------------------------------
+# Test ability to resolve symlinks ---------------------------------------------
 
 test_that("absolute can resolve symlinks", {
   link <- workflowr:::absolute(tempfile())
@@ -331,6 +335,20 @@ test_that("relative can resolve symlinks", {
   nonexist <- file.path(link, "x/y/z")
   expect_equal(workflowr:::relative(nonexist), "x/y/z")
 })
+
+# Explicitly test resolve_symlink on all platforms (currently only used on
+# Windows)
+test_that("resolve_symlink can resolve symlinks", {
+  link <- workflowr:::absolute(tempfile())
+  target <- workflowr:::absolute(".")
+  on.exit(fs::link_delete(link))
+  fs::link_create(target, link)
+  expect_equal(workflowr:::resolve_symlink(link), target)
+  # Non-existent path
+  nonexist <- file.path(link, "x/y/z")
+  expect_equal(workflowr:::resolve_symlink(nonexist), file.path(target, "x/y/z"))
+})
+
 
 # Test toupper_win_drive -------------------------------------------------------
 
@@ -600,4 +618,78 @@ test_that("check_browser returns FALSE for invalid browser options", {
                       expect_false(workflowr:::check_browser()))
   withr::with_options(list(browser = ""),
                       expect_false(workflowr:::check_browser()))
+})
+
+# Test get_first_line ----------------------------------------------------------
+
+test_that("get_first_line returns the first line", {
+  messages <- c(
+    "Only has 1 line",
+    "Short title
+    line 2
+    line 3",
+    "This is a much longer title as you can observe by its length...
+
+    some more notes"
+  )
+
+  observed <- workflowr:::get_first_line(messages)
+  expect_identical(observed, c("Only has 1 line", "Short title",
+                               "This is a much longer title as you can observe by its length..."))
+})
+
+# Test check_site_generator ----------------------------------------------------
+
+test_that("check_site_generator checks for wflow_site", {
+  index <- fs::file_temp(ext = ".Rmd")
+  expect_error(
+    workflowr:::check_site_generator(index),
+    "Unable to find index.Rmd"
+  )
+
+  fs::file_create(index)
+  on.exit(fs::file_delete(index))
+
+  expect_false(workflowr:::check_site_generator(index))
+
+  writeLines(c("---", "site: workflowr::wflow_site", "---"), con = index)
+  expect_true(workflowr:::check_site_generator(index))
+
+  writeLines(c("---", "site: rmarkdown::default_site_generator", "---"), con = index)
+  expect_false(workflowr:::check_site_generator(index))
+})
+
+test_that("check_site_generator generates warning from wflow_build", {
+
+  skip_on_cran()
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  index <- file.path(path, "analysis", "index.Rmd")
+  writeLines(c("---", "output: workflowr::wflow_html", "---"), con = index)
+  expect_warning(
+    wflow_build(index, view = FALSE, project = path),
+    "Missing workflowr-specific site generator."
+  )
+})
+
+# Test is_rmd ------------------------------------------------------------------
+
+test_that("is_rmd distinguishes between Rmd and non-Rmd files", {
+  expect_identical(workflowr:::is_rmd("file.Rmd"), TRUE)
+  expect_identical(workflowr:::is_rmd("file.rmd"), TRUE)
+  expect_identical(workflowr:::is_rmd(c("file.Rmd", "file.rmd")), c(TRUE, TRUE))
+
+  expect_identical(workflowr:::is_rmd("file.md"), FALSE)
+  expect_identical(workflowr:::is_rmd("file.RRmd"), FALSE)
+  expect_identical(workflowr:::is_rmd("file.Rrmd"), FALSE)
+  expect_identical(workflowr:::is_rmd("file.rrmd"), FALSE)
+  expect_identical(workflowr:::is_rmd("file.MRmd"), FALSE)
+
+  expect_identical(
+    workflowr:::is_rmd(c("path/to/file.md", "path/to/file.Rmd",
+                         "path/to/file.Rrmd", "path/to/file.rmd")),
+    c(FALSE, TRUE, FALSE, TRUE))
 })

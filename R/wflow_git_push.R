@@ -42,10 +42,10 @@
 #' @param set_upstream logical (default: TRUE). Set the current local branch to
 #'   track the remote branch if it isn't already tracking one. This is likely
 #'   what you want. Equivalent to: \code{git push -u remote branch}
-#' @param view logical (default: TRUE). Open the URL to the repository in the
-#'   browser. Ignored if \code{dry_run = TRUE}. Also note that this only works
-#'   if the option \code{browser} is set, which you can check with
-#'   \code{getOption("browser")}.
+#' @param view logical (default: \code{getOption("workflowr.view")}). Open the
+#'   URL to the repository in the browser. Ignored if \code{dry_run = TRUE}.
+#'   Also note that this only works if the option \code{browser} is set, which
+#'   you can check with \code{getOption("browser")}.
 #' @param dry_run logical (default: FALSE). Preview the proposed action but do
 #'   not actually push to the remote repository.
 #' @param project character (default: ".") By default the function assumes the
@@ -89,7 +89,8 @@
 #' @export
 wflow_git_push <- function(remote = NULL, branch = NULL, username = NULL,
                            password = NULL, force = FALSE, set_upstream = TRUE,
-                           view = TRUE, dry_run = FALSE, project = ".") {
+                           view = getOption("workflowr.view"), dry_run = FALSE,
+                           project = ".") {
 
   # Check input arguments ------------------------------------------------------
 
@@ -131,7 +132,7 @@ wflow_git_push <- function(remote = NULL, branch = NULL, username = NULL,
   # Must be using Git
   p <- wflow_paths(error_git = TRUE, project = project)
   r <- git2r::repository(path = p$git)
-  git_head <- git2r_head(r)
+  git_head <- git2r::repository_head(r)
   remote_avail <- wflow_git_remote(verbose = FALSE, project = project)
 
   # Fail early if HEAD does not point to a branch
@@ -148,7 +149,7 @@ wflow_git_push <- function(remote = NULL, branch = NULL, username = NULL,
 
   # Send warning if the remote branch is not the same one as local branch (HEAD)
   warn_branch_mismatch(remote_branch = branch,
-                       local_branch = git2r_slot(git_head, "name"))
+                       local_branch = git_head$name)
 
   # Determine protocol ---------------------------------------------------------
 
@@ -179,7 +180,7 @@ wflow_git_push <- function(remote = NULL, branch = NULL, username = NULL,
   if (!dry_run) {
     # First check for and execute any pre-push hooks. libgit2 does not support
     # this. Only supported on unix-alike systems.
-    pre_push_file <- file.path(git2r_workdir(r), ".git/hooks/pre-push")
+    pre_push_file <- file.path(git2r::workdir(r), ".git/hooks/pre-push")
     pre_push_file_rel <- fs::path_rel(pre_push_file, start = getwd())
     if (fs::file_exists(pre_push_file) && .Platform$OS.type != "windows") {
       message(glue::glue("Executing pre-push hook in {pre_push_file_rel}"))
@@ -231,7 +232,7 @@ wflow_git_push <- function(remote = NULL, branch = NULL, username = NULL,
              }
     )
     # Set upstream tracking branch if it doesn't exist and `set_upstream=TRUE`
-    local_branch_object <- git2r_head(r)
+    local_branch_object <- git2r::repository_head(r)
     if (is.null(git2r::branch_get_upstream(local_branch_object)) && set_upstream) {
       git2r::branch_set_upstream(branch = local_branch_object,
                                  name = paste(remote, branch, sep = "/"))

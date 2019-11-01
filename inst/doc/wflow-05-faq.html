@@ -7,12 +7,13 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <meta name="author" content="John Blischak" />
 
-<meta name="date" content="2019-06-08" />
+<meta name="date" content="2019-10-31" />
 
 <title>Frequently asked questions</title>
 
@@ -70,7 +71,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -94,9 +95,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Frequently asked questions</h1>
-<h3 class="subtitle">workflowr version 1.4.0</h3>
+<h3 class="subtitle">workflowr version 1.5.0</h3>
 <h4 class="author">John Blischak</h4>
-<h4 class="date">2019-06-08</h4>
+<h4 class="date">2019-10-31</h4>
 
 
 <div id="TOC">
@@ -104,8 +105,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><a href="#why-isnt-my-website-displaying-online">Why isn’t my website displaying online?</a></li>
 <li><a href="#can-i-make-my-workflowr-website-private">Can I make my workflowr website private?</a></li>
 <li><a href="#how-can-i-include-external-images-in-my-website">How can I include external images in my website?</a></li>
+<li><a href="#how-can-i-save-a-figure-in-a-vector-graphics-format-e.g.pdf">How can I save a figure in a vector graphics format (e.g. PDF)?</a></li>
 <li><a href="#can-i-include-shiny-apps-in-my-website">Can I include Shiny apps in my website?</a></li>
 <li><a href="#can-i-change-x-on-my-website">Can I change “X” on my website?</a></li>
+<li><a href="#how-can-i-suppress-the-workflowr-report">How can I suppress the workflowr report?</a></li>
 <li><a href="#why-am-i-not-getting-the-same-result-with-wflow_build-as-with-the-rstudio-knit-html-button">Why am I not getting the same result with wflow_build() as with the RStudio Knit HTML button?</a></li>
 <li><a href="#can-i-share-workflowr-websites-directly-with-collaborators-in-a-secure-fashion">Can I share workflowr websites directly with collaborators in a secure fashion?</a></li>
 <li><a href="#can-i-password-protect-my-website">Can I password-protect my website?</a></li>
@@ -154,6 +157,47 @@ wflow_git_commit(&quot;docs/assets/*.png&quot;, &quot;Add external images of ...
 <li><p>Run <code>wflow_publish()</code> on the R Markdown file that contains the external image file(s)</p></li>
 </ol>
 </div>
+<div id="how-can-i-save-a-figure-in-a-vector-graphics-format-e.g.pdf" class="section level2">
+<h2>How can I save a figure in a vector graphics format (e.g. PDF)?</h2>
+<p>The default file format is PNG. This is ideal for displaying figure files on a web page. However, you might need to import a figure into a vector graphics editor (e.g. Illustrator, Inkscape) for final editing for a manuscript. There are multiple options for achieving this.</p>
+<p>One option is to switch to the file format SVG. It is a vector graphics format that is also well supported by web browsers. The code chunk below saves the figure file as an SVG:</p>
+<pre><code>```{r plot-for-paper, dev='svg'}
+library(ggplot2)
+data(mtcars)
+p &lt;- ggplot(mtcars, aes(x = mpg, y = disp)) + geom_point()
+p
+```</code></pre>
+<p>To apply this to every figure file in a particular document, you can create a “setup” chunk at the beginning of the document that sets the <a href="https://yihui.name/knitr/options/">knitr chunk option</a> globally:</p>
+<pre><code>```{r setup, dev='svg'}
+knitr::opts_chunk$set(dev = 'svg')
+```</code></pre>
+<p>Another option is to simultaneously create a PNG for display in the web page and a PDF for further editing. The example code below saves both a PNG and PDF version of the figure, but inserts the PNG into the web page:</p>
+<pre><code>```{r plot-for-paper, dev=c('png', 'pdf')}
+library(ggplot2)
+data(mtcars)
+p &lt;- ggplot(mtcars, aes(x = mpg, y = disp)) + geom_point()
+p
+```</code></pre>
+<p>The main advantage of the above approaches is that the figure files are still saved in an organized fashion (i.e. the file path is still something like <code>docs/figure/file.Rmd/chunk-name.ext</code>). Furthermore, <code>wflow_publish()</code> will automatically version the figure files regardless of the file extension.</p>
+<p>A similar option to the one above is to have two separate code chunks. The advantage of this more verbose option is that you can specify different chunk names (and thus different filenames) and also set different <code>fig.width</code> and <code>fig.height</code> for the website and paper versions. By setting <code>include=FALSE</code> for the second chunk, neither the code nor the PDF figure file is displayed in the web page.</p>
+<pre><code>```{r plot-for-paper}
+library(ggplot2)
+data(mtcars)
+p &lt;- ggplot(mtcars, aes(x = mpg, y = disp)) + geom_point()
+p
+```</code></pre>
+<pre><code>```{r figure1A, include=FALSE, dev='pdf', fig.height=3, fig.width=9}
+p
+```</code></pre>
+<p>However, for the most control, you can always save the figure manually, e.g. using <code>ggsave()</code>. For example, the example chunk below creates a 10x10 inch PNG file that is automatically versioned by workflowr, but also uses <code>ggsave()</code> to save a 5x5 inch PDF file in the subdirectory <code>paper/</code> (which would need to be manually committed by the user, e.g. with <code>wflow_git_commit()</code>):</p>
+<pre><code>```{r plot-for-paper, fig.width=10, fig.height=10}
+library(ggplot2)
+data(mtcars)
+p &lt;- ggplot(mtcars, aes(x = mpg, y = disp)) + geom_point()
+p
+ggsave(&quot;paper/plot-to-edit.pdf&quot;, width = 5, height = 5)
+```</code></pre>
+</div>
 <div id="can-i-include-shiny-apps-in-my-website" class="section level2">
 <h2>Can I include Shiny apps in my website?</h2>
 <p>No, at least not in the standard setup. The website is hosted with GitHub pages, which only supports static web pages. Shiny apps are dynamic, i.e. a user can interact with them to change the content. The easiest way to share your Shiny app would be to host it at <a href="http://www.shinyapps.io/">shinyapps.io</a> and add a link to your app on your workflowr website. Alternatively you could host your workflowr website on your own server, but that would require much more knowledge and resources to accomplish.</p>
@@ -161,6 +205,16 @@ wflow_git_commit(&quot;docs/assets/*.png&quot;, &quot;Add external images of ...
 <div id="can-i-change-x-on-my-website" class="section level2">
 <h2>Can I change “X” on my website?</h2>
 <p>Almost certainly yes, but some things are easier to customize than others. The vignette <a href="wflow-02-customization.html">Customize your research website</a> provides some ideas that are simple to implement. Check out the documentation for <a href="http://rmarkdown.rstudio.com/">rmarkdown</a> and <a href="http://getbootstrap.com/">Twitter Bootstrap</a> for inspiration.</p>
+</div>
+<div id="how-can-i-suppress-the-workflowr-report" class="section level2">
+<h2>How can I suppress the workflowr report?</h2>
+<p>To suppress the insertion of the workflowr report for all of the files in your project, activate the option <code>suppress_report</code> in the <code>_workflowr.yml</code> file by adding the following line:</p>
+<pre><code>suppress_report: TRUE</code></pre>
+<p>And then republishing your project:</p>
+<pre><code>wflow_publish(&quot;_workflowr.yml&quot;, republish = TRUE)</code></pre>
+<p>To suppress the workflowr report only for a specific file, add the following lines to its YAML header:</p>
+<pre><code>workflowr:
+  suppress_report: TRUE</code></pre>
 </div>
 <div id="why-am-i-not-getting-the-same-result-with-wflow_build-as-with-the-rstudio-knit-html-button" class="section level2">
 <h2>Why am I not getting the same result with wflow_build() as with the RStudio Knit HTML button?</h2>
@@ -234,10 +288,19 @@ output:
 </div>
 <div id="how-should-i-pronounce-and-spell-workflowr" class="section level2">
 <h2>How should I pronounce and spell workflowr?</h2>
-<p>You can say “workflowr + er” or “workflowr + R”, whichever is more natural to you.</p>
+<p>There are multiple options for pronouncing workflowr:</p>
+<ol style="list-style-type: decimal">
+<li>workflow + er</li>
+<li>workflow + R</li>
+<li>work + flower</li>
+</ol>
+<p>I (John) started primarily saying “workflow + er” but have more recently transitioned to saying “workflow + R” more often. You can choose whichever is most natural to you.</p>
 <p>Workflowr should be capitalized at the beginning of a sentence, but otherwise the lowercase workflowr should be the preferred option.</p>
 </div>
 
+
+
+<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

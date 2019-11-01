@@ -17,7 +17,7 @@ r <- repository(p$root)
 # Test check_branch ------------------------------------------------------------
 
 test_that("check_branch passes if HEAD points to a branch", {
-  git_head <- git2r_head(r)
+  git_head <- git2r::repository_head(r)
   expect_silent(check_branch(git_head))
 })
 
@@ -25,7 +25,7 @@ test_that("check_branch fails if HEAD does *not* point to a branch", {
   latest_commit <- commits(r)[[1]]
   checkout(latest_commit)
   on.exit(checkout(r, branch = "master"))
-  git_head <- git2r_head(r)
+  git_head <- git2r::repository_head(r)
   expect_error(check_branch(git_head), "You are not currently on any branch")
 })
 
@@ -73,20 +73,20 @@ test_that("determine_remote_and_branch does nothing if both are specified", {
 
 test_that("determine_remote_and_branch uses the name of the current branch if branch not specified", {
   result <- determine_remote_and_branch(r, remote = "x", branch = NULL)
-  expect_true(result$branch == git2r_slot(git2r_head(r), "name"))
+  expect_true(result$branch == git2r::repository_head(r)$name)
   checkout(r, branch = "test", create = TRUE)
   on.exit(checkout(r, branch = "master"))
   result <- determine_remote_and_branch(r, remote = "x", branch = NULL)
-  expect_true(result$branch == git2r_slot(git2r_head(r), "name"))
+  expect_true(result$branch == git2r::repository_head(r)$name)
 })
 
 test_that("determine_remote_and_branch uses the name of the current branch if branch not specified", {
   result <- determine_remote_and_branch(r, remote = "x", branch = NULL)
-  expect_true(result$branch == git2r_slot(git2r_head(r), "name"))
+  expect_true(result$branch == git2r::repository_head(r)$name)
   checkout(r, branch = "test", create = TRUE)
   on.exit(checkout(r, branch = "master"))
   result <- determine_remote_and_branch(r, remote = "x", branch = NULL)
-  expect_true(result$branch == git2r_slot(git2r_head(r), "name"))
+  expect_true(result$branch == git2r::repository_head(r)$name)
 })
 
 test_that("determine_remote_and_branch uses the only remote if it is not specified", {
@@ -163,8 +163,8 @@ test_that("authenticate_git can create HTTPS credentials", {
   cred <- authenticate_git(protocol = "https",
                            username = "fakeuser", password = "fakepass")
   expect_true(class(cred) == "cred_user_pass")
-  expect_true(git2r_slot(cred, "username") == "fakeuser")
-  expect_true(git2r_slot(cred, "password") == "fakepass")
+  expect_true(cred$username == "fakeuser")
+  expect_true(cred$password == "fakepass")
 })
 
 test_that("authenticate_git returns NULL for SSH remotes", {
@@ -295,6 +295,11 @@ test_that("prints correctly from merge commit", {
 })
 
 test_that("prints correctly from merge conflict", {
+
+  # Merge conflict due to unknown cause (committed, staged, or unstaged changes).
+  # Pull aborted.
+  # fail=TRUE
+  # conflicts=TRUE
   m <- structure(list(
     up_to_date = FALSE,
     fast_forward = FALSE,
@@ -303,9 +308,43 @@ test_that("prints correctly from merge conflict", {
     .Names = c("up_to_date", "fast_forward", "conflicts", "sha"),
     class = "git_merge_result")
 
-  o <- list(remote = "remote", branch = "branch", username = "username",
-            merge_result = m, dry_run = FALSE)
+    o <- list(remote = "remote", branch = "branch", username = "username",
+            merge_result = m, fail = TRUE, dry_run = FALSE)
   class(o) <- "wflow_git_pull"
 
-  expect_output(print(o), "There were conflicts")
+  expect_output(print(o), "No changes were made")
+
+  # Merge conflict due to committed changes
+  # fail=FALSE
+  # conflicts=TRUE
+  m <- structure(list(
+    up_to_date = FALSE,
+    fast_forward = FALSE,
+    conflicts = TRUE,
+    sha = NA_character_),
+    .Names = c("up_to_date", "fast_forward", "conflicts", "sha"),
+    class = "git_merge_result")
+
+    o <- list(remote = "remote", branch = "branch", username = "username",
+            merge_result = m, fail = FALSE, dry_run = FALSE)
+  class(o) <- "wflow_git_pull"
+
+  expect_output(print(o), "Git from the Terminal")
+
+  # Merge conflict due to unstaged or staged changes
+  # fail=FALSE
+  # conflicts=FALSE
+  m <- structure(list(
+    up_to_date = FALSE,
+    fast_forward = FALSE,
+    conflicts = FALSE,
+    sha = NA_character_),
+    .Names = c("up_to_date", "fast_forward", "conflicts", "sha"),
+    class = "git_merge_result")
+
+    o <- list(remote = "remote", branch = "branch", username = "username",
+            merge_result = m, fail = FALSE, dry_run = FALSE)
+  class(o) <- "wflow_git_pull"
+
+  expect_output(print(o), "local changes")
 })

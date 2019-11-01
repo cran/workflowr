@@ -7,12 +7,13 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <meta name="author" content="John Blischak" />
 
-<meta name="date" content="2019-06-08" />
+<meta name="date" content="2019-10-31" />
 
 <title>Getting started with workflowr</title>
 
@@ -70,7 +71,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -94,9 +95,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Getting started with workflowr</h1>
-<h3 class="subtitle">workflowr version 1.4.0</h3>
+<h3 class="subtitle">workflowr version 1.5.0</h3>
 <h4 class="author">John Blischak</h4>
-<h4 class="date">2019-06-08</h4>
+<h4 class="date">2019-10-31</h4>
 
 
 <div id="TOC">
@@ -128,7 +129,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h2>Start the project</h2>
 <p>To start a new project, open R (or RStudio) and load the workflowr package (note that all the code in this vignette should be run directly in the R console, i.e. do <strong>not</strong> try to run workflowr functions inside of R Markdown documents).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;workflowr&quot;</span>)
-## This is workflowr version 1.4.0
+## This is workflowr version 1.5.0
 ## Run ?workflowr for help getting started</code></pre></div>
 <p>If you have never created a Git repository on your computer before, you need to run the following command to tell Git your name and email. Git uses this information to assign the changes you make to the code to you (analogous to how Track Changes in a Microsoft Office Word document assigns your changes to you). You do not need to use the exact same name and email as you used for your account on GitHub or GitLab. Also, you only need to run this command once per computer, and all subsequent workflowr projects will use this information (you can also update it at any time by re-running the command with different input).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Replace the example text with your information</span>
@@ -136,11 +137,11 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Now you are ready to start your first workflowr project! <code>wflow_start(&quot;myproject&quot;)</code> creates a directory called <code>myproject/</code> that contains all the files to get started. It also changes the working directory to <code>myproject/</code><a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> and initializes a Git repository with the initial commit already made.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_start</span>(<span class="st">&quot;myproject&quot;</span>)</code></pre></div>
 <pre><code>## wflow_start:
-## - New directory created at /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject
+## - New directory created at /tmp/RtmpoftWea/wflow-01-getting-started-119d446e5653/myproject
 ## - Project name is &quot;myproject&quot;
-## - Working directory changed to /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject
-## - Git repo initiated at /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject
-## - Files were committed in version d6a967e</code></pre>
+## - Working directory changed to /tmp/RtmpoftWea/wflow-01-getting-started-119d446e5653/myproject
+## - Git repo initiated at /tmp/RtmpoftWea/wflow-01-getting-started-119d446e5653/myproject
+## - Files were committed in version 89b023b</code></pre>
 <p><code>wflow_start()</code> created the following directory structure in <code>myproject/</code>:</p>
 <pre><code>myproject/
 ├── .gitignore
@@ -183,7 +184,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>You will notice that the <code>docs/</code> directory is currently empty. That is because we have not yet generated the website from the <code>analysis/</code> files. This is what we will do next.</p>
 <p>To build the website, run the function <code>wflow_build()</code> in the R console:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_build</span>()</code></pre></div>
-<pre><code>## Current working directory: /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject
+<pre><code>## Current working directory: /tmp/RtmpoftWea/wflow-01-getting-started-119d446e5653/myproject
 ## Building 3 file(s):
 ## Building analysis/about.Rmd
 ## Building analysis/index.Rmd
@@ -200,7 +201,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## docs/index.html
 ## docs/license.html
 ## 
-## Log files saved in /tmp/RtmpeLsJPL/workflowr</code></pre>
+## Log files saved in /tmp/RtmpoftWea/workflowr</code></pre>
 <p>This command builds all the R Markdown files in <code>analysis/</code> and saves the corresponding HTML files in <code>docs/</code>. It sets the same seed before running every file so that any function that generates random data (e.g. permutations) is reproducible. Furthermore, each file is built in its own external R session to avoid any potential conflicts between analyses (e.g. accidentally sharing a variable with the same name across files). Lastly, it displays the website in the RStudio Viewer or default web browser.</p>
 <p>The default action of <code>wflow_build()</code> is to behave similar to a <a href="https://swcarpentry.github.io/make-novice">Makefile</a> (<code>make = TRUE</code> is the default when no input files are provided), i.e. it only builds R Markdown files that have been modified more recently than their corresponding HTML files. Thus if you run it again, no files are built (and no files are displayed).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_build</span>()
@@ -218,12 +219,12 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h2>Publish the website</h2>
 <p>workflowr makes an important distinction between R Markdown files that are published versus unpublished. A published file is included in the website online; whereas, the HTML file of an unpublished R Markdown file is only able to be viewed on the local computer. Since the project was just started, there are no published files. To view the status of the workflowr project, run <code>wflow_status()</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_status</span>()
-## Status of 3 files
+## Status of 3 Rmd files
 ## 
 ## Totals:
 ##  3 Unpublished
 ## 
-## The following files require attention:
+## The following Rmd files require attention:
 ## 
 ## Unp analysis/about.Rmd
 ## Unp analysis/index.Rmd
@@ -231,15 +232,21 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 
 ## Key: Unp = Unpublished
 ## 
+## The current Git status is:
+## 
+##    status substatus                 file
+##  unstaged  modified   analysis/about.Rmd
+##  unstaged  modified   analysis/index.Rmd
+##  unstaged  modified analysis/license.Rmd
+## 
 ## To publish your changes as part of your website, use
 ## `wflow_publish()`.
-## 
 ## To commit your changes without publishing them yet, use
 ## `wflow_git_commit()`.</code></pre></div>
 <p>This alerts us that our project has 3 R Markdown files, and they are all unpublished (“Unp”). Furthermore, it instructs how to publish them: use <code>wflow_publish()</code>. The first argument to <code>wflow_publish()</code> is a character vector of the R Markdown files to publish <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>. The second is a message that will be recorded by the version control system Git when it commits (i.e. saves a snapshot of) these files. The more informative the commit message the better (so that future you knows what you were trying to accomplish).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_publish</span>(<span class="kw">c</span>(<span class="st">&quot;analysis/index.Rmd&quot;</span>, <span class="st">&quot;analysis/about.Rmd&quot;</span>, <span class="st">&quot;analysis/license.Rmd&quot;</span>),
               <span class="st">&quot;Publish the initial files for myproject&quot;</span>)</code></pre></div>
-<pre><code>## Current working directory: /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject
+<pre><code>## Current working directory: /tmp/RtmpoftWea/wflow-01-getting-started-119d446e5653/myproject
 ## Building 3 file(s):
 ## Building analysis/index.Rmd
 ## Building analysis/about.Rmd
@@ -255,7 +262,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   $ git add analysis/index.Rmd analysis/about.Rmd analysis/license.Rmd 
 ##   $ git commit -m &quot;Publish the initial files for myproject&quot; 
 ## 
-## The following file(s) were included in commit 2987669:
+## The following file(s) were included in commit 9644a56:
 ## analysis/about.Rmd
 ## analysis/index.Rmd
 ## analysis/license.Rmd
@@ -274,7 +281,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## docs/about.html
 ## docs/license.html
 ## 
-## Log files saved in /tmp/RtmpeLsJPL/workflowr
+## Log files saved in /tmp/RtmpoftWea/workflowr
 ## 
 ## **Step 3: Commit HTML files**
 ## 
@@ -285,7 +292,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   $ git add docs/index.html docs/about.html docs/license.html docs/figure/index.Rmd docs/figure/about.Rmd docs/figure/license.Rmd docs/site_libs docs/.nojekyll 
 ##   $ git commit -m &quot;Build site.&quot; 
 ## 
-## The following file(s) were included in commit 18419f1:
+## The following file(s) were included in commit 4172102:
 ## docs/about.html
 ## docs/index.html
 ## docs/license.html
@@ -302,12 +309,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Performing these 3 steps ensures that the HTML files are always in sync with the latest versions of the R Markdown files. Performing these steps manually would be tedious and error-prone (e.g. an HTML file may have been built with an outdated version of an R Markdown file). However, <code>wflow_publish()</code> makes it easy to keep the pages of your site in sync.</p>
 <p>Now when you run <code>wflow_status()</code>, it reports that all the files are published and up-to-date.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_status</span>()
-## Status of 3 files
+## Status of 3 Rmd files
 ## 
 ## Totals:
 ##  3 Published
 ## 
-## Files are up-to-date</code></pre></div>
+## The current Git status is: working directory clean
+## 
+## Rmd files are up-to-date</code></pre></div>
 </div>
 <div id="deploy-the-website" class="section level2">
 <h2>Deploy the website</h2>
@@ -350,8 +359,8 @@ Create a new repository on GitHub.
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_open</span>(<span class="st">&quot;analysis/first-analysis.Rmd&quot;</span>)</code></pre></div>
 <pre><code>## wflow_open:
 ## - New file(s):
-##   /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject/analysis/first-analysis.Rmd
-## - Same working directory: /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject</code></pre>
+##   /tmp/RtmpoftWea/wflow-01-getting-started-119d446e5653/myproject/analysis/first-analysis.Rmd
+## - Same working directory: /tmp/RtmpoftWea/wflow-01-getting-started-119d446e5653/myproject</code></pre>
 <p>Now you are ready to start writing! Go ahead and add some example code. If you are using RStudio, press the Knit button to build the file and see a preview in the Viewer pane. Alternatively from the R console, you can run <code>wflow_build()</code> again (this function can be run from the base directory of your project or any subdirectory).</p>
 <p>Check out your new file <code>first-analysis.html</code>. Near the top you will see the workflowr reproducibility report. If you click on the button, the full menu will drop down. Click around to learn more about the reproducibility safety checks, why their important, and whether or not the file passed or failed each one. You’ll notice that the first check failed because the R Markdown file had uncommitted changes. This is OK now since the file is a draft. Once you are ready to publish it to share with others, you can use <code>wflow_publish()</code> to ensure that any changes to the R Markdown file are committed to the Git repository prior to generating the results.</p>
 <p>In order to make it easier to navigate to your new file, you can include a link to it on the main index page. First open <code>analysis/index.Rmd</code> (optionally using <code>wflow_open()</code>). Second paste the following line into <code>index.Rmd</code>:</p>
@@ -359,28 +368,33 @@ Create a new repository on GitHub.
 <p>This uses the Markdown syntax for creating a hyperlink (for a quick reference guide in RStudio click “Help” -&gt; “Markdown Quick Reference”). You specify the HTML version of the file since this is what comprises the website. Click Knit (or run <code>wflow_build()</code> again) to check that the link works.</p>
 <p>Now run <code>wflow_status()</code> again. As expected, two files need attention. <code>index.Rmd</code> has status “Mod” for modified. This means it is a published file that has subsequently been modified. <code>first-analysis.Rmd</code> has status “Scr” for Scratch. This means not only is the HTML not published, but the R Markdown file is not yet being tracked by Git.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_status</span>()
-## Status of 4 files
+## Status of 4 Rmd files
 ## 
 ## Totals:
 ##  3 Published (1 Modified)
 ##  1 Scratch
 ## 
-## The following files require attention:
+## The following Rmd files require attention:
 ## 
 ## Mod analysis/index.Rmd
 ## Scr analysis/first-analysis.Rmd
 ## 
 ## Key: Mod = Modified, Scr = Scratch (Untracked)
 ## 
+## The current Git status is:
+## 
+##     status substatus                        file
+##   unstaged  modified          analysis/index.Rmd
+##  untracked untracked analysis/first-analysis.Rmd
+## 
 ## To publish your changes as part of your website, use
 ## `wflow_publish()`.
-## 
 ## To commit your changes without publishing them yet, use
 ## `wflow_git_commit()`.</code></pre></div>
 <p>To publish the new analysis and the updated index page, again use <code>wflow_publish()</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_publish</span>(<span class="kw">c</span>(<span class="st">&quot;analysis/index.Rmd&quot;</span>, <span class="st">&quot;analysis/first-analysis.Rmd&quot;</span>),
               <span class="st">&quot;Add my first analysis&quot;</span>)</code></pre></div>
-<pre><code>## Current working directory: /tmp/RtmpeLsJPL/wflow-01-getting-started-31ec4e1fc584/myproject
+<pre><code>## Current working directory: /tmp/RtmpoftWea/wflow-01-getting-started-119d446e5653/myproject
 ## Building 2 file(s):
 ## Building analysis/index.Rmd
 ## Building analysis/first-analysis.Rmd
@@ -395,7 +409,7 @@ Create a new repository on GitHub.
 ##   $ git add analysis/index.Rmd analysis/first-analysis.Rmd 
 ##   $ git commit -m &quot;Add my first analysis&quot; 
 ## 
-## The following file(s) were included in commit f5a298e:
+## The following file(s) were included in commit 1a90298:
 ## analysis/first-analysis.Rmd
 ## analysis/index.Rmd
 ## 
@@ -412,7 +426,7 @@ Create a new repository on GitHub.
 ## docs/index.html
 ## docs/first-analysis.html
 ## 
-## Log files saved in /tmp/RtmpeLsJPL/workflowr
+## Log files saved in /tmp/RtmpoftWea/workflowr
 ## 
 ## **Step 3: Commit HTML files**
 ## 
@@ -423,7 +437,7 @@ Create a new repository on GitHub.
 ##   $ git add docs/index.html docs/first-analysis.html docs/figure/index.Rmd docs/figure/first-analysis.Rmd docs/site_libs docs/.nojekyll 
 ##   $ git commit -m &quot;Build site.&quot; 
 ## 
-## The following file(s) were included in commit c6b4be1:
+## The following file(s) were included in commit a41d3d2:
 ## docs/first-analysis.html
 ## docs/index.html
 ## docs/site_libs/font-awesome-5.1.0/
@@ -506,7 +520,7 @@ Create a new repository on GitHub.
 <li id="fn2"><p>If you’re using RStudio, you can alternatively create a new workflowr project using the RStudio project template. Go to <code>File</code> -&gt; <code>New Project...</code> and select <code>workflowr project</code> from the list of project types. In the future you can return to your project by choosing <code>Open Project...</code> and selecting the file <code>myproject.Rproj</code>. This will set the correct working directory in the R console, switch the file navigator to the project, and configure the Git pane.<a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p>Because of this requirement, you can’t customize the knitr option <code>fig.path</code> (which controls where figure files are saved) in any R Markdown file that is part of a workflowr project. If you do set it, it will be ignored and workflowr will insert a warning into the HTML file to alert you.<a href="#fnref3">↩</a></p></li>
 <li id="fn4"><p>Instead of listing each file individually, you can also pass <a href="https://en.wikipedia.org/wiki/Glob_(programming)">file globs</a> as input to any workflowr function, e.g. <code>wflow_publish(&quot;analysis/*Rmd&quot;, &quot;Publish the initial files for myproject&quot;)</code>.<a href="#fnref4">↩</a></p></li>
-<li id="fn5"><p>The default is to name the GitHub repository using the same name as the directory that contains the workflowr project. This is likely what you used with <code>wflow_start()</code>, which in this case was <code>&quot;myproject&quot;</code>. If you’d prefer the GitHub repository to have a different name, you can pass the argument <code>repository = &quot;other-name&quot;</code>.<a href="#fnref5">↩</a></p></li>
+<li id="fn5"><p>The default is to name the GitHub repository using the same name as the directory that contains the workflowr project. This is likely what you used with <code>wflow_start()</code>, which in this case was <code>&quot;myproject&quot;</code>. If you’d prefer the GitHub repository to have a different name, or if you’ve already created a GitHub repo with a different name, you can pass the argument <code>repository = &quot;other-name&quot;</code>.<a href="#fnref5">↩</a></p></li>
 <li id="fn6"><p>This sounds scarier than it actually is. The “workflowr-oauth-app” is simply a formality for GitHub to grant authorization. The “app” itself is the R code running on your local machine. Once <code>wflow_use_github()</code> finishes, the authorization is deleted, and nothing (and no one) can access your account<a href="#fnref6">↩</a></p></li>
 <li id="fn7"><p>Unfortunately this can fail for many different reasons. If you already regularly use <code>git push</code> in the Terminal, you will probably want to continue using this. If you don’t have Git installed on your computer and thus must use <code>wflow_git_push()</code>, you can search the <a href="https://github.com/ropensci/git2r/issues">git2r Issues</a> for troubleshooting ideas.<a href="#fnref7">↩</a></p></li>
 <li id="fn8"><p>If you’d prefer to use SSH keys for authentication, please see the section <a href="wflow-02-customization.html#setup-ssh-keys">Setup SSH keys</a>.<a href="#fnref8">↩</a></p></li>
@@ -516,6 +530,9 @@ Create a new repository on GitHub.
 </ol>
 </div>
 
+
+
+<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

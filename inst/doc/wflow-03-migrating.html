@@ -7,12 +7,13 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <meta name="author" content="John Blischak" />
 
-<meta name="date" content="2019-06-08" />
+<meta name="date" content="2019-10-31" />
 
 <title>Migrating an existing project to use workflowr</title>
 
@@ -70,7 +71,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -94,9 +95,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Migrating an existing project to use workflowr</h1>
-<h3 class="subtitle">workflowr version 1.4.0</h3>
+<h3 class="subtitle">workflowr version 1.5.0</h3>
 <h4 class="author">John Blischak</h4>
-<h4 class="date">2019-06-08</h4>
+<h4 class="date">2019-10-31</h4>
 
 
 <div id="TOC">
@@ -116,7 +117,11 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </div>
 <div id="scenario-i-have-a-collection-of-r-markdown-files" class="section level2">
 <h2>Scenario: I have a collection of R Markdown files</h2>
-<p>If you have a collection of R Markdown files, but no version control or other files, the most straightforward solution would be to create a workflowr project in a new directory and then move the R Markdown files to the <code>analysis/</code> subdirectory. In the hypothetical example below, the original R Markdown files are located in the directory <code>~/projects/misc/</code> and the workflowr project will be created in the new directory <code>~/projects/new-project/</code>.</p>
+<p>If you have a collection of R Markdown files, but no version control or other files, the quickest solution is to use the function <code>wflow_quickstart()</code>. The code below 1) starts a new workflowr project in <code>~/projects/new-project/</code>, 2) copies the existing Rmd files in <code>~/projects/misc/</code> to the <code>analysis/</code> subdirectory of the new project, 3) builds and commits the website, and 4) configures the project to use GitHub (which is why the GitHub username is required).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;workflowr&quot;</span>)
+<span class="kw">wflow_quickstart</span>(<span class="st">&quot;~/projects/misc/*Rmd&quot;</span>, <span class="dt">username =</span> <span class="st">&quot;&lt;github-username&gt;&quot;</span>,
+                 <span class="dt">directory =</span> <span class="st">&quot;~/projects/new-project/&quot;</span>)</code></pre></div>
+<p>Alternatively, you can manually perform each step to migrate your existing analysis by starting a workflowr project in a new directory and then moving the R Markdown files to the <code>analysis/</code> subdirectory. In the hypothetical example below, the original R Markdown files are located in the directory <code>~/projects/misc/</code> and the workflowr project will be created in the new directory <code>~/projects/new-project/</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;workflowr&quot;</span>)
 <span class="co"># Create project directory and change working directory to this location</span>
 <span class="kw">wflow_start</span>(<span class="st">&quot;~/projects/new-project&quot;</span>)
@@ -124,6 +129,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="kw">file.copy</span>(<span class="dt">from =</span> <span class="kw">Sys.glob</span>(<span class="st">&quot;~/projects/misc/*Rmd&quot;</span>), <span class="dt">to =</span> <span class="st">&quot;analysis&quot;</span>)</code></pre></div>
 <p>Next run <code>wflow_build()</code> to see if your files run without error. Lastly, build and commit the website using <code>wflow_publish()</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_publish</span>(<span class="st">&quot;analysis/*Rmd&quot;</span>, <span class="st">&quot;Publish analysis files&quot;</span>)</code></pre></div>
+<p>When you are ready to share the results online, you can run <code>wflow_use_github()</code> or <code>wflow_use_gitlab()</code>.</p>
 </div>
 <div id="scenario-i-have-a-collection-of-r-markdown-files-and-other-project-infrastructure" class="section level2">
 <h2>Scenario: I have a collection of R Markdown files and other project infrastructure</h2>
@@ -171,6 +177,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ol>
 </div>
 
+
+
+<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

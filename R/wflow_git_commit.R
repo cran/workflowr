@@ -162,19 +162,20 @@ wflow_git_commit <- function(files = NULL, message = NULL, all = FALSE,
 wflow_git_commit_ <- function(files = NULL, message = NULL, all = FALSE,
                               force = FALSE, dry_run = FALSE, project = ".") {
 
-  # Obtain workflowr status
-  s <- wflow_status(project = project)
-
   # Establish connection to Git repository
-  r <- git2r::repository(s$git)
+  r <- git2r::repository(path = project)
 
   # Files cannot have merge conflicts
-  conflicted_files_all <- rownames(s$status)[s$status$conflicted]
-  conflicted_files <- files[files %in% conflicted_files_all]
-  if (length(conflicted_files) > 0) {
+  s <- git2r::status(r, ignored = TRUE)
+  s_df <- status_to_df(s)
+  # Fix file paths
+  s_df$file <- file.path(git2r::workdir(r), s_df$file)
+  s_df$file <- relative(s_df$file)
+  f_conflicted <- s_df$file[s_df$substatus == "conflicted"]
+  if (length(f_conflicted) > 0) {
     stop(call. = FALSE, wrap(
       "Cannot proceed due to merge conflicts in the following file(s):"
-      ), "\n\n", paste(conflicted_files, collapse = "\n"))
+      ), "\n\n", paste(f_conflicted, collapse = "\n"))
   }
 
   if (!dry_run) {
@@ -190,7 +191,7 @@ wflow_git_commit_ <- function(files = NULL, message = NULL, all = FALSE,
       # bug that affects Ubuntu and Windows, but not macOS. Manually adding all
       # unstaged changes.
       unstaged <- unlist(git2r::status(r)$unstaged)
-      unstaged <- file.path(git2r_workdir(r), unstaged)
+      unstaged <- file.path(git2r::workdir(r), unstaged)
       git2r_add(r, unstaged)
     }
     # Commit
@@ -247,7 +248,7 @@ print.wflow_git_commit <- function(x, ...) {
   if (!x$dry_run) {
     cat(sep = "", "\n",
         wrap("The following file(s) were included in commit ",
-             stringr::str_sub(git2r_slot(x$commit, "sha"), start = 1, end = 7)),
+             stringr::str_sub(x$commit$sha, start = 1, end = 7)),
         ":\n")
     cat(shorten_site_libs(x$commit_files), sep = "\n")
   }

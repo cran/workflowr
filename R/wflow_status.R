@@ -23,6 +23,10 @@
 #' @param files character (default: NULL) The analysis file(s) to report the
 #'   status. By default checks the status of all analysis files. Supports
 #'   file \href{https://en.wikipedia.org/wiki/Glob_(programming)}{globbing}.
+#' @param include_git_status logical (default: TRUE) Include the Git status of
+#'   the project files in the output. Note that this excludes any files in the
+#'   website directory, since these generated files should only be committed by
+#'   workflowr, and not the user.
 #' @param project character (default: ".") By default the function assumes the
 #'   current working directory is within the project. If this is not true,
 #'   you'll need to provide the path to the project directory.
@@ -51,6 +55,13 @@
 #' \code{_workflowr.yml} has uncommitted changes, otherwise \code{FALSE}. If the
 #' file does not exist, the result is \code{NULL}. If the file was recently
 #' deleted and not yet committed to Git, then it will be \code{TRUE}.
+#'
+#' \item \bold{git_status} The Git status as a \code{git_status}
+#' object from the package \link{git2r} (see \code{git2r::\link[git2r]{status}}).
+#'
+#' \item \bold{include_git_status} The argument \code{include_git_status}
+#' indicating whether the Git status should be printed along with the status of
+#' the Rmd files.
 #'
 #' \item \bold{status}: A data frame with detailed information on the status of
 #' each R Markdown file (see below).
@@ -104,7 +115,7 @@
 #' s <- wflow_status()
 #' }
 #' @export
-wflow_status <- function(files = NULL, project = ".") {
+wflow_status <- function(files = NULL, include_git_status = TRUE, project = ".") {
 
   if (!is.null(files)) {
     if (!(is.character(files) && length(files) > 0))
@@ -122,6 +133,9 @@ wflow_status <- function(files = NULL, project = ".") {
     if (any(ext_wrong))
       stop(wrap("File extensions must be either Rmd or rmd."))
   }
+
+  if (!(is.logical(include_git_status) && length(include_git_status) == 1))
+    stop("include_git_status must be a one-element logical vector")
 
   if (!(is.character(project) && length(project) == 1))
     stop("project must be a one element character vector")
@@ -149,7 +163,7 @@ wflow_status <- function(files = NULL, project = ".") {
   s <- git2r::status(r, ignored = TRUE)
   s_df <- status_to_df(s)
   # Fix file paths
-  s_df$file <- file.path(git2r_workdir(r), s_df$file)
+  s_df$file <- file.path(git2r::workdir(r), s_df$file)
   s_df$file <- relative(s_df$file)
   # Categorize all files by git status
   f_ignored <- s_df$file[s_df$status == "ignored"]
@@ -205,6 +219,10 @@ wflow_status <- function(files = NULL, project = ".") {
                          unpublished, scratch,
                          row.names = files_analysis)
 
+  # Passing the Git status to print.wflow_status()
+  o$include_git_status <- include_git_status
+  o$git_status <- s
+
   class(o) <- "wflow_status"
   return(o)
 }
@@ -216,7 +234,7 @@ print.wflow_status <- function(x, ...) {
   key <- character()
 
   # Report totals
-  cat(sprintf("Status of %d files\n\nTotals:\n", nrow(x$status)))
+  cat(sprintf("Status of %d Rmd files\n\nTotals:\n", nrow(x$status)))
   if (sum(x$status$published) > 0 & sum(x$status$modified) > 0) {
     cat(sprintf(" %d Published (%d Modified)\n",
                 sum(x$status$published), sum(x$status$modified)))
@@ -242,25 +260,42 @@ print.wflow_status <- function(x, ...) {
                             sum(x$status$scratch)))
 
   if (length(f) > 0) {
-    cat("\nThe following files require attention:\n\n")
+    cat("\nThe following Rmd files require attention:\n\n")
   }
   for (i in seq_along(f)) {
     o <- sprintf("%s %s\n", names(f)[i], f[i])
     cat(o)
   }
-  if (length(f) == 0) {
-    cat("\nFiles are up-to-date")
-  } else {
-    m <- sprintf("Key: %s
-
-To publish your changes as part of your website, use `wflow_publish()`.
-
-To commit your changes without publishing them yet, use `wflow_git_commit()`.",
-    paste(key, collapse = ", "))
-    cat("\n")
-    cat(wrap(m))
+  if (length(f) > 0) {
+    cat(sprintf("\nKey: %s\n", paste(key, collapse = ", ")))
   }
-  cat("\n")
+
+  if (x$include_git_status) {
+    s <- scrub_status(x$git_status, git2r::repository(x$git), output_dir = x$docs,
+                      remove_ignored = TRUE)
+    s_df <- status_to_df(s)
+    if (nrow(s_df) > 0) {
+      s_df$file <- file.path(x$git, s_df$file)
+      s_df$file <- relative(s_df$file)
+      cat("\nThe current Git status is:\n\n")
+      prev <- options(width = 200)
+      cat(paste(utils::capture.output(print(s_df, row.names = FALSE)), collapse = "\n"))
+      options(prev)
+      cat("\n")
+    } else {
+      cat("\nThe current Git status is: working directory clean\n")
+    }
+  }
+
+  if (length(f) == 0) {
+    cat("\nRmd files are up-to-date\n")
+  } else {
+    cat("\n")
+    cat(wrap("To publish your changes as part of your website, use `wflow_publish()`."))
+    cat("\n")
+    cat(wrap("To commit your changes without publishing them yet, use `wflow_git_commit()`."))
+    cat("\n")
+  }
 
   if (x$site_yml) {
     site_yml_path <- relative(file.path(x$analysis, "_site.yml"))

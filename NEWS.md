@@ -1,3 +1,136 @@
+# workflowr 1.5.0
+
+This minor release of workflowr includes a new function, the introduction of
+options to control package-wide function behavior, the ability to suppress the
+workflowr report from the HTML file, a new vignette for teaching workflowr, and
+lots of error handling improvements.
+
+## New function `wflow_quickstart()`
+
+The new function `wflow_quickstart()` provides a simple interface to
+effortlessly create a workflowr project from an existing data analysis. Pass it
+your existing R Markdown file(s), and it will start a new workflowr project,
+publish the analysis files, and configure GitHub (or GitLab).
+
+```
+wflow_quickstart(files = "existing-analysis.Rmd", username = "your-github-username")
+```
+
+## Package options
+
+This is the first release to include options for controlling the behavior of all
+workflowr functions. This makes it more convenient for you to create a
+consistent workflowr experience. You can set the options in your project's
+`.Rprofile` (using the function `options()`) instead of having to always
+remember to change a default argument every time you call a function.
+
+Currently there are two workflowr package options. See `?workflowr` for more
+details.
+
+* `workflowr.git`: Set the path to the system Git executable, which is
+occasionally used to increase the speed of Git operations performed by workflowr
+functions.
+
+* `workflowr.view`: Should workflowr functions open webpages for viewing in the
+browser? The default is set to `interactive()` (i.e. it is `TRUE` only if it is
+an interactive R session). This option is currently used by `wflow_build()`,
+`wflow_git_push()`, and `wflow_publish()`.
+
+## Workshop tutorial for teaching workflowr
+
+The new vignette "Reproducible research with workflowr" is designed to be taught
+as a tutorial in a workshop setting. It includes setup instructions, an example
+analysis to highlight the benefits of workflowr, and troubleshooting advice.
+
+## Suppress the HTML workflowr report
+
+If you'd like to suppress the workflowr report at the top of an HTML page, you
+can set the option `suppress_report` to `TRUE`. To suppress the report in every
+HTML file, set the option in `_workflowr.yml`:
+
+```
+suppress_report: TRUE
+```
+
+To suppress the report in a specific HTML file, add the following to the YAML
+header of the corresponding Rmd file:
+
+```
+workflowr:
+  suppress_report: TRUE
+```
+
+Many thanks to @kaneplusplus for implementing this feature! (#168)
+
+## Minor improvements and bug fixes
+
+* Require git2r >= 0.26.0 to support internal changes that increase speed and
+robustness of workflowr Git functionality
+
+* `wflow_start()` adds a `.gitattributes` file that classifies R Markdown files
+as R code for the official GitHub language statistics calculated via
+[linguist][]. The default setting is to ignore R Markdown files.
+
+[linguist]: https://github.com/github/linguist
+
+* Address [callr 3.3.0 bug][callr-bug-3.3.0] that writes objects to the global
+environment, causing the workflowr check of the global environment to fail. The
+failed check now explains that the problem can be fixed by updating the callr
+package.
+
+[callr-bug-3.3.0]: https://github.com/r-lib/callr/commit/9f7665e1081da6f5134b214da694b4461d05659f
+
+* Warn user from `wflow_build()` if `index.Rmd` is missing the
+workflowr-specific site generator `wflow_site()` (idea from @pcarbo, #177)
+
+* Fail early if missing required file `index.Rmd`
+
+* Add argument `fail` to `wflow_git_pull()` with default value of `TRUE`. Now if
+a pull generates a merge conflict, `wflow_git_pull()` will abort the pull. Thus
+no changes will be made to the local files. Users can set `fail = FALSE` to allow
+Git to add the merge conflicts to the local files.
+
+* Speed improvements for `wflow_publish()`
+
+* Improved error handling when files contain merge conflicts. Before workflowr
+only detected merge conflicts in Rmd files. Now it detects them for any file
+(since Git requires any merge conflicts to be resolved before it makes any new
+commits).
+
+* Warn user if `knit_root_dir` (the directory where the code in the Rmd files is
+executed) defined in `_workflowr.yml` is an absolute path. An absolute path
+would only work on the current computer, limiting reproducibility.
+
+* Include Git status in output of `wflow_status()`. Note that it purposefully
+excludes any files in the website directory since these generated files should
+only be committed by workflowr. You can omit the Git status by setting
+`include_git_status = FALSE` (idea from @pcarbo)
+
+* Make it clearer that you have two options for creating the remote repository on
+Github: 1) let `wflow_use_github()` do it automatically, or 2) create it yourself
+manually at https://github.com/new (idea from @pcarbo)
+
+* New FAQ "How can I save a figure in a vector graphics format (e.g. PDF)?"
+
+* Added citation to [F1000Research
+paper](https://doi.org/10.12688/f1000research.20843.1). Run
+`citation("workflowr")` to obtain the new citation information.
+
+* Fixed `wflow_start()` infinite recursion bug by requiring stringr >=1.3.0
+
+* Added httpuv as imported dependency so that `wflow_use_github()` is able to
+automatically create the GitHub repository via the httr package
+
+* Set (or increased) minimum required versions for fs, git2r, httpuv,
+rstudioapi, stringr, whisker, clipr, shiny, testthat, and withr
+
+* Document possible error of a greyed out GitHub authentication button when
+trying to give permission for workflowr to create a repository for your account
+
+* Fixed bug in date displayed in table of past versions in the workflowr report.
+Depending on the time of day the commit was made, the displayed day may have
+been off by one.
+
 # workflowr 1.4.0
 
 This minor release of workflowr features further GitHub integration, a new
