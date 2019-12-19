@@ -5,6 +5,7 @@ Addins
 Aja
 AppVeyor
 ascorbic
+autosave
 blogdown
 bootswatch
 BuildType
@@ -34,6 +35,7 @@ dropdown
 edavidaja
 edu
 et al
+FASTQ
 filepath
 Frazee
 fs
@@ -56,6 +58,7 @@ httr
 Inkscape
 io
 knitr
+LFS
 libgit
 lovelace
 macOS
@@ -66,12 +69,14 @@ myproject
 navbar
 oauth
 omnibar
+pagetitle
 pandoc
 Pandoc
 pkgdown
 pre
 preprocess
 proj
+qtl
 rawgit
 rcc
 README
@@ -93,8 +98,10 @@ Scr
 serverless
 SHA
 shinyapps
+singlecell
 singleCellSeq
 spacelab
+SRA
 stringr
 subproject
 symlink

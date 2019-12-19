@@ -68,6 +68,8 @@
 #' \item \bold{protocol}: The authentication protocol for the remote repository
 #' (either \code{"https"} or \code{"ssh"}.
 #'
+#' \item \bold{project}: The input argument \code{project}.
+#'
 #' }
 #'
 #' @examples
@@ -165,6 +167,14 @@ wflow_git_pull <- function(remote = NULL, branch = NULL, username = NULL,
 
   # Do the pull in 2 steps: fetch+merge, b/c git2r::pull only allows pulling
   # from the tracked branch.
+  git_alternative <- glue::glue("
+    Alternatively, if you have Git installed on your machine, the easiest
+    solution is to instead run `git pull` in the terminal. This is equivalent
+    to wflow_git_pull(). Specifically, copy-paste the following in the
+    terminal:
+
+    git pull {remote} {branch}
+    ")
   if (!dry_run) {
     tryCatch(git2r::fetch(r, name = remote,
                           refspec = paste0("refs/heads/", branch),
@@ -174,27 +184,27 @@ wflow_git_pull <- function(remote = NULL, branch = NULL, username = NULL,
                    stringr::str_detect(e$message, "unsupported URL protocol")) {
                  reason <-
                    "workflowr was unable to use your SSH keys because your
-                   computer does not have the required software installed. For
-                   a quick fix, run `git pull` in the Terminal instead. If you
-                   want to be able to pull directly from R, re-install the
+                   computer does not have the required software installed. If
+                   you want to be able to pull directly from R, re-install the
                    package git2r and follow its advice for how to enable SSH
                    for your operating system."
+                 reason <- c(reason, "\n\n", git_alternative)
                } else if (protocol == "ssh" &&
                           stringr::str_detect(e$message, "Failed to authenticate SSH session")) {
                  reason <-
                    "workflowr was unable to use your SSH keys because it has a
                    passphrase. You'll need to activate ssh-agent and add your
-                   keys. Alternatively, run `git pull` in the Terminal
-                   instead."
+                   keys."
+                 reason <- c(reason, "\n\n", git_alternative)
                } else {
                  reason <- c("Pull failed for unknown reason.",
                              "\n\nThe error message from git2r::pull() was:\n\n",
                              e$message,
                              "\n\nThese sorts of errors are difficult to
-                             troubleshoot. If you have Git installed on your
-                             machine, the easiest solution is to instead run
-                             `git pull` in the Terminal. This is equivalent to
-                             wflow_git_pull().")
+                             troubleshoot. You can search for similar errors
+                             on the git2r GitHub repository for advice on how
+                             to fix it.")
+                 reason <- c(reason, "\n\n", git_alternative)
                }
                stop(wrap(reason), call. = FALSE)
              }
@@ -208,7 +218,7 @@ wflow_git_pull <- function(remote = NULL, branch = NULL, username = NULL,
 
   o <- list(remote = remote, branch = branch, username = username,
             merge_result = merge_result, fail = fail, dry_run = dry_run,
-            protocol = protocol)
+            protocol = protocol, project = project)
   class(o) <- "wflow_git_pull"
   return(o)
 }
@@ -282,6 +292,16 @@ print.wflow_git_pull <- function(x, ...) {
 
   # Merge conflicts from committed changes. Merge conflicts are now unstaged changes
   if (x$merge_result$conflicts) {
+    conflicted_files <- get_conflicted_files(x$project)
+    cat("\nThe following file(s) contain conflicts:\n")
+    cat(conflicted_files, sep = "\n")
+    if (interactive() && rstudioapi::isAvailable(version_needed = "0.99.719")) {
+      ans <- readline("Do you want workflowr to open the conflicting files in RStudio? (y/n/c) ")
+      if (tolower(ans) == "y") {
+        conflicted_lines <- get_conflicted_lines(conflicted_files)
+        open_files_rstudio(conflicted_files, conflicted_lines)
+      }
+    }
     m <- "You will need to use Git from the Terminal to resolve these conflicts
           manually. Run `git status` in the Terminal to get started."
     cat("\n", wrap(m), "\n", sep = "")
@@ -297,4 +317,33 @@ print.wflow_git_pull <- function(x, ...) {
   cat("\n", wrap(m), "\n", sep = "")
   cat("\n")
   return(invisible(x))
+}
+
+# Return conflicted files in a Git repository
+get_conflicted_files <- function(path) {
+  r <- git2r::repository(path)
+  s <- git2r::status(r)
+  s_df <- status_to_df(s)
+  conflicted <- s_df[s_df$substatus == "conflicted", "file"]
+
+  if (length(conflicted) == 0) return(NA)
+
+  conflicted <- file.path(git2r::workdir(r), conflicted)
+  return(conflicted)
+}
+
+get_conflicted_lines <- function(files) {
+  list_of_lines <- Map(readLines, files)
+  conflicted_lines <- Map(find_conflicted_line, list_of_lines)
+  conflicted_lines <- unlist(conflicted_lines)
+  return(conflicted_lines)
+}
+
+find_conflicted_line <- function(lines) {
+  stringr::str_which(lines, "^<<<")[1]
+}
+
+open_files_rstudio <- function(files, lines = -1L) {
+  mapply(rstudioapi::navigateToFile, file = files, line = lines)
+  return(invisible(files))
 }

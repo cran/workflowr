@@ -1,3 +1,87 @@
+# workflowr 1.6.0
+
+## New features
+
+* New function `wflow_run()`. It executes the code chunks of an R Markdown file
+in the current R session without affecting any of the website files. This is
+meant to be used while interactively developing an analysis. It does not change
+the working directory or isolate the computation from the current R session.
+This is analogous to the RStudio option "Run all" to run all the code chunks
+(idea from @pcarbo)
+
+* New autosave feature. The workflowr functions `wflow_build()`,
+`wflow_publish()`, and `wflow_status()` will autosave any unsaved files open in
+the RStudio editor pane. This is similar to the behavior of the Knit HTML
+button. This feature can be disabled by setting the package option
+`workflowr.autosave` to `FALSE` (idea from @xiangzhu in #179)
+
+* New [vignette][vig-data] on using large data files in a workflowr project
+(motivated by @xiangzhu, #183)
+
+[vig-data]: https://jdblischak.github.io/workflowr/articles/wflow-10-data.html
+
+* If there are merge conflicts after running `wflow_git_pull()`, and the merge
+was allowed to proceed (`fail = FALSE`), then the conflicted files are listed
+and optionally opened in RStudio at the first line of the conflict that needs
+to be resolved
+
+* `wflow_git_config()` has a new argument `overwrite`. Previously
+`wflow_git_config()` would by default overwrite any previous settings. Now this
+will throw an error. To overwrite a previous setting, set `overwrite = TRUE`
+([idea][f1000-config-overwrite] from @petebaker)
+
+[f1000-config-overwrite]: https://f1000research.com/articles/8-1749/v1#referee-response-55117
+
+## Minor improvements and bug fixes
+
+* Warn user if only HTML file has been committed (and avoid throwing an error).
+Previously this threw an error because workflowr expects the R Markdown file to
+be committed to the Git repo if its corresponding HTML file is
+(bug report from @kevinlkx)
+
+* Warn user if a dependency does not meet the minimum required version. There
+are multiple ways this could happen. First, it is possible to install an old
+version after having installed workflowr. Second, when running
+`install.packages()`, if the minimum required version is available in any of the
+package libraries, it is not installed. However, if the version of the package
+in the first directory listed in `.libPaths()` does not meet the minimum
+required version, it is still the one that is loaded when workflowr is loaded
+(idea from @stephens999)
+
+* Fix off-by-one date bug by specifying the local timezone (see [git2r Issue
+407][git2r407])
+
+[git2r407]: https://github.com/ropensci/git2r/issues/407
+
+* Fix bug when path to project includes a space. The bug was introduced in
+version 1.5.0 with the feature to use the system Git executable to run `git
+ls-files`. To fix the issue in version 1.5.0, set `options(workflowr.sysgit =
+"")` in the file `.Rprofile` (bug report from @wolfemd, #180)
+
+* Fix bug caused by an unset timezone. If the machine has no timezone set,
+workflowr will default to Etc/UTC
+
+* Handle missing title/pagetitle warning from pandoc 2+ and rmarkdown 1.18+
+(see [rmarkdown Issue 1355][rmarkdown1355])
+
+[rmarkdown1355]: https://github.com/rstudio/rmarkdown/pull/1355#issuecomment-558817744
+
+* Improve speed of `wflow_publish()`/`wflow_status()` by using the system Git
+executable (if available) to obtain the last commit time of the analysis files
+(this is used to determine which published Rmd files are outdated and need to be
+republished)
+
+* Report exact command to run `git push` or `git pull` in the terminal if either
+`wflow_git_push()` or `wflow_git_pull()` fail (reported by @jennysjaarda, #182)
+
+* Update FAQ to include how to create a PDF using the RStudio Knit button
+(reported by @han16)
+
+* Update citation to [workflowr publication](https://doi.org/10.12688/f1000research.20843.1)
+
+* Properly quote the Git executable with `shQuote()` whenever Git is called
+from R
+
 # workflowr 1.5.0
 
 This minor release of workflowr includes a new function, the introduction of

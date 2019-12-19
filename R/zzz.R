@@ -6,11 +6,13 @@
                  utils::packageVersion("workflowr")),
          "Run ?workflowr for help getting started")
   packageStartupMessage(paste(m, collapse = "\n"))
+  check_deps()
 }
 
 .onLoad <- function(libname, pkgname) {
   sysgit <- Sys.which("git")
   wflow_pkg_opts <- list(
+    workflowr.autosave = TRUE,
     workflowr.sysgit = if(fs::file_exists(sysgit)) sysgit else "",
     workflowr.view = interactive()
   )
@@ -20,6 +22,38 @@
   if(any(toset)) options(wflow_pkg_opts[toset])
 
   invisible()
+}
+
+# Check minimum required versions of dependencies b/c install.packages() doesn't
+check_deps <- function() {
+  deps <- c(
+    fs = "1.2.7",
+    git2r = "0.26.0",
+    httpuv = "1.2.2",
+    knitr = "1.18",
+    rmarkdown = "1.7",
+    rstudioapi = "0.6",
+    stringr = "1.3.0",
+    whisker = "0.3-2"
+  )
+  deps <- as.package_version(deps)
+
+  invalid <- logical(length = length(deps))
+  names(invalid) <- names(deps)
+  for (i in seq_along(deps)) {
+    pkgname <- names(deps[i])
+    required <- deps[i]
+    installed <- utils::packageVersion(pkgname)
+
+    if (installed < required) {
+      warning(call. = FALSE, glue::glue(
+        "Please update package \"{pkgname}\": version {installed} is installed, but {required} is required"
+      ))
+      invalid[i] <- TRUE
+    }
+  }
+
+  return(invisible(invalid))
 }
 
 #' workflowr: A workflow template for creating a research website
@@ -76,6 +110,12 @@
 #' }
 #'
 #' \describe{
+#'
+#' \item{workflowr.autosave}{A logical indicating whether workflowr functions
+#' should automatically save files open in the RStudio editor before running.
+#' The default is \code{TRUE}. This requires RStudio 1.1.287 or later. Only
+#' files that have been previously saved are affected. In other words, unnamed
+#' files will be ignored.}
 #'
 #' \item{workflowr.sysgit}{The path to the system Git executable. This is
 #' occasionally used to increase the speed of Git operations performed by

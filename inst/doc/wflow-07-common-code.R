@@ -1,7 +1,7 @@
-## ----chunk-options, include=FALSE----------------------------------------
+## ----chunk-options, include=FALSE---------------------------------------------
 library("knitr")
 opts_chunk$set(eval = FALSE)
 
-## ----knit-expand-vignette------------------------------------------------
+## ----knit-expand-vignette-----------------------------------------------------
 #  vignette("knit_expand", package = "knitr")
 

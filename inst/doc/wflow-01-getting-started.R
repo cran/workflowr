@@ -1,4 +1,4 @@
-## ----decide-to-execute, cache=FALSE, echo=FALSE--------------------------
+## ----decide-to-execute, cache=FALSE, echo=FALSE-------------------------------
 library("knitr")
 
 # The code in this vignette requires a functional Git setup. If a workflowr user
@@ -26,7 +26,7 @@ if (!rmarkdown::pandoc_available()) {
   ))
 }
 
-## ----chunk-options, cache=FALSE, include=FALSE---------------------------
+## ----chunk-options, cache=FALSE, include=FALSE--------------------------------
 .tmp <- tempfile("wflow-01-getting-started-")
 .tmp <- workflowr:::absolute(.tmp)
 .project <- file.path(.tmp, "myproject")
@@ -34,88 +34,88 @@ fs::dir_create(.project)
 opts_knit$set(root.dir = .project)
 opts_chunk$set(collapse = TRUE)
 
-## ----load-workflowr------------------------------------------------------
+## ----load-workflowr-----------------------------------------------------------
 library("workflowr")
 
-## ----wflow-git-config, eval=FALSE----------------------------------------
+## ----wflow-git-config, eval=FALSE---------------------------------------------
 #  # Replace the example text with your information
 #  wflow_git_config(user.name = "Your Name", user.email = "email@domain")
 
-## ----wflow-start, eval=FALSE---------------------------------------------
+## ----wflow-start, eval=FALSE--------------------------------------------------
 #  wflow_start("myproject")
 
-## ----wflow-start-hidden, echo=FALSE--------------------------------------
+## ----wflow-start-hidden, echo=FALSE-------------------------------------------
 setwd(.tmp)
 unlink(.project, recursive = TRUE)
 wflow_start("myproject", user.name = "Your Name", user.email = "email@domain")
 
-## ----wflow-build, eval=FALSE---------------------------------------------
+## ----wflow-build, eval=FALSE--------------------------------------------------
 #  wflow_build()
 
-## ----wflow-build-hidden, echo=FALSE--------------------------------------
+## ----wflow-build-hidden, echo=FALSE-------------------------------------------
 # Don't want to actually open the website when building the vignette
 wflow_build(view = FALSE)
 
-## ----wflow-build-no-action-----------------------------------------------
+## ----wflow-build-no-action----------------------------------------------------
 wflow_build()
 
-## ----wflow-view, eval=FALSE----------------------------------------------
+## ----wflow-view, eval=FALSE---------------------------------------------------
 #  wflow_view()
 
-## ----edit-files, include=FALSE-------------------------------------------
+## ----edit-files, include=FALSE------------------------------------------------
 for (f in file.path("analysis", c("index.Rmd", "about.Rmd", "license.Rmd"))) {
   cat("\nedit\n", file = f, append = TRUE)
 }
 
-## ----wflow-status--------------------------------------------------------
+## ----wflow-status-------------------------------------------------------------
 wflow_status()
 
-## ----wflow-publish, eval=FALSE-------------------------------------------
+## ----wflow-publish, eval=FALSE------------------------------------------------
 #  wflow_publish(c("analysis/index.Rmd", "analysis/about.Rmd", "analysis/license.Rmd"),
 #                "Publish the initial files for myproject")
 
-## ----wflow-publish-hidden, echo=FALSE------------------------------------
+## ----wflow-publish-hidden, echo=FALSE-----------------------------------------
 # Don't want to actually open the website when building the vignette
 wflow_publish(c("analysis/index.Rmd", "analysis/about.Rmd", "analysis/license.Rmd"),
               "Publish the initial files for myproject",
               view = FALSE)
 
-## ----wflow-status-post-publish-------------------------------------------
+## ----wflow-status-post-publish------------------------------------------------
 wflow_status()
 
-## ----wflow-use-github, eval=FALSE----------------------------------------
+## ----wflow-use-github, eval=FALSE---------------------------------------------
 #  wflow_use_github("myname")
 
-## ----wflow-use-github-hidden, echo=FALSE---------------------------------
+## ----wflow-use-github-hidden, echo=FALSE--------------------------------------
 # Don't want to try to authenticate on GitHub
 wflow_use_github("myname", create_on_github = FALSE)
 
-## ----wflow-git-push------------------------------------------------------
+## ----wflow-git-push-----------------------------------------------------------
 wflow_git_push(dry_run = TRUE)
 
-## ----create-file, eval=FALSE---------------------------------------------
+## ----create-file, eval=FALSE--------------------------------------------------
 #  wflow_open("analysis/first-analysis.Rmd")
 
-## ----create-file-hidden, echo=FALSE--------------------------------------
+## ----create-file-hidden, echo=FALSE-------------------------------------------
 # Don't want to actually open the file when building the vignette in RStudio
 wflow_open("analysis/first-analysis.Rmd", edit_in_rstudio = FALSE)
 
-## ----edit-index, include=FALSE-------------------------------------------
+## ----edit-index, include=FALSE------------------------------------------------
 cat("\nClick on this [link](first-analysis.html) to see my results.\n",
     file = "analysis/index.Rmd", append = TRUE)
 
-## ----wflow-status-newfile------------------------------------------------
+## ----wflow-status-newfile-----------------------------------------------------
 wflow_status()
 
-## ----wflow-publish-newfile, eval=FALSE-----------------------------------
+## ----wflow-publish-newfile, eval=FALSE----------------------------------------
 #  wflow_publish(c("analysis/index.Rmd", "analysis/first-analysis.Rmd"),
 #                "Add my first analysis")
 
-## ----wflow-publish-newfile-hidden, echo=FALSE----------------------------
+## ----wflow-publish-newfile-hidden, echo=FALSE---------------------------------
 # Don't want to actually open the website when building the vignette
 wflow_publish(c("analysis/index.Rmd", "analysis/first-analysis.Rmd"),
               "Add my first analysis", view = FALSE)
 
-## ----republish-----------------------------------------------------------
+## ----republish----------------------------------------------------------------
 wflow_publish("analysis/_site.yml", republish = TRUE, dry_run = TRUE)
 

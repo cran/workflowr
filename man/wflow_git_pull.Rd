@@ -4,8 +4,15 @@
 \alias{wflow_git_pull}
 \title{Pull files from remote repository}
 \usage{
-wflow_git_pull(remote = NULL, branch = NULL, username = NULL,
-  password = NULL, fail = TRUE, dry_run = FALSE, project = ".")
+wflow_git_pull(
+  remote = NULL,
+  branch = NULL,
+  username = NULL,
+  password = NULL,
+  fail = TRUE,
+  dry_run = FALSE,
+  project = "."
+)
 }
 \arguments{
 \item{remote}{character (default: NULL). The name of the remote repository.
@@ -55,6 +62,8 @@ or GitLab).
 
 \item \bold{protocol}: The authentication protocol for the remote repository
 (either \code{"https"} or \code{"ssh"}.
+
+\item \bold{project}: The input argument \code{project}.
 
 }
 }

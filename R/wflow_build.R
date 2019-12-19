@@ -226,6 +226,8 @@ wflow_build <- function(files = NULL, make = is.null(files),
   if(rmarkdown::pandoc_version() >= 2 && utils::packageVersion("rmarkdown") < 1.7)
     stop("pandoc 2+ requires rmarkdown version >= 1.7. Please update your rmarkdown package")
 
+  if (isTRUE(getOption("workflowr.autosave"))) autosave()
+
   # Obtain files to consider ---------------------------------------------------
 
   p <- wflow_paths(project = project)
@@ -315,7 +317,7 @@ wflow_build <- function(files = NULL, make = is.null(files),
       dir_cache <- glue::glue("{dir_cache}_cache")
       if (fs::dir_exists(dir_cache)) {
         if (delete_cache) {
-          fs::dir_delete(dir_cache)
+          wflow_delete(dir_cache)
           message("  - Note: Deleted the cache directory before building")
         } else {
           message("  - Note: This file has a cache directory")
@@ -375,6 +377,9 @@ print.wflow_build <- function(x, ...) {
   if (x$republish) cat(" republish: TRUE")
   if (x$clean_fig_files) cat(" clean_fig_files: TRUE")
   if (x$delete_cache) cat(" delete_cache: TRUE")
+  if (x$verbose) cat(" verbose: TRUE")
+  if (x$local) cat(" local: TRUE")
+  if (x$dry_run) cat(" dry_run: TRUE")
   cat("\n\n")
 
   if (length(x$built) == 0) {

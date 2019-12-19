@@ -140,10 +140,16 @@ get_committed_files <- function(repo, commit = NULL,
 
   # If Git is available and don't need a specific commit, use `git ls-files`
   if (!is.null(sysgit) && !is.na(sysgit) && nchar(sysgit) > 0 && is.null(commit)) {
-    cmd <- sprintf("%s -C %s ls-files", sysgit, git2r::workdir(repo))
-    files <- system(cmd, intern = TRUE)
-    files <- absolute(file.path(git2r::workdir(repo), files))
-    return(files)
+    cmd <- sprintf("%s -C %s ls-files", shQuote(sysgit),
+                   shQuote(git2r::workdir(repo)))
+    suppressWarnings(files <- system(cmd, intern = TRUE, ignore.stderr = TRUE))
+    # Using Git is supposed to be a convenient speed increase. If it fails for
+    # any reason (a failure adds an attribute "status"), just continue and use
+    # git2r/libgit2.
+    if (is.null(attr(files, which = "status", exact = TRUE))) {
+      files <- absolute(file.path(git2r::workdir(repo), files))
+      return(files)
+    }
   }
 
   if (is.null(commit)) {
@@ -179,8 +185,12 @@ ls_files <- function (tree) {
 # repo: git_repository object
 # files: character vector of filenames
 # outdir: directory with website files
-get_outdated_files <- function(repo, files, outdir = NULL) {
+# sysgit: path to system Git executable to run `git log -n 1` to obtain time of
+# last commit
+get_outdated_files <- function(repo, files, outdir = NULL,
+                                sysgit = getOption("workflowr.sysgit", default = "")) {
   if (length(files) == 0) return(files)
+  stopifnot(inherits(repo, "git_repository"))
 
   ext <- tools::file_ext(files)
   if (!all(grepl("[Rr]md", ext)))
@@ -191,18 +201,40 @@ get_outdated_files <- function(repo, files, outdir = NULL) {
   # its corresponding HTML
   out_of_date <- logical(length = length(files))
 
+  # If Git is available, use it to run `git log -n 1`
+  if (!is.null(sysgit) && !is.na(sysgit) && nchar(sysgit) > 0) {
+    last_commit_time <- last_commit_time_sysgit
+  } else {
+    last_commit_time <- last_commit_time_git2r
+  }
+
   for (i in seq_along(files)) {
-    # Most recent commit time of source and HTML files
-    recent_source <- git2r::commits(repo, n = 1, path = files[i])[[1]]
-    recent_source_time <- as.POSIXct(recent_source$author$when)
-    recent_html <- git2r::commits(repo, n = 1, path = html[i])[[1]]
-    recent_html_time <- as.POSIXct(recent_html$author$when)
+    recent_source_time <- last_commit_time(repo, files[i], sysgit = sysgit)
+    recent_html_time <- last_commit_time(repo, html[i], sysgit = sysgit)
     if (recent_source_time >= recent_html_time) {
       out_of_date[i] <- TRUE
     }
   }
   outdated <- files[out_of_date]
   return(outdated)
+}
+
+last_commit_time_git2r <- function(repo, fname, ...) {
+  last_commit <- git2r::commits(repo, n = 1, path = fname)[[1]]
+  last_commit_time <- last_commit$author$when$time
+  return(last_commit_time)
+}
+
+last_commit_time_sysgit <- function(repo, fname, sysgit, ...) {
+  cmd <- sprintf("%s -C %s log -n 1 --date=raw --format=%%ad -- %s",
+                 shQuote(sysgit), shQuote(git2r::workdir(repo)), shQuote(fname))
+  raw_git <- suppressWarnings(system(cmd, intern = TRUE, ignore.stderr = TRUE))
+  # If it fails for any reason, fall back on git2r
+  if (!is.null(attr(raw_git, which = "status", exact = TRUE))) {
+    return(last_commit_time_git2r(repo, fname))
+  }
+  unix_git <- stringr::str_split(raw_git, "\\s")[[1]][1]
+  return(as.numeric(unix_git))
 }
 
 # Obtain the files updated in a commit

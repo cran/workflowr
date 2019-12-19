@@ -2,6 +2,10 @@ context("wflow_status")
 
 # Setup ------------------------------------------------------------------------
 
+source("setup.R")
+
+skip_on_cran_windows()
+
 # Setup workflowr project for testing
 site_dir <- tempfile("test-wflow_status-")
 suppressMessages(wflow_start(site_dir, change_wd = FALSE, user.name = "Test Name",
@@ -227,6 +231,21 @@ test_that("wflow_status detects uncommitted changes in configuration files", {
   expect_true(s_config$wflow_yml) # still true because "deleted" in git status
 })
 
+test_that("wflow_status works if HTML file of published Rmd is deleted", {
+
+  skip_on_cran()
+
+  html_pub <- workflowr:::to_html(rmd_pub, outdir = s$docs)
+  html_pub_tmp <- fs::file_temp(ext = "Rmd")
+  fs::file_move(html_pub, html_pub_tmp)
+  on.exit(fs::file_move(html_pub_tmp, html_pub))
+
+  expect_silent(
+    status <- wflow_status(files = rmd_pub, project = site_dir)
+  )
+  expect_true(status$status$published)
+})
+
 # Warnings and Errors ----------------------------------------------------------
 
 test_that("wflow_status throws error if not in workflowr project.", {
@@ -288,6 +307,26 @@ test_that("wflow_status throws error if given non-[Rr]md extension.", {
   readme <- file.path(site_dir, "README.md")
   expect_error(wflow_status(readme, project = site_dir),
                "File extensions must be either Rmd or rmd.")
+})
+
+test_that("wflow_status gives warning for HTML-only published files", {
+
+  # Setup functions from setup.R
+  path <- test_setup()
+  on.exit(test_teardown(path))
+
+  rmd <- file.path(path, "analysis", "test.Rmd")
+  fs::file_create(rmd)
+  html <- file.path(path, "docs", "test.html")
+  fs::file_create(html)
+
+  r <- git2r::repository(path)
+  git2r::add(r, html)
+  git2r::commit(r, "Commit HTML only")
+  expect_warning(
+    wflow_status(project = path),
+    workflowr:::relative(rmd)
+  )
 })
 
 # Test wflow_paths -------------------------------------------------------------

@@ -7,6 +7,8 @@ source("helpers.R", local = TRUE)
 
 source("setup.R", local = TRUE)
 
+skip_on_cran_windows()
+
 # Test get_committed_files and obtain_files_in_commit --------------------------
 
 # Create temp Git directory
@@ -85,6 +87,18 @@ test_that("obtain_files_in_commit reports a deleted file", {
   expect_identical(actual, expected)
 })
 
+test_that("get_committed_files can handle a path with spaces", {
+
+  path <- test_setup(path = fs::file_temp(" a path with spaces "))
+  on.exit(test_teardown(path))
+  r <- git2r::repository(path)
+
+  readme <- file.path(path, "README.md")
+
+  expect_true(readme %in% workflowr:::get_committed_files(r))
+  expect_true(readme %in% workflowr:::get_committed_files(r, sysgit = ""))
+})
+
 # Test check_git_config --------------------------------------------------------
 
 test_that("check_git_config throws an error when user.name and user.email are not set", {
@@ -146,4 +160,76 @@ test_that("commits(path) returns commits in reverse chronological order", {
     expect_true(all(date[seq_len(length(date) - 1)] >= date[seq(2, length(date))]))
   }
 
+})
+
+# Test get_outdated_files ------------------------------------------------------
+
+test_that("Git and git2r return same unix time for last commit", {
+
+  sysgit <- getOption("workflowr.sysgit", default = "")
+  if (is.null(sysgit) || is.na(sysgit) || nchar(sysgit) == 0)
+    skip("No system Git available")
+
+  path <- test_setup()
+  on.exit(test_teardown(path))
+  r <- git2r::repository(path)
+  readme <- workflowr:::absolute(file.path(path, "README.md"))
+
+  result_last_commit_time_sysgit <- workflowr:::last_commit_time_sysgit(r, readme, sysgit = sysgit)
+  result_last_commit_time_git2r <- workflowr:::last_commit_time_git2r(r, readme)
+
+  expect_identical(
+    result_last_commit_time_sysgit,
+    result_last_commit_time_git2r
+  )
+
+  expect_true(is.numeric(result_last_commit_time_sysgit))
+})
+
+test_that("Git and git2r return same outdated files", {
+
+  sysgit <- getOption("workflowr.sysgit", default = "")
+  if (is.null(sysgit) || is.na(sysgit) || nchar(sysgit) == 0)
+    skip("No system Git available")
+
+  path <- test_setup()
+  on.exit(test_teardown(path))
+  r <- git2r::repository(path)
+  p <- workflowr:::wflow_paths(project = path)
+  # Use absolute paths. For some reason git2r sometimes fails with relative
+  # paths, e.g. on winbuilder. Impossible to debug.
+  p <- lapply(p, workflowr:::absolute)
+  rmd <- list.files(path = p$analysis, pattern = "Rmd$", full.names = TRUE)
+  html <- workflowr:::to_html(rmd, outdir = p$docs)
+
+  # Fake publish them by committing HTML
+  Sys.sleep(1.25)
+  fs::file_create(html)
+  git2r::add(r, html)
+  git2r::commit(r, "Publish HTML files")
+  # Make the first one outdated
+  Sys.sleep(1.25)
+  cat("edit\n", file = rmd[1], append = TRUE)
+  git2r::add(r, rmd[1])
+  git2r::commit(r, "Make outdated Rmd")
+
+  outdated_sysgit <- workflowr:::get_outdated_files(r,
+                                                    files = rmd,
+                                                    outdir = p$docs,
+                                                    sysgit = sysgit)
+
+  outdated_git2r <- workflowr:::get_outdated_files(r,
+                                                   files = rmd,
+                                                   outdir = p$docs,
+                                                   sysgit = "")
+
+  expect_identical(
+    outdated_sysgit,
+    outdated_git2r
+  )
+
+  expect_identical(
+    outdated_sysgit,
+    rmd[1]
+  )
 })
