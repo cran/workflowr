@@ -40,10 +40,12 @@
 #'   will be named after the first Rmd file. This new directory will be located
 #'   in the current working directory. Supports file
 #'   \href{https://en.wikipedia.org/wiki/Glob_(programming)}{globbing}.
-#' @param username character (default: NULL). The GitHub or GitLab account you
-#'   want to use to create the remote Git repository. This is likely your
-#'   personal username, but it could also be the name of an organization you
-#'   belong to.
+#' @param username character (default: NULL). The GitHub or GitLab personal
+#'   account you want to use to create the remote Git repository. It can also be
+#'   the name of a GitLab Group that you belong to. However, if it is a GitHub
+#'   organization, instead use the argument \code{organization}.
+#' @param organization  The GitHub organization account you want to use to
+#'   create the remote Git repository.
 #' @param supporting_files character (default: NULL) Supporting files or
 #'   directories that are used by the Rmd files. These will be copied to the
 #'   root of the project. Since by default Rmd files are executed in the root of
@@ -96,7 +98,8 @@
 #'
 #' @export
 wflow_quickstart <- function(files,
-                             username,
+                             username = NULL,
+                             organization = NULL,
                              supporting_files = NULL,
                              directory = NULL,
                              change_wd = TRUE,
@@ -112,47 +115,37 @@ wflow_quickstart <- function(files,
 
   # Check input arguments ------------------------------------------------------
 
-  if (!(is.character(files) && length(files) > 0))
-      stop("files must be a character vector of filenames")
-  files <- glob(files)
-  if (!all(fs::file_exists(files)))
-    stop("Not all files exist. Check the paths to the files")
-  files <- absolute(files)
-  dir <- fs::is_dir(files)
-  if (any(dir)) {
-    stop("The argument `files` does not accept directories.\n",
-         "Instead use file globs to input multiple Rmd files.",
-         glue::glue("Directory: {fs::path_file(files[dir][1])}"),
-         call. = FALSE)
-  }
-  rmd <- is_rmd(files)
-  if (any(!rmd)) {
-    stop("The argument `files` only accepts R Markdown files\n",
-         glue::glue("Problem file: {fs::path_file(files[!rmd][1])}"),
-         call. = FALSE)
-  }
+  files <- process_input_files(files, rmd_only = TRUE)
 
-  if (!(is.character(username) && length(username) == 1))
-    stop("username must be a one-element character vector")
+  if (!is.null(username))
+    if (!(is.character(username) && length(username) == 1))
+      stop("username must be NULL or a one element character vector: ", username)
 
-  if (!is.null(supporting_files)) {
-    if (!(is.character(supporting_files) && length(supporting_files) > 0))
-      stop("supporting_files must be a character vector of files and/or directories")
-    supporting_files <- glob(supporting_files)
-    if (!all(fs::file_exists(supporting_files)))
-      stop("Not all supporting files exist. Check the paths to the files")
-    supporting_files <- absolute(supporting_files)
-  }
+  if (!is.null(organization))
+    if (!(is.character(organization) && length(organization) == 1))
+      stop("organization must be NULL or a one element character vector: ", organization)
 
-  if (!(is.logical(delete_on_error) && length(delete_on_error) == 1))
-    stop("delete_on_error must be a one-element logical vector")
+  if (is.character(username) && is.character(organization))
+    stop("Cannot set both username and organization.",
+         " Only one GitHub account can own the repository.")
 
-  if (!(is.logical(view) && length(view) == 1))
-    stop("view must be a one-element logical vector")
+  if (is.character(organization) && host == "gitlab")
+    stop("Do not use the argument \"organization\" for creating a repository on ",
+         "GitLab. Instead use the argument \"username\" for either a personal or ",
+         "Group account.")
+
+  supporting_files <- process_input_files(supporting_files, allow_null = TRUE,
+                                          files_only = FALSE)
+  supporting_files <- absolute(supporting_files)
+
+  assert_is_flag(delete_on_error)
+  assert_is_flag(view)
 
   if (!is.null(directory))
     if (!(is.character(directory) && length(directory) == 1))
       stop("directory must be NULL or a one element character vector: ", directory)
+
+  check_wd_exists()
 
   # Determine directory --------------------------------------------------------
 
@@ -252,6 +245,7 @@ wflow_quickstart <- function(files,
     # For now, only perform local operations. Attempt to create GitHub repo
     # below after publishing.
     gh_result <- suppressMessages(wflow_use_github(username = username,
+                                                   organization = organization,
                                                    create_on_github = FALSE,
                                                    project = directory))
     message("* Configured local Git repo to host project on GitHub.com")
@@ -273,10 +267,11 @@ wflow_quickstart <- function(files,
 
   if (host == "github") {
     gh_result <- suppressMessages(wflow_use_github(username = username,
+                                                   organization = organization,
                                                    create_on_github = create_on_github,
                                                    project = directory))
     if (!gh_result$repo_created) {
-      message(glue::glue("* To do: Create {username}/{gh_result$repository} on GitHub.com"))
+      message(glue::glue("* To do: Create {gh_result$repository} on GitHub.com"))
     }
   }
 

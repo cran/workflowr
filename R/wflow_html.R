@@ -496,7 +496,7 @@ wflow_post_knit <- function(metadata, input_file, runtime, encoding, ...) {
 wflow_pre_processor <- function(metadata, input_file, runtime, knit_meta,
                                 files_dir, output_dir) {
   # Pass additional arguments to Pandoc. I use this to add a custom header
-  # (--include-before-body) and footer (--include-after-body). The template text
+  # (--include-in-header) and footer (--include-after-body). The template text
   # for these are in the list `includes` defined in R/infrastructure.R.
 
   # header
@@ -508,7 +508,7 @@ wflow_pre_processor <- function(metadata, input_file, runtime, knit_meta,
   writeLines(includes$footer, con = fname_footer)
 
   # Pandoc args
-  args <- c("--include-before-body", fname_header,
+  args <- c("--include-in-header", fname_header,
             "--include-after-body", fname_footer)
 
   # Add pagetitle if missing title to avoid pandoc2 error
@@ -533,8 +533,7 @@ add_pagetitle <- function(metadata, input_file) {
   rmd_version <- utils::packageVersion("rmarkdown")
   # rmarkdown handles this starting in version 1.10 and ending in version 1.18
   # https://github.com/rstudio/rmarkdown/pull/1355
-  if (rmd_version >= as.numeric_version("1.10") &&
-      rmd_version <= as.numeric_version("1.17"))
+  if (rmd_version >= "1.10" && rmd_version <= "1.17")
     return(character(0))
 
   # No title/pagetitle defined with pandoc_args

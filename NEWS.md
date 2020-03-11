@@ -1,3 +1,68 @@
+# workflowr 1.6.1
+
+This patch release of workflowr includes minor improvements, updated
+documentation, bug fixes, and lots of internal refactoring.
+
+## Minor improvements
+
+* Workflowr functions check if the working directory exists
+(idea from @pcarbo, #185)
+
+* `wflow_use_github()` can now create repositories for GitHub organizations
+using the new argument `organization`. However, GitLab Groups should still be
+specified with the argument `username` for `wflow_use_gitlab()`
+(bug report from @stephens999, #186)
+
+* Any workflowr function that prompts for user input will continue to re-prompt
+until valid input has been entered (or canceled by hitting the key `Esc`)
+(idea from @pcarbo)
+
+* All functions that commit to the Git repository first check for the
+availability of the Git variables user.name and user.email (either global or
+local), which are required for creating a commit
+(#85)
+
+* The workflowr icon is displayed in browser tabs of workflowr websites
+(idea from @pcarbo)
+
+## Updated documentation
+
+* Document that GitLab.com provides private repositories with access control to
+the source code repository and the website
+(#187)
+
+* Update URL to RStudio-specific instructions for installing pandoc
+(bug report from @PietrH, #190)
+
+* Document in the FAQ vignette how to include an external image using an
+absolute URL to the image hosted on another website
+(idea from @JiaxiangBU, #159)
+
+* Document how to embed Shiny apps with `knitr::include_app()` and
+[shinyapps.io](http://www.shinyapps.io/)
+(idea from @rsimon64, #130)
+
+* Update the FAQ on including external images to account for the breaking change
+in `knitr::include_graphics()` introduced in knitr version 1.28
+(bug report from @ditordccaa, #103)
+
+* Add FAQ entry on how to use a Git hosting site that uses the HTTP protocol
+(idea from @antass, #163)
+
+## Bug fixes
+
+* Fix Windows-specific bug that caused the table of past versions to be missing
+from the workflowr report (bug introduced in version 1.5.0)
+
+## Internal refactoring
+
+* Internal refactoring for increased speed and improved error handling of input
+arguments
+* Check for class with `inherits()`
+(#189)
+* Switch to use pandoc option `--include-in-header` to insert workflowr-specific
+CSS and other metadata (surprisingly `--include-before-body` works fine)
+
 # workflowr 1.6.0
 
 ## New features
@@ -265,8 +330,6 @@ underlying functions from [git2r][] work.
 * Document in the GitLab vignette that the repository will be automatically
 created the first time the repository is pushed with `wflow_git_push()` (this is
 a feature unique to GitLab)
-
-[git2r]: https://cran.r-project.org/package=git2r
 
 # workflowr 1.3.0
 

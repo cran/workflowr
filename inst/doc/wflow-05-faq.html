@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <meta name="author" content="John Blischak" />
 
-<meta name="date" content="2019-12-19" />
+<meta name="date" content="2020-03-11" />
 
 <title>Frequently asked questions</title>
 
 
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
+<style type="text/css" data-origin="pandoc">
 div.sourceCode { overflow-x: auto; }
 table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
   margin: 0; padding: 0; vertical-align: baseline; border: none; }
@@ -55,11 +55,36 @@ code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
 code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
 code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
 code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
 </style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 
 
-<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+
+
 
 </head>
 
@@ -69,9 +94,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Frequently asked questions</h1>
-<h3 class="subtitle"><em>workflowr version 1.6.0</em></h3>
-<h4 class="author"><em>John Blischak</em></h4>
-<h4 class="date"><em>2019-12-19</em></h4>
+<h3 class="subtitle">workflowr version 1.6.1</h3>
+<h4 class="author">John Blischak</h4>
+<h4 class="date">2020-03-11</h4>
 
 
 <div id="TOC">
@@ -85,11 +110,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><a href="#can-i-change-x-on-my-website">Can I change “X” on my website?</a></li>
 <li><a href="#how-can-i-suppress-the-workflowr-report">How can I suppress the workflowr report?</a></li>
 <li><a href="#why-am-i-not-getting-the-same-result-with-wflow_build-as-with-the-rstudio-knit-html-button">Why am I not getting the same result with wflow_build() as with the RStudio Knit HTML button?</a></li>
-<li><a href="#can-i-share-workflowr-websites-directly-with-collaborators-in-a-secure-fashion">Can I share workflowr websites directly with collaborators in a secure fashion?</a></li>
-<li><a href="#can-i-password-protect-my-website">Can I password-protect my website?</a></li>
 <li><a href="#how-should-i-install-packages-to-use-with-a-workflowr-project">How should I install packages to use with a workflowr project?</a></li>
 <li><a href="#can-i-create-a-single-html-or-pdf-file-of-one-of-my-workflowr-r-markdown-files">Can I create a single HTML or PDF file of one of my workflowr R Markdown files?</a></li>
 <li><a href="#can-i-use-r-notebooks-with-workflowr">Can I use R notebooks with workflowr?</a></li>
+<li><a href="#can-i-use-a-git-hosting-service-that-uses-the-http-protocol">Can I use a Git hosting service that uses the HTTP protocol?</a></li>
 <li><a href="#how-should-i-pronounce-and-spell-workflowr">How should I pronounce and spell workflowr?</a></li>
 </ul>
 </div>
@@ -109,8 +133,13 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </div>
 <div id="can-i-make-my-workflowr-website-private" class="section level2">
 <h2>Can I make my workflowr website private?</h2>
-<p>Short answer: Not if you use the default setup that deploys the site on GitHub Pages. For alternative deployment options, see the vignette <a href="wflow-08-deploy.html">Alternative strategies for deploying workflowr websites</a>. It includes options for public or private websites.</p>
-<p>Long answer: Even if you create a private GitHub repository, the website it creates is still public. If you’re not ready to publish your results online, you can always wait and activate GitHub Pages later. In the meantime, you’ll still have a version-controlled, organized set of results for your project. However, the risk that someone that doesn’t have the link to your website is able to find it is very low. Search engines prioritize the results by how many other sites link to a site, so your website will not be high in the results even if you search for very specific terms. Thus if you only share the URL to your results with your close collaborators, and request that they not share it widely, your website is effectively private. That being said, being truly scooped in science is rare (at best) and openly sharing your work will help establish your expertise in the field (and furthermore establishes your priority), so you should consider keeping both your code and website public. The main caveat to this advice is if you are analyzing data that contains sensitive or restricted information, in which case you should not use GitHub Pages or any other public deployment option.</p>
+<p>Yes. While it it is <strong>not</strong> possible to make a <a href="https://pages.github.com/">GitHub Pages</a> site private (the default setup described in the <a href="wflow-01-getting-started.html">“Getting Started” vignette</a>), there are various other hosting platforms that provide access control. Below are the currently documented options, in order of least to most amount of technical setup required:</p>
+<ul>
+<li>You can host a private site on <a href="https://docs.gitlab.com/ce/user/project/pages/index.html">GitLab Pages</a> and grant access to collaborators. All they need is a GitLab.com account (and they can use a social account, e.g. Twitter, to login to GitLab.com) - <a href="wflow-06-gitlab.html">Deploy your site with GitLab Pages</a></li>
+<li>You can use <a href="https://beakerbrowser.com/">Beaker Browser</a> to securely self-host your site and share the link with collaborators - <a href="wflow-08-deploy.html#beaker-browser-secure-sharing">Deploy your site with Beaker Browser</a></li>
+<li>You can deploy a password-protected site using <a href="https://aws.amazon.com/s3/">Amazon Web Services</a> (requires familiarity with cloud technologies) - <a href="wflow-08-deploy.html#amazon-s3-password-protected">Deploy your site with AWS</a></li>
+</ul>
+<p>To see all the currently documented deployment options, see the vignette <a href="wflow-08-deploy.html">Alternative strategies for deploying workflowr websites</a>.</p>
 </div>
 <div id="how-should-i-manage-large-data-files-in-a-workflowr-project" class="section level2">
 <h2>How should I manage large data files in a workflowr project?</h2>
@@ -126,8 +155,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li><p>In the R Markdown file, refer to the image file(s) using the relative path from <code>docs/</code> (because this is where the HTML files are located), e.g.:</p>
 <pre><code>![](assets/external.png)</code></pre>
 <p>Alternatively, you could use <code>knitr::include_graphics()</code> inside of an R code chunk, which will automatically center the image and also follow the knitr chunk options <code>out.width</code> and <code>out.height</code>:</p>
-<pre><code>knitr::include_graphics(&quot;assets/external.png&quot;)</code></pre>
-Note that the image will not be previewed in the R Markdown file inside of RStudio because it is in a different directory than the R Markdown file.</li>
+<pre><code>knitr::include_graphics(&quot;assets/external.png&quot;, error = FALSE)</code></pre>
+Note that the image will not be previewed in the R Markdown file inside of RStudio because it is in a different directory than the R Markdown file. Also note that the default behavior of <code>knitr::include_graphics()</code> has changed over time. Starting in version 1.28, the function throws an error if it can’t find the file. This breaks the workflowr setup, since the file path only exists once the HTML file is moved to <code>docs/</code>. Thus you have to set <code>error = FALSE</code>. Starting in 1.29, there is a knitr package option that you can set, e.g. in your <code>.Rprofile</code>, to disable this behavior globally: <code>options(knitr.graphics.error = FALSE)</code></li>
 <li>Run <code>wflow_build()</code> to confirm the external image file(s) are properly displayed</li>
 <li><p>Use <code>wflow_git_commit()</code> to commit the file(s) to the Git repo (so that they get pushed to GitHub):</p>
 <pre><code>wflow_git_commit(&quot;docs/assets/external.png&quot;, &quot;Add external image of ...&quot;)
@@ -135,6 +164,7 @@ Note that the image will not be previewed in the R Markdown file inside of RStud
 wflow_git_commit(&quot;docs/assets/*.png&quot;, &quot;Add external images of ...&quot;)</code></pre></li>
 <li><p>Run <code>wflow_publish()</code> on the R Markdown file that contains the external image file(s)</p></li>
 </ol>
+<p>Another option is to first upload the image, e.g. to <a href="https://imgur.com/">Imgur</a>, <a href="https://figshare.com/">Figshare</a>, another GitHub repository, etc. Then you can link directly to the image in your Rmd file using the absolute URL. This has the added advantage that the image will automatically display in the Rmd file as you edit it in RStudio. The main disadvantage is that the image isn’t in the same location as the rest of your project files.</p>
 </div>
 <div id="how-can-i-save-a-figure-in-a-vector-graphics-format-e.g.pdf" class="section level2">
 <h2>How can I save a figure in a vector graphics format (e.g. PDF)?</h2>
@@ -179,7 +209,12 @@ ggsave(&quot;paper/plot-to-edit.pdf&quot;, width = 5, height = 5)
 </div>
 <div id="can-i-include-shiny-apps-in-my-website" class="section level2">
 <h2>Can I include Shiny apps in my website?</h2>
-<p>No, at least not in the standard setup. The website is hosted with GitHub pages, which only supports static web pages. Shiny apps are dynamic, i.e. a user can interact with them to change the content. The easiest way to share your Shiny app would be to host it at <a href="http://www.shinyapps.io/">shinyapps.io</a> and add a link to your app on your workflowr website. Alternatively you could host your workflowr website on your own server, but that would require much more knowledge and resources to accomplish.</p>
+<p>Yes, but not directly. You cannot directly embed the Shiny app into the Rmd file using <code>runtime: shiny_prerendered</code> for two reasons. First, workflowr creates a static website, and the free deployment options (e.g. GitHub Pages), only provide static web hosting. Shiny apps require a dynamic website because they need to call a server to run the R code. Second, even if you setup your own web server, the supporting files (e.g. CSS/JS) for a Shiny app have to be in a <a href="https://rmarkdown.rstudio.com/authoring_shiny_prerendered.html#external_resources">different location</a> than the standard for an Rmd-based website.</p>
+<p>However, there is still a good option for embedding the Shiny app directly into the web page. You can upload your Shiny app to <a href="http://www.shinyapps.io/">shinyapps.io</a>, and then embed it directly into your document by calling <code>knitr::include_app()</code> inside a code chunk, as shown below:</p>
+<div class="sourceCode"><pre class="sourceCode markdown"><code class="sourceCode markdown">```{r shiny-app}
+knitr::include_app(&quot;https://&lt;user-name&gt;.shinyapps.io/&lt;app-name&gt;/&quot;)
+```</code></pre></div>
+<p>Using this method, the R code for the Shiny app is executed on the servers at shinyapps.io, but your readers are able to explore the app without leaving your website.</p>
 </div>
 <div id="can-i-change-x-on-my-website" class="section level2">
 <h2>Can I change “X” on my website?</h2>
@@ -198,14 +233,6 @@ ggsave(&quot;paper/plot-to-edit.pdf&quot;, width = 5, height = 5)
 <div id="why-am-i-not-getting-the-same-result-with-wflow_build-as-with-the-rstudio-knit-html-button" class="section level2">
 <h2>Why am I not getting the same result with wflow_build() as with the RStudio Knit HTML button?</h2>
 <p><code>wflow_build()</code> is designed to have the same functionality as the Knit HTML button in RStudio, namely that it knits the HTML file in a separate R session to avoid any clashes with variables or packages in use in the current R session. However, the technical implementations are not identical, and thus informally we have noticed the behavior of the two options occasionally differs. At the moment, we believe that if the file results in an error when using <code>wflow_build()</code>, the file needs to be fixed, regardless of whether the file is able to be built with the RStudio button. If you have a use case that you think should be supported by <code>wflow_build()</code>, please open an <a href="https://github.com/jdblischak/workflowr/issues">Issue</a> and provide a small reproducible example.</p>
-</div>
-<div id="can-i-share-workflowr-websites-directly-with-collaborators-in-a-secure-fashion" class="section level2">
-<h2>Can I share workflowr websites directly with collaborators in a secure fashion?</h2>
-<p>Yes. Please see these <a href="wflow-08-deploy.html#beaker-browser-secure-sharing">instructions</a> for deploying a workflowr project securely with <a href="https://beakerbrowser.com/">Beaker Browser</a>.</p>
-</div>
-<div id="can-i-password-protect-my-website" class="section level2">
-<h2>Can I password-protect my website?</h2>
-<p>Yes. Please see these <a href="wflow-08-deploy.html#amazon-s3-password-protected">instructions</a> for deploying a workflowr project with password-protection using <a href="https://aws.amazon.com/s3/">Amazon S3</a>.</p>
 </div>
 <div id="how-should-i-install-packages-to-use-with-a-workflowr-project" class="section level2">
 <h2>How should I install packages to use with a workflowr project?</h2>
@@ -271,6 +298,30 @@ output:
     code_folding: show
 ---</code></pre>
 </div>
+<div id="can-i-use-a-git-hosting-service-that-uses-the-http-protocol" class="section level2">
+<h2>Can I use a Git hosting service that uses the HTTP protocol?</h2>
+<p>Workflowr works best with Git hosting services that use the HTTPS protocol. However, with some minimal upfront configuration, it is possible to use the HTTP protocol.</p>
+<p>The configuration differs depending on whether you are authenticating with SSH keys or username/password.</p>
+<p><strong>SSH keys</strong></p>
+<ol style="list-style-type: decimal">
+<li>Configure the remote with <code>wflow_git_remote()</code> and <code>protocol = &quot;ssh&quot;</code></li>
+<li>You can use <code>wflow_git_push()</code> and <code>wflow_git_pull()</code></li>
+<li><p>For the embedded links to past versions of the files to be correct, you need to manually include the URL to the project in <code>_workflowr.yml</code> (for historical reasons, this variable is named <code>github</code>)</p>
+<pre><code>github: http://custom-site.com/&lt;username&gt;/&lt;reponame&gt;</code></pre></li>
+</ol>
+<p><strong>Username/Password</strong></p>
+<ol style="list-style-type: decimal">
+<li>You can’t use <code>wflow_git_remote()</code>. Instead use either
+<ol style="list-style-type: lower-alpha">
+<li><p><code>git2r::remote_add()</code> in R:</p>
+<pre><code>git2r::remote_add(name = &quot;origin&quot;, url = &quot;http://custom-site/&lt;username&gt;/&lt;reponame&gt;.git&quot;)</code></pre></li>
+<li><p><code>git remote add origin</code> in the terminal:</p>
+<pre><code>git remote add origin http://custom-site/&lt;username&gt;/&lt;reponame&gt;.git</code></pre></li>
+</ol></li>
+<li>You cannot use <code>wflow_git_push()</code> and <code>wflow_git_pull()</code>. Instead run <code>git push</code> and <code>git pull</code> in the terminal</li>
+<li>The embedded links to past versions of the files will be correct because they will be based off of your remote URL</li>
+</ol>
+</div>
 <div id="how-should-i-pronounce-and-spell-workflowr" class="section level2">
 <h2>How should I pronounce and spell workflowr?</h2>
 <p>There are multiple options for pronouncing workflowr:</p>
@@ -283,6 +334,9 @@ output:
 <p>Workflowr should be capitalized at the beginning of a sentence, but otherwise the lowercase workflowr should be the preferred option.</p>
 </div>
 
+
+
+<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

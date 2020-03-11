@@ -27,12 +27,18 @@
 #'
 #' }
 #'
+#' By default the GitLab repository is set to private, so you are the only one
+#' that can access it. If you need to keep it private, you can
+#' \href{https://gitlab.com/help/user/project/pages/pages_access_control.md}{grant
+#' access} to collaborators in Settings->Members. Otherwise, you can make it
+#' public in Settings->General->Visibility.
+#'
 #' For more details, read the documentation provided by
 #' \href{https://docs.gitlab.com/ee/ci/yaml/README.html#pages}{GitLab Pages}.
 #'
 #' @param username character (default: NULL). The GitLab account associated with
 #'   the GitLab repository. This is likely your personal GitLab username, but it
-#'   could also be the name of a GitLab organization you belong to. It will be
+#'   could also be the name of a GitLab Group you belong to. It will be
 #'   combined with the arguments \code{repository} and \code{domain} to
 #'   determine the URL of the new repository, e.g. the default is
 #'   https://gitlab.com/username/repository. It will be combined with the
@@ -67,7 +73,7 @@
 #'   this information.
 #'
 #' @seealso \code{\link{wflow_git_push}}, \code{\link{wflow_git_remote}},
-#'          \code{\link{wflow_use_github}}
+#'          \code{\link{wflow_use_github}}, vignette("wflow-06-gitlab")
 #'
 #' @examples
 #' \dontrun{
@@ -94,17 +100,18 @@ wflow_use_gitlab <- function(username = NULL, repository = NULL,
     if (!(is.character(repository) && length(repository) == 1))
       stop("repository must be NULL or a one element character vector: ", repository)
 
-  if (!(is.logical(navbar_link) && length(navbar_link) == 1))
-    stop("navbar_link must be a one-element logical vector")
+  assert_is_flag(navbar_link)
 
-  if (!(is.character(project) && length(project) == 1))
-    stop("project must be a one-element character vector")
+  if (!(is.character(protocol) && length(protocol) == 1))
+    stop("protocol must be a one element character vector: ", protocol)
 
-  if (!fs::dir_exists(project)) {
-    stop("project directory does not exist.")
-  }
+  if (!(is.character(domain) && length(domain) == 1))
+    stop("domain must be a one element character vector: ", domain)
 
+  check_wd_exists()
+  assert_is_single_directory(project)
   project <- absolute(project)
+  check_git_config(project, "`wflow_use_gitlab`")
 
   # Status ---------------------------------------------------------------------
 

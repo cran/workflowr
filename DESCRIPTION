@@ -1,7 +1,7 @@
 Package: workflowr
 Type: Package
 Title: A Framework for Reproducible and Collaborative Data Science
-Version: 1.6.0
+Version: 1.6.1
 Authors@R: c(
     person("John", "Blischak", role = c("aut", "cre"),
            email = "jdblischak@uchicago.edu",
@@ -43,7 +43,7 @@ VignetteBuilder: knitr
 SystemRequirements: pandoc (>= 1.12.3) - http://pandoc.org
 Language: en-US
 NeedsCompilation: no
-Packaged: 2019-12-19 20:10:55 UTC; jdb-work
+Packaged: 2020-03-11 17:24:21 UTC; jdb-work
 Author: John Blischak [aut, cre] (<https://orcid.org/0000-0003-2634-9879>),
   Peter Carbonetto [aut] (<https://orcid.org/0000-0003-1144-6780>),
   Matthew Stephens [aut] (<https://orcid.org/0000-0001-5397-9257>),
@@ -55,4 +55,4 @@ Author: John Blischak [aut, cre] (<https://orcid.org/0000-0003-2634-9879>),
     suppress_report)
 Maintainer: John Blischak <jdblischak@uchicago.edu>
 Repository: CRAN
-Date/Publication: 2019-12-19 20:40:02 UTC
+Date/Publication: 2020-03-11 18:20:02 UTC

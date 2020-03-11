@@ -385,14 +385,14 @@ test_that("wflow_build reports working and knit directories", {
 
 test_that("wflow_build fails early for bad files", {
   expect_error(wflow_build(character(), project = site_dir),
-               "files must be NULL or a character vector of filenames")
+               "vector with length 0")
   expect_error(wflow_build(s$analysis, project = site_dir),
                "files cannot include a path to a directory")
   expect_error(wflow_build("", project = site_dir),
                "Not all files exist. Check the paths to the files")
   fs::file_create(file.path(s$analysis, "invalid.R"))
   expect_error(wflow_build(file.path(s$analysis, "invalid.R"), project = site_dir),
-               "File extensions must be either Rmd or rmd.")
+               "Only files with extension Rmd or rmd")
 })
 
 test_that("wflow_build throws error if given directory input", {

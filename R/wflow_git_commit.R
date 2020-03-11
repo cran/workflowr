@@ -81,15 +81,8 @@
 wflow_git_commit <- function(files = NULL, message = NULL, all = FALSE,
                              force = FALSE, dry_run = FALSE, project = ".") {
 
-  if (!is.null(files)) {
-    if (!(is.character(files) && length(files) > 0))
-      stop("files must be NULL or a character vector of filenames")
-    files <- glob(files)
-    if (!all(fs::file_exists(files)))
-      stop("Not all files exist. Check the paths to the files")
-    # Change filepaths to relative paths
-    files <- relative(files)
-  }
+  files <- process_input_files(files, allow_null = TRUE, files_only = FALSE,
+                               convert_to_relative_paths = TRUE)
 
   if (is.null(message)) {
     message <- deparse(sys.call())
@@ -100,22 +93,11 @@ wflow_git_commit <- function(files = NULL, message = NULL, all = FALSE,
     stop("message must be NULL or a character vector")
   }
 
-  if (!(is.logical(all) && length(all) == 1))
-    stop("all must be a one-element logical vector")
-
-  if (!(is.logical(force) && length(force) == 1))
-    stop("force must be a one-element logical vector")
-
-  if (!(is.logical(dry_run) && length(dry_run) == 1))
-    stop("dry_run must be a one-element logical vector")
-
-  if (!(is.character(project) && length(project) == 1))
-    stop("project must be a one-element character vector")
-
-  if (!fs::dir_exists(project)) {
-    stop("project directory does not exist.")
-  }
-
+  assert_is_flag(all)
+  assert_is_flag(force)
+  assert_is_flag(dry_run)
+  check_wd_exists()
+  assert_is_single_directory(project)
   project <- absolute(project)
 
   # Fail early if no Git repository
@@ -131,24 +113,11 @@ wflow_git_commit <- function(files = NULL, message = NULL, all = FALSE,
 
   # Additional checks of files to be committed
   if (!is.null(files)) {
-    # Files must be within the Git repository
-    if (!all(sapply(files, git2r::in_repository)))
-      stop("Not all files are inside the Git repository")
-    # Files cannot be larger than 100MB
-    sizes <- file.size(files) / 10^6
-    if (any(sizes >= 100))
-      stop(wrap(
-      "All files to be committed must be less than 100 MB. This is the max
-      file size able to be pushed to GitHub, and is in general a good practice
-      to follow no matter what Git hosting service you are using. Large files
-      will make each push and pull take much longer and increase the risk of
-      the download timing out. Run Git directly in the Terminal if you really
-      want to commit these files."
-      ))
+    check_files_in_git_repo(files)
+    check_file_sizes(files)
   }
 
-  wflow_git_commit_(files = files, message = message, all = all,
-                force = force, dry_run = dry_run, project = project)
+  do.call(wflow_git_commit_, args = as.list(environment()))
 }
 
 # Internal function that performs add/commit. Called by wflow_git_commit.
@@ -159,8 +128,9 @@ wflow_git_commit <- function(files = NULL, message = NULL, all = FALSE,
 # run, some of the files may not yet be built (which would cause an error).
 # Also, not every Rmd file will create output figures, but it's easier to just
 # attempt to add figures for every file.
-wflow_git_commit_ <- function(files = NULL, message = NULL, all = FALSE,
-                              force = FALSE, dry_run = FALSE, project = ".") {
+wflow_git_commit_ <- function() {}
+formals(wflow_git_commit_) <- formals(wflow_git_commit)
+body(wflow_git_commit_) <- quote({
 
   # Establish connection to Git repository
   r <- git2r::repository(path = project)
@@ -223,7 +193,7 @@ wflow_git_commit_ <- function(files = NULL, message = NULL, all = FALSE,
   }
 
   return(o)
-}
+})
 
 #' @export
 print.wflow_git_commit <- function(x, ...) {
@@ -275,4 +245,23 @@ shorten_site_libs <- function(files) {
     }
   }
   return(unique(out))
+}
+
+check_files_in_git_repo <- function(files) {
+  if (!all(sapply(files, git2r::in_repository)))
+    stop("Not all files are inside the Git repository")
+}
+
+# Files cannot be larger than 100MB
+check_file_sizes <- function(files) {
+  sizes <- file.size(files) / 10^6
+  if (any(sizes >= 100))
+    stop(wrap(
+      "All files to be committed must be less than 100 MB. This is the max
+      file size able to be pushed to GitHub, and is in general a good practice
+      to follow no matter what Git hosting service you are using. Large files
+      will make each push and pull take much longer and increase the risk of
+      the download timing out. Run Git directly in the Terminal if you really
+      want to commit these files."
+    ))
 }

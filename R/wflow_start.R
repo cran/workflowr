@@ -238,7 +238,6 @@
 #' }
 #'
 #' @export
-#'
 wflow_start <- function(directory,
                         name = NULL,
                         git = TRUE,
@@ -249,22 +248,19 @@ wflow_start <- function(directory,
                         dry_run = FALSE,
                         user.name = NULL,
                         user.email = NULL) {
+
+  # Check input arguments ------------------------------------------------------
+
   if (!is.character(directory) | length(directory) != 1)
     stop("directory must be a one element character vector: ", directory)
   if (!(is.null(name) | (is.character(name) | length(name) != 1)))
     stop("name must be NULL or a one element character vector: ", name)
-  if (!is.logical(git) | length(git) != 1)
-    stop("git must be a one element logical vector: ", git)
-  if (!is.logical(existing) | length(existing) != 1)
-    stop("existing must be a one element logical vector: ", existing)
-  if (!is.logical(overwrite) | length(overwrite) != 1)
-    stop("overwrite must be a one element logical vector: ", overwrite)
-  if (!is.logical(change_wd) | length(change_wd) != 1)
-    stop("change_wd must be a one element logical vector: ", change_wd)
-  if (!is.logical(disable_remote) | length(disable_remote) != 1)
-    stop("disable_remote must be a one element logical vector: ", disable_remote)
-  if (!is.logical(dry_run) | length(dry_run) != 1)
-    stop("dry_run must be a one element logical vector: ", dry_run)
+  assert_is_flag(git)
+  assert_is_flag(existing)
+  assert_is_flag(overwrite)
+  assert_is_flag(change_wd)
+  assert_is_flag(disable_remote)
+  assert_is_flag(dry_run)
   if (!(is.null(user.name) | (is.character(user.name) | length(user.name) != 1)))
     stop("user.name must be NULL or a one element character vector: ", user.name)
   if (!(is.null(user.email) | (is.character(user.email) | length(user.email) != 1)))
@@ -272,6 +268,8 @@ wflow_start <- function(directory,
   if ((is.null(user.name) && !is.null(user.email)) ||
       (!is.null(user.name) && is.null(user.email)))
     stop("Must specify both user.name and user.email, or neither.")
+
+  check_wd_exists()
 
   if (!existing & fs::dir_exists(directory)) {
     stop("Directory already exists. Set existing = TRUE if you wish to add workflowr files to an already existing project.")
@@ -284,13 +282,7 @@ wflow_start <- function(directory,
   # A workflowr directory cannot be created within an existing Git repository if
   # git = TRUE & existing = FALSE.
   if (git & !existing) {
-    # In order to check if location is within an existing Git repository, first
-    # must obtain the most upstream existing directory
-    dir_existing <- obtain_existing_path(directory)
-    if (git2r::in_repository(dir_existing)) {
-      r <- git2r::repository(dir_existing, discover = TRUE)
-      stop("The directory where you have chosen to create a new workflowr directory is already within a Git repository. This is potentially dangerous. If you want to have a workflowr project created within this existing Git repository, re-run wflow_start with `git = FALSE` and then manually commit the new files. The following directory contains the existing .git directory: ", git2r::workdir(r))
-    }
+    check_for_existing_git_directory(directory)
   }
 
   # Require that user.name and user.email be set locally or globally
@@ -307,6 +299,13 @@ wflow_start <- function(directory,
   if (disable_remote && .Platform$OS.type == "windows") {
     stop("disable_remote is not available on Windows")
   }
+
+  do.call(wflow_start_, args = as.list(environment()))
+}
+
+wflow_start_ <- function() {}
+formals(wflow_start_) <- formals(wflow_start)
+body(wflow_start_) <- quote({
 
   # Create directory if it doesn't already exist
   if (!existing && !fs::dir_exists(directory) && !dry_run) {
@@ -413,7 +412,7 @@ wflow_start <- function(directory,
   class(o) <- "wflow_start"
 
   return(o)
-}
+})
 
 #' @export
 print.wflow_start <- function(x, ...) {
@@ -500,4 +499,21 @@ check_rstudio_version <- function() {
     rs_version <- NULL
   }
   return(rs_version)
+}
+
+check_for_existing_git_directory <- function(directory) {
+  # In order to check if location is within an existing Git repository, first
+  # must obtain the most upstream existing directory
+  dir_existing <- obtain_existing_path(directory)
+  if (git2r::in_repository(dir_existing)) {
+    r <- git2r::repository(dir_existing, discover = TRUE)
+    stop(call. = FALSE,
+      "The directory where you have chosen to create a new workflowr directory",
+      " is already within a Git repository. This is potentially dangerous. If",
+      " you want to have a workflowr project created within this existing Git",
+      " repository, re-run wflow_start with `git = FALSE` and then manually",
+      " commit the new files. The following directory contains the existing .git",
+      " directory: ", git2r::workdir(r))
+  }
+  return(invisible(NULL))
 }

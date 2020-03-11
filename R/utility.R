@@ -283,7 +283,7 @@ get_output_dir <- function(directory, yml = "_site.yml") {
 
 # Convert the output of git2r::status() to a data frame for easier manipulation
 status_to_df <- function(x) {
-  stopifnot(class(x) == "git_status")
+  stopifnot(inherits(x, "git_status"))
 
   col_status <- character()
   col_substatus <- character()
@@ -438,14 +438,17 @@ check_site_generator <- function(index) {
   return(FALSE)
 }
 
-is_rmd <- function(path) {
-  extensions <- fs::path_ext(path)
-  stringr::str_detect(extensions, "^[Rr]md$")
-}
-
 # Save the files open in RStudio editor
 autosave <- function() {
   if (!rstudioapi::isAvailable(version_needed = "1.1.287")) return(FALSE)
 
   rstudioapi::documentSaveAll()
+}
+
+check_wd_exists <- function() {
+  wd <- fs::path_wd()
+  if (length(fs::path_wd()) == 0)
+    stop("The current working directory doesn't exist.",
+         " Use setwd() to change to an existing directory.",
+         call. = FALSE)
 }

@@ -16,7 +16,7 @@ wflow_use_gitlab(
 \arguments{
 \item{username}{character (default: NULL). The GitLab account associated with
 the GitLab repository. This is likely your personal GitLab username, but it
-could also be the name of a GitLab organization you belong to. It will be
+could also be the name of a GitLab Group you belong to. It will be
 combined with the arguments \code{repository} and \code{domain} to
 determine the URL of the new repository, e.g. the default is
 https://gitlab.com/username/repository. It will be combined with the
@@ -85,6 +85,12 @@ save the website files in \code{public/}
 
 }
 
+By default the GitLab repository is set to private, so you are the only one
+that can access it. If you need to keep it private, you can
+\href{https://gitlab.com/help/user/project/pages/pages_access_control.md}{grant
+access} to collaborators in Settings->Members. Otherwise, you can make it
+public in Settings->General->Visibility.
+
 For more details, read the documentation provided by
 \href{https://docs.gitlab.com/ee/ci/yaml/README.html#pages}{GitLab Pages}.
 }
@@ -99,5 +105,5 @@ wflow_git_push()
 }
 \seealso{
 \code{\link{wflow_git_push}}, \code{\link{wflow_git_remote}},
-         \code{\link{wflow_use_github}}
+         \code{\link{wflow_use_github}}, vignette("wflow-06-gitlab")
 }

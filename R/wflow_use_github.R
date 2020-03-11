@@ -51,8 +51,9 @@
 #' origin master} in the terminal) to push your code to GitHub.
 #'
 #' @param username character (default: NULL). The GitHub account associated with
-#'   the GitHub repository. This is likely your personal GitHub username, but it
-#'   could also be the name of a GitHub organization you belong to. It will be
+#'   the GitHub repository. This should be your personal GitHub username. If the
+#'   repository will be created for a GitHub organization, instead use the
+#'   argument \code{organization}. It will be
 #'   combined with the arguments \code{repository} and \code{domain} to
 #'   determine the URL of the new repository, e.g. the default is
 #'   https://github.com/username/repository. It will be combined with the
@@ -69,6 +70,10 @@
 #'   the repository. First, it will check the current setting for the remote URL
 #'   named "origin". Second, it will use the name of the root directory of the
 #'   workflowr project.
+#' @param organization character (default: NULL). The GitHub organization
+#'   associated with the GitHub repository. Only set one of \code{organization}
+#'   or \code{username}. See the argument \code{username} above for more
+#'   details.
 #' @param navbar_link logical (default: TRUE). Insert a link to the GitHub
 #'   repository into the navigation bar.
 #' @param create_on_github logical (default: NULL). Should workflowr create the
@@ -123,11 +128,16 @@
 #' wflow_use_github("your-username", "name-of-repository")
 #' # Login with GitHub account and create new repository
 #' wflow_git_push()
+#'
+#' # Create a repository for an organization  you belong to
+#' wflow_use_github(organization = "my-org")
 #' }
 #'
 #' @importFrom httpuv startServer
 #' @export
-wflow_use_github <- function(username = NULL, repository = NULL,
+wflow_use_github <- function(username = NULL,
+                             repository = NULL,
+                             organization = NULL,
                              navbar_link = TRUE,
                              create_on_github = NULL,
                              protocol = "https",
@@ -144,21 +154,25 @@ wflow_use_github <- function(username = NULL, repository = NULL,
     if (!(is.character(repository) && length(repository) == 1))
       stop("repository must be NULL or a one element character vector: ", repository)
 
-  if (!(is.logical(navbar_link) && length(navbar_link) == 1))
-    stop("navbar_link must be a one-element logical vector")
+  if (!is.null(organization))
+    if (!(is.character(organization) && length(organization) == 1))
+      stop("organization must be NULL or a one element character vector: ", organization)
 
-  if (!is.null(create_on_github))
-    if (!(is.logical(create_on_github) && length(create_on_github) == 1))
-      stop("create_on_github must be NULL or a one element character vector: ", create_on_github)
-
-  if (!(is.character(project) && length(project) == 1))
-    stop("project must be a one-element character vector")
-
-  if (!fs::dir_exists(project)) {
-    stop("project directory does not exist.")
+  assert_is_flag(navbar_link)
+  if (!is.null(create_on_github)) {
+    assert_is_flag(create_on_github)
   }
 
+  if (!(is.character(protocol) && length(protocol) == 1))
+    stop("protocol must be a one element character vector: ", protocol)
+
+  if (!(is.character(domain) && length(domain) == 1))
+    stop("domain must be a one element character vector: ", domain)
+
+  check_wd_exists()
+  assert_is_single_directory(project)
   project <- absolute(project)
+  check_git_config(project, "`wflow_use_github`")
 
   # Status ---------------------------------------------------------------------
 
@@ -178,14 +192,24 @@ wflow_use_github <- function(username = NULL, repository = NULL,
   host <- get_host_from_remote(path = project) # returns NA if unavailable
   host_parts <- stringr::str_split(host, "/")[[1]]
 
-  if (is.null(username)) {
+  account_is_organization <- FALSE
+
+  if (is.character(username) && is.character(organization)) {
+    stop("Cannot set both username and organization.",
+         " Only one GitHub account can own the repository.")
+  } else if (is.character(organization)) {
+    account <- organization
+    account_is_organization <- TRUE
+  } else if (is.character(username)) {
+    account <- username
+  } else {
     if (is.na(host)) {
       stop("Unable to guess username. Please specify this argument.")
     } else {
-      username <- host_parts[length(host_parts) - 1]
+      account <- host_parts[length(host_parts) - 1]
     }
   }
-  message("username: ", username)
+  message("account: ", account)
 
   if (is.null(repository)) {
     if (is.na(host)) {
@@ -231,20 +255,20 @@ wflow_use_github <- function(username = NULL, repository = NULL,
   #   1. Remote is already set correctly -> Do nothing
   #   2. Remote "origin" is currently defined -> Update URL with set_url
   #   3. Remote "origin" does not exist -> Add remote "origin"
-  url_anticipated <- create_remote_url(user = username, repo = repository,
+  url_anticipated <- create_remote_url(user = account, repo = repository,
                                        protocol = protocol, domain = domain)
   url_current <- remotes["origin"]
   if (!is.na(url_current) && url_current == url_anticipated) {
     config_remote <- NA
     message("* Remote \"origin\" already set to ", remotes["origin"])
   } else if ("origin" %in% names(remotes)) {
-    config_remote <- wflow_git_remote(remote = "origin", user = username,
+    config_remote <- wflow_git_remote(remote = "origin", user = account,
                                       repo = repository, protocol = protocol,
                                       action = "set_url", domain = domain,
                                       verbose = FALSE, project = project)
     message("* Overwrote previous remote \"origin\" to ", config_remote["origin"])
   } else {
-    config_remote <- wflow_git_remote(remote = "origin", user = username,
+    config_remote <- wflow_git_remote(remote = "origin", user = account,
                                       repo = repository, protocol = protocol,
                                       action = "add", domain = domain,
                                       verbose = FALSE, project = project)
@@ -295,42 +319,48 @@ wflow_use_github <- function(username = NULL, repository = NULL,
       "1. Have workflowr attempt to automatically create the repository \"{repository}\" on GitHub.
       This requires
       logging into GitHub and enabling the workflowr-oauth-app access to the
-      account \"{username}\"."
+      account \"{account}\"."
     )), "\n", sep = "")
 
     cat("\n", wrap(glue::glue(
       "2. Create the repository \"{repository}\" yourself by going to https://github.com/new and entering \"{repository}\" for the Repository name. This is the default option."
     )), "\n", sep = "")
 
-    ans <- readline("\nEnter your choice (1 or 2): ")
-    if (ans == "1") {
-      create_on_github <- TRUE
-      cat("You chose option 1: have workflowr attempt to create repo\n")
-    } else if (ans == "2") {
-      cat("You chose option 2: create the repo yourself\n")
-    } else {
-      cat("Invalid input. Defaulting to option 2: create the repo yourself\n")
+    cat("\n")
+    ans <- ""
+    while(!ans %in% c("1", "2")) {
+      ans <- readline("Enter your choice (1 or 2): ")
+      if (ans == "1") {
+        create_on_github <- TRUE
+        cat("You chose option 1: have workflowr attempt to create repo\n")
+      } else if (ans == "2") {
+        cat("You chose option 2: create the repo yourself\n")
+      } else {
+        cat("Invalid input.\n")
+      }
     }
   }
 
   if (is.null(create_on_github)) create_on_github <- FALSE
 
   if (create_on_github) {
-    repo_url <- create_gh_repo(username, repository)
+    repo_url <- create_gh_repo(account, repository,
+                               account_is_organization = account_is_organization)
     if (check_browser()) utils::browseURL(repo_url)
     repo_created <- TRUE
-    message(glue::glue("*  Created {username}/{repository}"))
+    message(glue::glue("*  Created {account}/{repository}"))
   }
 
   # Prepare output -------------------------------------------------------------
 
-  o <- list(username = username, repository = repository,
+  o <- list(username = username, organization = organization,
+            account = account, repository = repository,
             renamed = renamed, files_git = files_git, commit = commit,
             config_remote = config_remote, repo_created = repo_created)
   class(o) <- "wflow_use_github"
 
   if (!repo_created) {
-    message(glue::glue("To do: Create {username}/{repository} at {domain} (if it doesn't already exist)"))
+    message(glue::glue("To do: Create {account}/{repository} at {domain} (if it doesn't already exist)"))
   }
 
   message("To do: Run wflow_git_push() to push your project to GitHub")
@@ -339,7 +369,7 @@ wflow_use_github <- function(username = NULL, repository = NULL,
 }
 
 # Create GitHub repository
-create_gh_repo <- function(username, repository) {
+create_gh_repo <- function(account, repository, account_is_organization = FALSE) {
 
   # Authenticate with GitHub
   app <- httr::oauth_app("github",
@@ -350,7 +380,7 @@ create_gh_repo <- function(username, repository) {
   ua <- httr::user_agent("https://github.com/jdblischak/workflowr")
 
   message(glue::glue(
-    "Requesting authorization for workflowr app to access GitHub account {username}"))
+    "Requesting authorization for workflowr app to access GitHub account {account}"))
   oauth_token <- httr::oauth2.0_token(httr::oauth_endpoints("github"),
                                       app,
                                       scope = c("public_repo"),
@@ -368,23 +398,31 @@ create_gh_repo <- function(username, repository) {
   }
 
   # Confirm the repository doesn't exist
-  req_exist <- httr::GET(glue::glue("https://api.github.com/repos/{username}/{repository}"),
+  req_exist <- httr::GET(glue::glue("https://api.github.com/repos/{account}/{repository}"),
                          token, ua)
   status_exist <- httr::http_status(req_exist)
   if (status_exist$reason != "Not Found") {
-    warning(glue::glue("Repository {repository} already exists for user {username}"),
+    warning(glue::glue("Repository {repository} already exists for account {account}"),
             call. = FALSE, immediate. = TRUE)
-    return(glue::glue("https://github.com/{username}/{repository}"))
+    return(glue::glue("https://github.com/{account}/{repository}"))
   }
 
   # Create the repository
   message(glue::glue("Creating repository {repository}"))
-  req_create <- httr::POST("https://api.github.com/user/repos", token, ua,
-                           body = list(name = repository), encode = "json")
-  httr::stop_for_status(req_create)
+  if (account_is_organization) {
+      req_create <- httr::POST(
+        glue::glue("https://api.github.com/orgs/{account}/repos"), token, ua,
+        body = list(name = repository), encode = "json"
+      )
+      httr::stop_for_status(req_create)
+  } else {
+    req_create <- httr::POST("https://api.github.com/user/repos", token, ua,
+                             body = list(name = repository), encode = "json")
+    httr::stop_for_status(req_create)
+  }
 
   # Confirm the repository exists
-  req_confirm <- httr::GET(glue::glue("https://api.github.com/repos/{username}/{repository}"),
+  req_confirm <- httr::GET(glue::glue("https://api.github.com/repos/{account}/{repository}"),
                            token, ua)
   status_confirm <- httr::http_status(req_confirm)
   if (status_confirm$category != "Success") {

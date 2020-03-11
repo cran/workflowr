@@ -44,6 +44,19 @@ test_that("wflow_git_commit can commit multiple new files", {
   expect_true(grepl(sprintf("\\$ git add %s %s", f2, f3), actual_print))
 })
 
+test_that("wflow_git_commit can commit a directory of files", {
+  d1 <- file.path(site_dir, "subdir")
+  fs::dir_create(d1)
+  d1_files <- file.path(d1, paste0("f", 1:5, ".txt"))
+  fs::file_create(d1_files)
+  expect_silent(actual <- wflow_git_commit(d1, project = site_dir))
+  expect_identical(actual$commit_files, d1_files)
+  recent <- commits(r, n = 1)[[1]]
+  expect_identical(actual$commit$sha, recent$sha)
+  actual_print <- paste(utils::capture.output(actual), collapse = "\n")
+  expect_true(grepl(sprintf("\\$ git add %s", d1), actual_print))
+})
+
 test_that("wflow_git_commit creates a commit message", {
   o <- wflow_git_commit(all = TRUE, dry_run = TRUE, project = site_dir)
   expect_identical(o$message,
@@ -167,7 +180,7 @@ test_that("wflow_git_commit_ can commit deleted files from project subdir", {
 
 test_that("wflow_git_commit fails with invalid argument for files", {
   expect_error(wflow_git_commit(files = 1, project = site_dir),
-               "files must be NULL or a character vector of filenames")
+               "Observed input: 1")
   expect_error(wflow_git_commit(files = "nonexistent.Rmd", project = site_dir),
                "Not all files exist. Check the paths to the files")
 })

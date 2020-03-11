@@ -266,7 +266,7 @@ test_that("wflow_quickstart only accepts Rmd files", {
 
   expect_error(
     wflow_quickstart(c(rmd, nonrmd)),
-    glue::glue("{fs::path_file(nonrmd)}")
+    "Only files with extension Rmd or rmd"
   )
 
   directory <- fs::file_temp()
@@ -275,7 +275,7 @@ test_that("wflow_quickstart only accepts Rmd files", {
 
   expect_error(
     wflow_quickstart(c(rmd, directory)),
-    glue::glue("{fs::path_file(directory)}")
+    "files cannot include a path to a directory"
   )
 
 })
@@ -304,4 +304,33 @@ test_that("wflow_quickstart only deletes directory on error if it exists", {
     existing
   )
   expect_false(fs::dir_exists(path))
+})
+
+test_that("wflow_quickstart does not accept organization for hosting on GitLab", {
+
+  rmd <- fs::file_temp(ext = ".Rmd")
+  fs::file_create(rmd)
+  on.exit(fs::file_delete(rmd), add = TRUE)
+
+  expect_error(
+    wflow_quickstart(rmd, organization = "gitlab-group", host = "gitlab"),
+    "Do not use the argument"
+  )
+})
+
+test_that("wflow_quickstart fails early if both username and organization are set", {
+
+  rmd <- fs::file_temp(ext = ".Rmd")
+  fs::file_create(rmd)
+  on.exit(fs::file_delete(rmd), add = TRUE)
+  directory <- "test"
+
+  expect_error(
+    wflow_quickstart(rmd, username = "personal-account",
+                     organization = "github-org", directory = directory),
+    "Cannot set both username and organization."
+  )
+
+  # Confirm that directory wasn't created
+  expect_false(fs::dir_exists(directory))
 })

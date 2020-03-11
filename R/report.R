@@ -59,7 +59,7 @@ create_report <- function(input, output_dir, has_code, opts) {
   # If it is part of a workflowr project, construct a path relative to the
   # directory that contains the workflowr project directory.
   p <- try(wflow_paths(error_git = FALSE, project = input_dir), silent = TRUE)
-  if (class(p) != "try-error") {
+  if (!inherits(p, "try-error")) {
     if (fs::path_has_parent(knit_root_print, absolute(p$root))) {
       knit_root_print <- fs::path_rel(knit_root_print,
                                       start = dirname(absolute(p$root)))
@@ -156,11 +156,15 @@ create_report <- function(input, output_dir, has_code, opts) {
 
 get_versions <- function(input, output_dir, r, github) {
 
-  rmd <- relative(input, start = git2r::workdir(r))
+  rmd <- input
   html <- to_html(rmd, outdir = output_dir)
-  html <- relative(html, start = git2r::workdir(r))
 
   df_versions <- get_versions_df(c(rmd, html), r)
+
+  # Convert paths to be relative to Git root
+  rmd <- relative(rmd, start = git2r::workdir(r))
+  html <- relative(html, start = git2r::workdir(r))
+  df_versions$File <- relative(df_versions$File, start = git2r::workdir(r))
 
   # Exit early if there are no past versions
   if (length(df_versions) == 0) {
@@ -188,9 +192,13 @@ get_versions <- function(input, output_dir, r, github) {
 
   template <-
 "
-<p>These are the previous versions of the R Markdown and HTML files. If you've
-configured a remote Git repository (see <code>?wflow_git_remote</code>), click
-on the hyperlinks in the table below to view them.</p>
+<p>
+These are the previous versions of the repository in which changes were made
+to the R Markdown (<code>{{rmd}}</code>) and HTML (<code>{{html}}</code>)
+files. If you've configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table below to
+view the files as they were in that past version.
+</p>
 <div class=\"table-responsive\">
 <table class=\"table table-condensed table-hover\">
 <thead>
@@ -216,7 +224,8 @@ on the hyperlinks in the table below to view them.</p>
 </table>
 </div>
 "
-  data <- list(df_versions = unname(whisker::rowSplit(df_versions)))
+  data <- list(rmd = rmd, html = html,
+               df_versions = unname(whisker::rowSplit(df_versions)))
   text <- whisker::whisker.render(template, data)
 
   return(text)
@@ -297,17 +306,13 @@ get_versions_fig <- function(fig, r, github) {
 
 # Return a data frame of past versions
 #
-# files - paths relative to Git repository
+# files - paths to files
 # r - git_repository
 # timezone - timezone to use, e.g. "America/New_York". Defaults to local
 #            timezone. If unset (i.e. is NULL, NA, or ""), defaults to "Etc/UTC".
 #
 # If no past versions, returns empty data frame
 get_versions_df <- function(files, r, timezone = Sys.timezone()) {
-
-  if (any(fs::is_absolute_path(files)))
-    stop("File paths must be relative to Git repository at ",
-         git2r::workdir(r))
 
   commits_path <- list()
   for (f in files) {
@@ -367,14 +372,26 @@ check_vc <- function(input, r, s, github, output_dir) {
    status <- utils::capture.output(print(s))
    status <- c("<pre><code>", status, "</code></pre>")
    status <- paste(status, collapse = "\n")
-   details <- paste(collpase = "\n",
+   details <-
 "
 <p>
 Great! You are using Git for version control. Tracking code development and
 connecting the code version to the results is critical for reproducibility.
-The version displayed above was the version of the Git repository at the time
-these results were generated.
-<br><br>
+</p>
+"
+   if (sha_display != "No commits yet") {
+     details <- c(details,
+                  glue::glue(
+"<p>
+The results in this page were generated with repository version {sha_display}.
+See the <em>Past versions</em> tab to see a history of the changes made to the
+R Markdown and HTML files.
+</p>"
+                  ))
+   }
+   details <- c(details,
+"
+<p>
 Note that you need to be careful to ensure that all relevant files for the
 analysis have been committed to Git prior to generating the results (you can
 use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only
@@ -382,14 +399,16 @@ checks the R Markdown file, but you know if there are other scripts or data
 files that it depends on. Below is the status of the Git repository when the
 results were generated:
 </p>
+",
+status,
 "
-                , status,
-"<p>
+<p>
 Note that any generated files, e.g. HTML, png, CSS, etc., are not included in
 this status report because it is ok for generated content to have uncommitted
 changes.
 </p>
 ")
+   details <- paste(details, collapse = "\n")
  } else {
    pass <- FALSE
    summary <- "<strong>Repository version:</strong> no version control"
@@ -844,19 +863,19 @@ get_proj_dir <- function(directory) {
   # RStudio project file, .Rproj
   proj_dir <- try(rprojroot::find_rstudio_root_file(path = directory),
                 silent = TRUE)
-  if (class(proj_dir) != "try-error") return(proj_dir)
+  if (!inherits(proj_dir, "try-error")) return(proj_dir)
 
   # .git/
   proj_dir <- try(rprojroot::find_root_file(criterion = rprojroot::is_git_root,
                                             path = directory),
                   silent = TRUE)
-  if (class(proj_dir) != "try-error") return(proj_dir)
+  if (!inherits(proj_dir, "try-error")) return(proj_dir)
 
   # _workflowr.yml file
   proj_dir <- try(rprojroot::find_root(rprojroot::has_file("_workflowr.yml"),
                                        path = directory),
                   silent = TRUE)
-  if (class(proj_dir) != "try-error") return(proj_dir)
+  if (!inherits(proj_dir, "try-error")) return(proj_dir)
 
   return(directory)
 }
