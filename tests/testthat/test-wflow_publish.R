@@ -205,6 +205,7 @@ test_that("wflow_publish removes unused figure files even if directory no longer
 test_that("wflow_publish deletes cache when delete_cache = TRUE", {
 
   skip_on_cran()
+  skip_on_os("windows") # Avoid errors due to long filenames
 
   # Build a file that has cached chunks
   file_w_cache <- file.path(s$analysis, "cache.Rmd")

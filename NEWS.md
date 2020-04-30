@@ -1,3 +1,33 @@
+# workflowr 1.6.2
+
+This patch release of workflowr includes minor improvements, updated
+documentation, and bug fixes. Users are encouraged to upgrade workflowr so that
+it is compatible with the next release of [fs][] (>1.4.1).
+
+## Minor improvements
+
+* Make the HTTP calls by `wflow_use_github()` to the GitHub API more resilient
+to transient network issues by automatically retrying HTTP calls more than once
+(@jameslamb, #199, #201)
+* Enhance the RStudio Project Template to include more arguments from
+`wflow_start()` (@trannhatanh89, #193, #200)
+* Throw error early if user sets `overwrite = TRUE` to `wflow_start()` but
+`existing = FALSE`, since it isn't possible to overwrite non-existent files
+(@skpurdue, #194, #202, idea from @pcarbo)
+
+## Updated documentation
+
+* Update FAQ entry on external images to note that the website directory for
+GitLab Pages is `public/`, not `docs/` (idea from @ryurko)
+
+## Bug fixes
+
+* Send warning if Python plots created using outdated version of reticulate (<
+1.15) (bug report from @lazappi, #181)
+* Make workflowr compatible with fs version 1.4.1.9000+ (@jimhester, #204)
+* Set minimum version requirement for dependency rprojroot to 1.2
+* Skip test of error handling of deleted working directory on Solaris
+
 # workflowr 1.6.1
 
 This patch release of workflowr includes minor improvements, updated
@@ -58,8 +88,10 @@ from the workflowr report (bug introduced in version 1.5.0)
 
 * Internal refactoring for increased speed and improved error handling of input
 arguments
+
 * Check for class with `inherits()`
 (#189)
+
 * Switch to use pandoc option `--include-in-header` to insert workflowr-specific
 CSS and other metadata (surprisingly `--include-before-body` works fine)
 
