@@ -130,9 +130,9 @@ create_report <- function(input, output_dir, has_code, opts) {
       </span>
       </p>
       <p>
-      This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a>
+      This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
       analysis was created with <a
-      href="https://github.com/jdblischak/workflowr">workflowr</a> (version
+      href="https://github.com/workflowr/workflowr">workflowr</a> (version
       {packageVersion("workflowr")}). The <em>Checks</em> tab describes the
       reproducibility checks that were applied when the results were created.
       The <em>Past versions</em> tab lists the development history.
@@ -514,21 +514,6 @@ ensure that the code is always run in an empty environment.</p>
                      "<p>The following objects were defined in the global
                      environment when these results were created:</p>",
                      objects_table)
-
-    if (utils::packageVersion("callr") == "3.3.0") {
-      details <- paste(collapse = "\n",
-                       details,
-                       "<p><strong>SOLUTION:</strong> The R package
-                       <a href=\"https://cran.r-project.org/package=callr\">callr</a>,
-                       which workflowr relies on to isolate the code execution
-                       from the current R session, has a known bug in version
-                       3.3.0. It writes the objects <code>data</code> and
-                       <code>env</code> to the global environment. At best
-                       this only causes the workflowr check to fail, but at
-                       worse could affect your results if your analysis uses
-                       variables with the same names. To avoid this problem,
-                       please update the callr package.</p>")
-    }
   }
 
   return(list(pass = pass, summary = summary, details = details))

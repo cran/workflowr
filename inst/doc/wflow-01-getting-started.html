@@ -12,49 +12,94 @@
 
 <meta name="author" content="John Blischak" />
 
-<meta name="date" content="2020-04-30" />
+<meta name="date" content="2021-12-20" />
 
 <title>Getting started with workflowr</title>
 
+<script src="data:application/javascript;base64,Ly8gUGFuZG9jIDIuOSBhZGRzIGF0dHJpYnV0ZXMgb24gYm90aCBoZWFkZXIgYW5kIGRpdi4gV2UgcmVtb3ZlIHRoZSBmb3JtZXIgKHRvCi8vIGJlIGNvbXBhdGlibGUgd2l0aCB0aGUgYmVoYXZpb3Igb2YgUGFuZG9jIDwgMi44KS4KZG9jdW1lbnQuYWRkRXZlbnRMaXN0ZW5lcignRE9NQ29udGVudExvYWRlZCcsIGZ1bmN0aW9uKGUpIHsKICB2YXIgaHMgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCJkaXYuc2VjdGlvbltjbGFzcyo9J2xldmVsJ10gPiA6Zmlyc3QtY2hpbGQiKTsKICB2YXIgaSwgaCwgYTsKICBmb3IgKGkgPSAwOyBpIDwgaHMubGVuZ3RoOyBpKyspIHsKICAgIGggPSBoc1tpXTsKICAgIGlmICghL15oWzEtNl0kL2kudGVzdChoLnRhZ05hbWUpKSBjb250aW51ZTsgIC8vIGl0IHNob3VsZCBiZSBhIGhlYWRlciBoMS1oNgogICAgYSA9IGguYXR0cmlidXRlczsKICAgIHdoaWxlIChhLmxlbmd0aCA+IDApIGgucmVtb3ZlQXR0cmlidXRlKGFbMF0ubmFtZSk7CiAgfQp9KTsK"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
 
 
-<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
 <style type="text/css" data-origin="pandoc">
-div.sourceCode { overflow-x: auto; }
-table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
-  margin: 0; padding: 0; vertical-align: baseline; border: none; }
-table.sourceCode { width: 100%; line-height: 100%; }
-td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
-td.sourceCode { padding-left: 5px; }
-code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code > span.dt { color: #902000; } /* DataType */
-code > span.dv { color: #40a070; } /* DecVal */
-code > span.bn { color: #40a070; } /* BaseN */
-code > span.fl { color: #40a070; } /* Float */
-code > span.ch { color: #4070a0; } /* Char */
-code > span.st { color: #4070a0; } /* String */
-code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code > span.ot { color: #007020; } /* Other */
-code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code > span.fu { color: #06287e; } /* Function */
-code > span.er { color: #ff0000; font-weight: bold; } /* Error */
-code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-code > span.cn { color: #880000; } /* Constant */
-code > span.sc { color: #4070a0; } /* SpecialChar */
-code > span.vs { color: #4070a0; } /* VerbatimString */
-code > span.ss { color: #bb6688; } /* SpecialString */
-code > span.im { } /* Import */
-code > span.va { color: #19177c; } /* Variable */
-code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code > span.op { color: #666666; } /* Operator */
-code > span.bu { } /* BuiltIn */
-code > span.ex { } /* Extension */
-code > span.pp { color: #bc7a00; } /* Preprocessor */
-code > span.at { color: #7d9029; } /* Attribute */
-code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 
 </style>
 <script>
@@ -81,7 +126,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 
-<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+<link rel="stylesheet" href="data:text/css,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" type="text/css" />
 
 
 
@@ -94,9 +140,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Getting started with workflowr</h1>
-<h3 class="subtitle">workflowr version 1.6.2</h3>
+<h3 class="subtitle">workflowr version 1.7.0</h3>
 <h4 class="author">John Blischak</h4>
-<h4 class="date">2020-04-30</h4>
+<h4 class="date">2021-12-20</h4>
 
 
 <div id="TOC">
@@ -114,33 +160,33 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </div>
 
 <p>The workflowr R package helps scientists organize their research in a way that promotes effective project management, reproducibility, collaboration, and sharing of results. Workflowr combines literate programming (knitr and rmarkdown) and version control (Git, via git2r) to generate a website containing time-stamped, versioned, and documented results. Any R user can quickly and easily adopt workflowr.</p>
-<p>This tutorial assumes you have already followed the <a href="https://jdblischak.github.io/workflowr/index.html#installation">installation instructions</a>. Specifically, you need to have R, pandoc (or RStudio), and workflowr installed on your computer. Furthermore, you need an account on <a href="https://github.com">GitHub</a> or <a href="https://gitlab.com">GitLab</a>.</p>
+<p>This tutorial assumes you have already followed the <a href="https://workflowr.github.io/workflowr/index.html#installation">installation instructions</a>. Specifically, you need to have R, pandoc (or RStudio), and workflowr installed on your computer. Furthermore, you need an account on <a href="https://github.com">GitHub</a> or <a href="https://about.gitlab.com/">GitLab</a>.</p>
 <div id="overview" class="section level2">
 <h2>Overview</h2>
 <p>A workflowr project has two key components:</p>
 <ol style="list-style-type: decimal">
 <li><p>An R Markdown-based website. This consists of a configuration file (<code>_site.yml</code>), a collection of R Markdown files, and their corresponding HTML files.</p></li>
-<li><p>A Git repository. Git is a <a href="https://en.wikipedia.org/wiki/Version_control">version control system</a> that helps track code development<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. Workflowr is able to run the basic Git commands, so there is no need to install Git prior to using workflowr.</p></li>
+<li><p>A Git repository. Git is a <a href="https://en.wikipedia.org/wiki/Version_control">version control system</a> that helps track code development<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>. Workflowr is able to run the basic Git commands, so there is no need to install Git prior to using workflowr.</p></li>
 </ol>
 <p>One of the main goals of workflowr is to help make your research more transparent and reproducible. This is achieved by displaying multiple “reproducibility checks” at the top of each analysis, including the unique identifier that Git assigns a snapshot of your code (or “commit” as Git calls it), so you always know which version of the code produced the results.</p>
 </div>
 <div id="start-the-project" class="section level2">
 <h2>Start the project</h2>
-<p>To start a new project, open R (or RStudio) and load the workflowr package (note that all the code in this vignette should be run directly in the R console, i.e. do <strong>not</strong> try to run workflowr functions inside of R Markdown documents).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;workflowr&quot;</span>)
-## This is workflowr version 1.6.2
-## Run ?workflowr for help getting started</code></pre></div>
+<p>To start a new project, open R (or RStudio) and load the workflowr package (note that all the code in this vignette should be run directly in the R console, i.e. do <strong>not</strong> try to run workflowr functions inside of R Markdown documents).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;workflowr&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="do">## This is workflowr version 1.7.0</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Run ?workflowr for help getting started</span></span></code></pre></div>
 <p>If you have never created a Git repository on your computer before, you need to run the following command to tell Git your name and email. Git uses this information to assign the changes you make to the code to you (analogous to how Track Changes in a Microsoft Office Word document assigns your changes to you). You do not need to use the exact same name and email as you used for your account on GitHub or GitLab. Also, you only need to run this command once per computer, and all subsequent workflowr projects will use this information (you can also update it at any time by re-running the command with different input).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Replace the example text with your information</span>
-<span class="kw">wflow_git_config</span>(<span class="dt">user.name =</span> <span class="st">&quot;Your Name&quot;</span>, <span class="dt">user.email =</span> <span class="st">&quot;email@domain&quot;</span>)</code></pre></div>
-<p>Now you are ready to start your first workflowr project! <code>wflow_start(&quot;myproject&quot;)</code> creates a directory called <code>myproject/</code> that contains all the files to get started. It also changes the working directory to <code>myproject/</code><a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> and initializes a Git repository with the initial commit already made.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_start</span>(<span class="st">&quot;myproject&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace the example text with your information</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_git_config</span>(<span class="at">user.name =</span> <span class="st">&quot;Your Name&quot;</span>, <span class="at">user.email =</span> <span class="st">&quot;email@domain&quot;</span>)</span></code></pre></div>
+<p>Now you are ready to start your first workflowr project! <code>wflow_start(&quot;myproject&quot;)</code> creates a directory called <code>myproject/</code> that contains all the files to get started. It also changes the working directory to <code>myproject/</code><a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> and initializes a Git repository with the initial commit already made.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_start</span>(<span class="st">&quot;myproject&quot;</span>)</span></code></pre></div>
 <pre><code>## wflow_start:
-## - New directory created at /tmp/RtmpvF1sZa/wflow-01-getting-started-367c23bd3cae/myproject
+## - New directory created at C:/Users/john/AppData/Local/Temp/Rtmpk1uhRX/wflow-01-getting-started-80873b45e03/myproject
 ## - Project name is &quot;myproject&quot;
-## - Working directory changed to /tmp/RtmpvF1sZa/wflow-01-getting-started-367c23bd3cae/myproject
-## - Git repo initiated at /tmp/RtmpvF1sZa/wflow-01-getting-started-367c23bd3cae/myproject
-## - Files were committed in version 82bb554</code></pre>
+## - Working directory changed to C:/Users/john/AppData/Local/Temp/Rtmpk1uhRX/wflow-01-getting-started-80873b45e03/myproject
+## - Git repo initiated at C:/Users/john/AppData/Local/Temp/Rtmpk1uhRX/wflow-01-getting-started-80873b45e03/myproject
+## - Files were committed in version ea8eb2b</code></pre>
 <p><code>wflow_start()</code> created the following directory structure in <code>myproject/</code>:</p>
 <pre><code>myproject/
 ├── .gitignore
@@ -163,12 +209,12 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>At this point, you have a minimal but complete workflowr project; that is, you have all the files needed to use the main workflowr commands and publish a research website. Later on, as you get more comfortable with the basic setup, you can modify and add to the initial file structure. The overall rationale for this setup is to help organize the files that will be commonly included in a data analysis project. However, not all of these files are required to use workflowr.</p>
 <p>The two <strong>required</strong> subdirectories are <code>analysis/</code> and <code>docs/</code>. These directories should never be removed from the workflowr project.</p>
 <ul>
-<li><code>analysis/</code>: This directory contains all the source R Markdown files for implementing the data analyses for your project. It also contains a special R Markdown file, <code>index.Rmd</code>, that does not contain any R code, but will be used to generate <code>index.html</code>, the homepage for your website. In addition, this directory contains the important configuration file <code>_site.yml</code>, which you can use to edit the theme, navigation bar, and other website aesthetics (for more details see the documentation on <a href="https://rmarkdown.rstudio.com/rmarkdown_websites.html">R Markdown websites</a>). Do not delete <code>index.Rmd</code> or <code>_site.yml</code>.</li>
+<li><code>analysis/</code>: This directory contains all the source R Markdown files for implementing the data analyses for your project. It also contains a special R Markdown file, <code>index.Rmd</code>, that does not contain any R code, but will be used to generate <code>index.html</code>, the homepage for your website. In addition, this directory contains the important configuration file <code>_site.yml</code>, which you can use to edit the theme, navigation bar, and other website aesthetics (for more details see the documentation on <a href="https://bookdown.org/yihui/rmarkdown/rmarkdown-site.html">R Markdown websites</a>). Do not delete <code>index.Rmd</code> or <code>_site.yml</code>.</li>
 </ul>
 <ul>
-<li><code>docs/</code>: This directory contains all the HTML files for your website. The HTML files are built from the R Markdown files in <code>analysis/</code>. Furthermore, any figures created by the R Markdown files are saved here. Each of these figures is saved according to the following pattern: <code>docs/figure/&lt;insert Rmd filename&gt;/&lt;insert chunk name&gt;-#.png</code>, where <code>#</code> corresponds to which of the plots the chunk generated (since one chunk can produce an arbitrary number of plots)<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>.</li>
+<li><code>docs/</code>: This directory contains all the HTML files for your website. The HTML files are built from the R Markdown files in <code>analysis/</code>. Furthermore, any figures created by the R Markdown files are saved here. Each of these figures is saved according to the following pattern: <code>docs/figure/&lt;insert Rmd filename&gt;/&lt;insert chunk name&gt;-#.png</code>, where <code>#</code> corresponds to which of the plots the chunk generated (since one chunk can produce an arbitrary number of plots)<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>.</li>
 </ul>
-<p>The workflowr-specific configuration file is <code>_workflowr.yml</code>. It will apply the workflowr reproducibility checks consistently across all your R Markdown files. The most critical setting is <code>knit_root_dir</code>, which determines the directory where the files in <code>analysis/</code> will be executed. The default is to execute the code in the root of the project where <code>_workflowr.yml</code> is located (i.e. <code>&quot;.&quot;</code>). To instead execute the code from <code>analysis/</code>, change the setting to <code>knit_root_dir: &quot;analysis&quot;</code>. See <code>?wflow_html</code> for more details.</p>
+<p>The workflowr-specific configuration file is <code>_workflowr.yml</code>. It will apply the workflowr reproducibility checks consistently across all your R Markdown files. The most critical setting is <code>knit_root_dir</code>, which determines the directory where the files in <code>analysis/</code> will be executed. The default is to execute the code in the root of the project where <code>_workflowr.yml</code> is located (i.e. <code>&quot;.&quot;</code>). To instead execute the code from <code>analysis/</code>, change the setting to <code>knit_root_dir: &quot;analysis&quot;</code>. See <code>?wflow_html</code> for more details.</p>
 <p>Also required is the RStudio project file, in this example <code>myproject.Rproj</code>. Even if you are not using RStudio, do not delete this file because the workflowr functions rely on it to determine the root directory of the project.</p>
 <p>The <strong>optional</strong> directories are <code>data/</code>, <code>code/</code>, and <code>output/</code>. These directories are suggestions for organizing your data analysis project, but can be removed if you do not find them useful.</p>
 <ul>
@@ -182,8 +228,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h2>Build the website</h2>
 <p>You will notice that the <code>docs/</code> directory is currently empty. That is because we have not yet generated the website from the <code>analysis/</code> files. This is what we will do next.</p>
 <p>To build the website, run the function <code>wflow_build()</code> in the R console:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_build</span>()</code></pre></div>
-<pre><code>## Current working directory: /tmp/RtmpvF1sZa/wflow-01-getting-started-367c23bd3cae/myproject
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_build</span>()</span></code></pre></div>
+<pre><code>## Current working directory: C:/Users/john/AppData/Local/Temp/Rtmpk1uhRX/wflow-01-getting-started-80873b45e03/myproject
 ## Building 3 file(s):
 ## Building analysis/about.Rmd
 ## Building analysis/index.Rmd
@@ -191,7 +237,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## Summary from wflow_build
 ## 
 ## Settings:
-##  make: TRUE
+##  make: TRUE combine: &quot;or&quot;
 ## 
 ## The following were built externally each in their own fresh R session: 
 ## 
@@ -199,51 +245,52 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## docs/index.html
 ## docs/license.html
 ## 
-## Log files saved in /tmp/RtmpvF1sZa/workflowr</code></pre>
+## Log files saved in
+## C:/Users/john/AppData/Local/Temp/Rtmpk1uhRX/workflowr</code></pre>
 <p>This command builds all the R Markdown files in <code>analysis/</code> and saves the corresponding HTML files in <code>docs/</code>. It sets the same seed before running every file so that any function that generates random data (e.g. permutations) is reproducible. Furthermore, each file is built in its own external R session to avoid any potential conflicts between analyses (e.g. accidentally sharing a variable with the same name across files). Lastly, it displays the website in the RStudio Viewer or default web browser.</p>
-<p>The default action of <code>wflow_build()</code> is to behave similar to a <a href="https://swcarpentry.github.io/make-novice">Makefile</a> (<code>make = TRUE</code> is the default when no input files are provided), i.e. it only builds R Markdown files that have been modified more recently than their corresponding HTML files. Thus if you run it again, no files are built (and no files are displayed).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_build</span>()
-## Summary from wflow_build
-## 
-## Settings:
-##  make: TRUE
-## 
-## No files to build</code></pre></div>
+<p>The default action of <code>wflow_build()</code> is to behave similar to a <a href="https://swcarpentry.github.io/make-novice/">Makefile</a> (<code>make = TRUE</code> is the default when no input files are provided), i.e. it only builds R Markdown files that have been modified more recently than their corresponding HTML files. Thus if you run it again, no files are built (and no files are displayed).</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_build</span>()</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Summary from wflow_build</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Settings:</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="do">##  make: TRUE combine: &quot;or&quot;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="do">## No files to build</span></span></code></pre></div>
 <p>To view the site without first building any files, run <code>wflow_view()</code>, which by default displays the file <code>docs/index.html</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_view</span>()</code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_view</span>()</span></code></pre></div>
 <p>This is how you can view your site right on your local machine. Go ahead and edit the files <code>index.Rmd</code>, <code>about.Rmd</code>, and <code>license.Rmd</code> to describe your project. Then run <code>wflow_build()</code> to re-build the HTML files and display them in the RStudio Viewer or your browser.</p>
 </div>
 <div id="publish-the-website" class="section level2">
 <h2>Publish the website</h2>
 <p>workflowr makes an important distinction between R Markdown files that are published versus unpublished. A published file is included in the website online; whereas, the HTML file of an unpublished R Markdown file is only able to be viewed on the local computer. Since the project was just started, there are no published files. To view the status of the workflowr project, run <code>wflow_status()</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_status</span>()
-## Status of 3 Rmd files
-## 
-## Totals:
-##  3 Unpublished
-## 
-## The following Rmd files require attention:
-## 
-## Unp analysis/about.Rmd
-## Unp analysis/index.Rmd
-## Unp analysis/license.Rmd
-## 
-## Key: Unp = Unpublished
-## 
-## The current Git status is:
-## 
-##    status substatus                 file
-##  unstaged  modified   analysis/about.Rmd
-##  unstaged  modified   analysis/index.Rmd
-##  unstaged  modified analysis/license.Rmd
-## 
-## To publish your changes as part of your website, use `wflow_publish()`.
-## To commit your changes without publishing them yet, use
-## `wflow_git_commit()`.</code></pre></div>
-<p>This alerts us that our project has 3 R Markdown files, and they are all unpublished (“Unp”). Furthermore, it instructs how to publish them: use <code>wflow_publish()</code>. The first argument to <code>wflow_publish()</code> is a character vector of the R Markdown files to publish <a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>. The second is a message that will be recorded by the version control system Git when it commits (i.e. saves a snapshot of) these files. The more informative the commit message the better (so that future you knows what you were trying to accomplish).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_publish</span>(<span class="kw">c</span>(<span class="st">&quot;analysis/index.Rmd&quot;</span>, <span class="st">&quot;analysis/about.Rmd&quot;</span>, <span class="st">&quot;analysis/license.Rmd&quot;</span>),
-              <span class="st">&quot;Publish the initial files for myproject&quot;</span>)</code></pre></div>
-<pre><code>## Current working directory: /tmp/RtmpvF1sZa/wflow-01-getting-started-367c23bd3cae/myproject
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_status</span>()</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Status of 3 Rmd files</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Totals:</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="do">##  3 Unpublished</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="do">## The following Rmd files require attention:</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Unp analysis/about.Rmd</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="do">## Unp analysis/index.Rmd</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="do">## Unp analysis/license.Rmd</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="do">## Key: Unp = Unpublished</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="do">## The current Git status is:</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="do">##    status substatus                 file</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="do">##  unstaged  modified   analysis/about.Rmd</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="do">##  unstaged  modified   analysis/index.Rmd</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="do">##  unstaged  modified analysis/license.Rmd</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="do">## To publish your changes as part of your website, use `wflow_publish()`.</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="do">## To commit your changes without publishing them yet, use</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="do">## `wflow_git_commit()`.</span></span></code></pre></div>
+<p>This alerts us that our project has 3 R Markdown files, and they are all unpublished (“Unp”). Furthermore, it instructs how to publish them: use <code>wflow_publish()</code>. The first argument to <code>wflow_publish()</code> is a character vector of the R Markdown files to publish <a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a>. The second is a message that will be recorded by the version control system Git when it commits (i.e. saves a snapshot of) these files. The more informative the commit message the better (so that future you knows what you were trying to accomplish).</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_publish</span>(<span class="fu">c</span>(<span class="st">&quot;analysis/index.Rmd&quot;</span>, <span class="st">&quot;analysis/about.Rmd&quot;</span>, <span class="st">&quot;analysis/license.Rmd&quot;</span>),</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;Publish the initial files for myproject&quot;</span>)</span></code></pre></div>
+<pre><code>## Current working directory: C:/Users/john/AppData/Local/Temp/Rtmpk1uhRX/wflow-01-getting-started-80873b45e03/myproject
 ## Building 3 file(s):
 ## Building analysis/index.Rmd
 ## Building analysis/about.Rmd
@@ -259,7 +306,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   $ git add analysis/index.Rmd analysis/about.Rmd analysis/license.Rmd 
 ##   $ git commit -m &quot;Publish the initial files for myproject&quot; 
 ## 
-## The following file(s) were included in commit b7f0a51:
+## The following file(s) were included in commit 5c625e2:
 ## analysis/about.Rmd
 ## analysis/index.Rmd
 ## analysis/license.Rmd
@@ -269,7 +316,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## Summary from wflow_build
 ## 
 ## Settings:
-##  clean_fig_files: TRUE
+##  combine: &quot;or&quot; clean_fig_files: TRUE
 ## 
 ## The following were built externally each in their own fresh R session: 
 ## 
@@ -277,7 +324,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## docs/about.html
 ## docs/license.html
 ## 
-## Log files saved in /tmp/RtmpvF1sZa/workflowr
+## Log files saved in
+## C:\Users\john\AppData\Local\Temp\Rtmpk1uhRX/workflowr
 ## 
 ## **Step 3: Commit HTML files**
 ## 
@@ -288,13 +336,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   $ git add docs/index.html docs/about.html docs/license.html docs/figure/index.Rmd docs/figure/about.Rmd docs/figure/license.Rmd docs/site_libs docs/.nojekyll 
 ##   $ git commit -m &quot;Build site.&quot; 
 ## 
-## The following file(s) were included in commit f275d96:
+## The following file(s) were included in commit fd97598:
 ## docs/about.html
 ## docs/index.html
 ## docs/license.html
 ## docs/site_libs/bootstrap-3.3.5/
+## docs/site_libs/header-attrs-2.11/
 ## docs/site_libs/highlightjs-9.12.0/
-## docs/site_libs/jquery-1.11.3/
+## docs/site_libs/jquery-3.6.0/
 ## docs/site_libs/navigation-1.1/</code></pre>
 <p><code>wflow_publish()</code> reports the 3 steps it took:</p>
 <ul>
@@ -304,21 +353,21 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul>
 <p>Performing these 3 steps ensures that the HTML files are always in sync with the latest versions of the R Markdown files. Performing these steps manually would be tedious and error-prone (e.g. an HTML file may have been built with an outdated version of an R Markdown file). However, <code>wflow_publish()</code> makes it easy to keep the pages of your site in sync.</p>
 <p>Now when you run <code>wflow_status()</code>, it reports that all the files are published and up-to-date.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_status</span>()
-## Status of 3 Rmd files
-## 
-## Totals:
-##  3 Published
-## 
-## The current Git status is: working directory clean
-## 
-## Rmd files are up-to-date</code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_status</span>()</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Status of 3 Rmd files</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Totals:</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="do">##  3 Published</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="do">## The current Git status is: working directory clean</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="do">## Rmd files are up-to-date</span></span></code></pre></div>
 </div>
 <div id="deploy-the-website" class="section level2">
 <h2>Deploy the website</h2>
 <p>At this point you have built a version-controlled website that exists on your local computer. The next step is to put your code on GitHub so that it can serve your website online. If you are using GitLab, switch to the vignette <a href="wflow-06-gitlab.html">Hosting workflowr websites using GitLab</a> and then continue with the next section.</p>
-<p>All the required setup can be performed by the workflowr function <code>wflow_use_github()</code>. The only required argument is your GitHub username<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_use_github</span>(<span class="st">&quot;myname&quot;</span>)</code></pre></div>
+<p>All the required setup can be performed by the workflowr function <code>wflow_use_github()</code>. The only required argument is your GitHub username<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a>:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_use_github</span>(<span class="st">&quot;myname&quot;</span>)</span></code></pre></div>
 <pre><code>## Summary from wflow_use_github():
 ## account: myname
 ## respository: myproject
@@ -327,69 +376,69 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## * Set remote &quot;origin&quot; to https://github.com/myname/myproject.git
 ## * Added GitHub link to navigation bar
 ## * Committed the changes to Git
-## To do: Create myname/myproject at github.com (if it doesn't already exist)
+## To do: Create myname/myproject at github.com (if it doesn&#39;t already exist)
 ## To do: Run wflow_git_push() to push your project to GitHub</code></pre>
-<p>This has two main effects on your local machine: 1) it configures Git to communicate with your future GitHub repository, and 2) it inserts a link to your future GitHub repository into the navigation bar (you’ll need to run <code>wflow_build()</code> or <code>wflow_publish()</code> to observe this change). Furthermore, <code>wflow_use_github()</code> will prompt you to ask if you’d like to authorize workflowr to automatically create the repository on GitHub. If you agree, a browser tab will open, and you will need to authenticate with your username and password, and then give permission to the “workflowr-oauth-app” to access your account<a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a>.</p>
-<p>If you decline the offer from <code>wflow_use_github()</code> to automatically create the GitHub repository, you need to manually create it. To do this, login to your account on GitHub and create a new repository following these <a href="https://help.github.com/articles/creating-a-new-repository/">instructions</a>. The screenshot below shows the menu in the topright of the webpage.</p>
+<p>This has two main effects on your local machine: 1) it configures Git to communicate with your future GitHub repository, and 2) it inserts a link to your future GitHub repository into the navigation bar (you’ll need to run <code>wflow_build()</code> or <code>wflow_publish()</code> to observe this change). Furthermore, <code>wflow_use_github()</code> will prompt you to ask if you’d like to authorize workflowr to automatically create the repository on GitHub. If you agree, a browser tab will open, and you will need to authenticate with your username and password, and then give permission to the “workflowr-oauth-app” to access your account<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a>.</p>
+<p>If you decline the offer from <code>wflow_use_github()</code> to automatically create the GitHub repository, you need to manually create it. To do this, login to your account on GitHub and create a new repository following these <a href="https://docs.github.com/articles/creating-a-new-repository">instructions</a>. The screenshot below shows the menu in the topright of the webpage.</p>
 <p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALMAAACoCAYAAACrBd+rAAAAbnpUWHRSYXcgcHJvZmlsZSB0eXBlIGV4aWYAAHjaVYzdDYAwCITfmcIRrhQpjFMTTdzA8cVK0vRLgOP4ofO5L9oGTUj2ZuqqCMTFuYcw/DBQGAU1dEkvq7o1yOyJFSv8RXzzuXTUnNXV7zbPaKQXtrIgfc+2tzMAAAoGaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/Pgo8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA0LjQuMC1FeGl2MiI+CiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIKICAgIHhtbG5zOnRpZmY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vdGlmZi8xLjAvIgogICBleGlmOlBpeGVsWERpbWVuc2lvbj0iMTc5IgogICBleGlmOlBpeGVsWURpbWVuc2lvbj0iMTY4IgogICB0aWZmOkltYWdlV2lkdGg9IjE3OSIKICAgdGlmZjpJbWFnZUhlaWdodD0iMTY4IgogICB0aWZmOk9yaWVudGF0aW9uPSIxIi8+CiA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAg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" alt="Create a new repository on GitHub." style="display: block; margin: auto; border: black 1px solid"></p>
 <p class="caption" style="text-align: center;">
 Create a new repository on GitHub.
 </p>
 <p>Note that in this tutorial the GitHub repository also has the name “myproject.” This isn’t strictly necessary (you can name your GitHub repository whatever you like), but it’s generally good organizational practice to use the same name for both your GitHub repository and the local directory on your computer.</p>
-<p>Next, you need to send your files to GitHub. Push your files to GitHub with the function <code>wflow_git_push()</code>:<a href="#fn7" class="footnoteRef" id="fnref7"><sup>7</sup></a></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_git_push</span>(<span class="dt">dry_run =</span> <span class="ot">TRUE</span>)
-## Summary from wflow_git_push
-## 
-## Pushing to the branch &quot;master&quot; of the remote repository &quot;origin&quot; 
-## 
-## Using the HTTPS protocol
-## The following Git command would be run:
-## 
-##   $ git push origin master</code></pre></div>
-<p>Using <code>dry_run = TRUE</code> previews what the function will do. Remove this argument to actually push to GitHub. You will be prompted to enter your GitHub username and password for authentication<a href="#fn8" class="footnoteRef" id="fnref8"><sup>8</sup></a>. Each time you make changes to your project, e.g. run <code>wflow_publish()</code>, you will need to run <code>wflow_git_push()</code> to send the changes to GitHub.</p>
-<p>Lastly, now that your code is on GitHub, you need to tell GitHub that you want the files in <code>docs/</code> to be published as a website. Go to Settings -&gt; GitHub Pages and choose “master branch docs/ folder” as the Source (<a href="https://help.github.com/articles/configuring-a-publishing-source-for-github-pages/#publishing-your-github-pages-site-from-a-docs-folder-on-your-master-branch">instructions</a>). Using the hypothetical names above, the repository would be hosted at the URL <code>myname.github.io/myproject/</code><a href="#fn9" class="footnoteRef" id="fnref9"><sup>9</sup></a>. If you scroll back down to the GitHub Pages section of the Settings page, you can click on the URL there.</p>
+<p>Next, you need to send your files to GitHub. Push your files to GitHub with the function <code>wflow_git_push()</code>:<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_git_push</span>(<span class="at">dry_run =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Summary from wflow_git_push</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Pushing to the branch &quot;main&quot; of the remote repository &quot;origin&quot; </span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Using the HTTPS protocol</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="do">## The following Git command would be run:</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="do">##   $ git push origin main</span></span></code></pre></div>
+<p>Using <code>dry_run = TRUE</code> previews what the function will do. Remove this argument to actually push to GitHub. You will be prompted to enter your GitHub username and password for authentication<a href="#fn8" class="footnote-ref" id="fnref8"><sup>8</sup></a>. Each time you make changes to your project, e.g. run <code>wflow_publish()</code>, you will need to run <code>wflow_git_push()</code> to send the changes to GitHub.</p>
+<p>Lastly, now that your code is on GitHub, you need to tell GitHub that you want the files in <code>docs/</code> to be published as a website. Go to Settings -&gt; GitHub Pages and choose “master branch docs/ folder” as the Source (<a href="https://docs.github.com/articles/configuring-a-publishing-source-for-github-pages">instructions</a>). Using the hypothetical names above, the repository would be hosted at the URL <code>myname.github.io/myproject/</code><a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a>. If you scroll back down to the GitHub Pages section of the Settings page, you can click on the URL there.</p>
 </div>
 <div id="add-a-new-analysis-file" class="section level2">
 <h2>Add a new analysis file</h2>
 <p>Now that you have a functioning website, the next step is to start analyzing data! Create a new R Markdown file, save it as <code>analysis/first-analysis.Rmd</code>, and open it in your preferred text editor (e.g. RStudio). Alternatively, you can use the convenience function <code>wflow_open()</code>, which will create the file (and open it if you are using RStudio):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_open</span>(<span class="st">&quot;analysis/first-analysis.Rmd&quot;</span>)</code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_open</span>(<span class="st">&quot;analysis/first-analysis.Rmd&quot;</span>)</span></code></pre></div>
 <pre><code>## wflow_open:
 ## - New file(s):
-##   /tmp/RtmpvF1sZa/wflow-01-getting-started-367c23bd3cae/myproject/analysis/first-analysis.Rmd
-## - Same working directory: /tmp/RtmpvF1sZa/wflow-01-getting-started-367c23bd3cae/myproject</code></pre>
+##   C:/Users/john/AppData/Local/Temp/Rtmpk1uhRX/wflow-01-getting-started-80873b45e03/myproject/analysis/first-analysis.Rmd
+## - Same working directory: C:/Users/john/AppData/Local/Temp/Rtmpk1uhRX/wflow-01-getting-started-80873b45e03/myproject</code></pre>
 <p>Now you are ready to start writing! Go ahead and add some example code. If you are using RStudio, press the Knit button to build the file and see a preview in the Viewer pane. Alternatively from the R console, you can run <code>wflow_build()</code> again (this function can be run from the base directory of your project or any subdirectory).</p>
 <p>Check out your new file <code>first-analysis.html</code>. Near the top you will see the workflowr reproducibility report. If you click on the button, the full menu will drop down. Click around to learn more about the reproducibility safety checks, why their important, and whether or not the file passed or failed each one. You’ll notice that the first check failed because the R Markdown file had uncommitted changes. This is OK now since the file is a draft. Once you are ready to publish it to share with others, you can use <code>wflow_publish()</code> to ensure that any changes to the R Markdown file are committed to the Git repository prior to generating the results.</p>
 <p>In order to make it easier to navigate to your new file, you can include a link to it on the main index page. First open <code>analysis/index.Rmd</code> (optionally using <code>wflow_open()</code>). Second paste the following line into <code>index.Rmd</code>:</p>
 <pre><code>Click on this [link](first-analysis.html) to see my results.</code></pre>
 <p>This uses the Markdown syntax for creating a hyperlink (for a quick reference guide in RStudio click “Help” -&gt; “Markdown Quick Reference”). You specify the HTML version of the file since this is what comprises the website. Click Knit (or run <code>wflow_build()</code> again) to check that the link works.</p>
 <p>Now run <code>wflow_status()</code> again. As expected, two files need attention. <code>index.Rmd</code> has status “Mod” for modified. This means it is a published file that has subsequently been modified. <code>first-analysis.Rmd</code> has status “Scr” for Scratch. This means not only is the HTML not published, but the R Markdown file is not yet being tracked by Git.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_status</span>()
-## Status of 4 Rmd files
-## 
-## Totals:
-##  3 Published (1 Modified)
-##  1 Scratch
-## 
-## The following Rmd files require attention:
-## 
-## Mod analysis/index.Rmd
-## Scr analysis/first-analysis.Rmd
-## 
-## Key: Mod = Modified, Scr = Scratch (Untracked)
-## 
-## The current Git status is:
-## 
-##     status substatus                        file
-##   unstaged  modified          analysis/index.Rmd
-##  untracked untracked analysis/first-analysis.Rmd
-## 
-## To publish your changes as part of your website, use `wflow_publish()`.
-## To commit your changes without publishing them yet, use
-## `wflow_git_commit()`.</code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_status</span>()</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Status of 4 Rmd files</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="do">## Totals:</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="do">##  3 Published (1 Modified)</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="do">##  1 Scratch</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="do">## The following Rmd files require attention:</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="do">## Mod analysis/index.Rmd</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="do">## Scr analysis/first-analysis.Rmd</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="do">## Key: Mod = Modified, Scr = Scratch (Untracked)</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="do">## The current Git status is:</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a><span class="do">##     status substatus                        file</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="do">##   unstaged  modified          analysis/index.Rmd</span></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="do">##  untracked untracked analysis/first-analysis.Rmd</span></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="do">## To publish your changes as part of your website, use `wflow_publish()`.</span></span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a><span class="do">## To commit your changes without publishing them yet, use</span></span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a><span class="do">## `wflow_git_commit()`.</span></span></code></pre></div>
 <p>To publish the new analysis and the updated index page, again use <code>wflow_publish()</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_publish</span>(<span class="kw">c</span>(<span class="st">&quot;analysis/index.Rmd&quot;</span>, <span class="st">&quot;analysis/first-analysis.Rmd&quot;</span>),
-              <span class="st">&quot;Add my first analysis&quot;</span>)</code></pre></div>
-<pre><code>## Current working directory: /tmp/RtmpvF1sZa/wflow-01-getting-started-367c23bd3cae/myproject
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_publish</span>(<span class="fu">c</span>(<span class="st">&quot;analysis/index.Rmd&quot;</span>, <span class="st">&quot;analysis/first-analysis.Rmd&quot;</span>),</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot;Add my first analysis&quot;</span>)</span></code></pre></div>
+<pre><code>## Current working directory: C:/Users/john/AppData/Local/Temp/Rtmpk1uhRX/wflow-01-getting-started-80873b45e03/myproject
 ## Building 2 file(s):
 ## Building analysis/index.Rmd
 ## Building analysis/first-analysis.Rmd
@@ -404,7 +453,7 @@ Create a new repository on GitHub.
 ##   $ git add analysis/index.Rmd analysis/first-analysis.Rmd 
 ##   $ git commit -m &quot;Add my first analysis&quot; 
 ## 
-## The following file(s) were included in commit 1c8f18c:
+## The following file(s) were included in commit eb2415c:
 ## analysis/first-analysis.Rmd
 ## analysis/index.Rmd
 ## 
@@ -413,14 +462,15 @@ Create a new repository on GitHub.
 ## Summary from wflow_build
 ## 
 ## Settings:
-##  clean_fig_files: TRUE
+##  combine: &quot;or&quot; clean_fig_files: TRUE
 ## 
 ## The following were built externally each in their own fresh R session: 
 ## 
 ## docs/index.html
 ## docs/first-analysis.html
 ## 
-## Log files saved in /tmp/RtmpvF1sZa/workflowr
+## Log files saved in
+## C:\Users\john\AppData\Local\Temp\Rtmpk1uhRX/workflowr
 ## 
 ## **Step 3: Commit HTML files**
 ## 
@@ -431,17 +481,17 @@ Create a new repository on GitHub.
 ##   $ git add docs/index.html docs/first-analysis.html docs/figure/index.Rmd docs/figure/first-analysis.Rmd docs/site_libs docs/.nojekyll 
 ##   $ git commit -m &quot;Build site.&quot; 
 ## 
-## The following file(s) were included in commit 2e1dda5:
+## The following file(s) were included in commit 136b514:
 ## docs/first-analysis.html
 ## docs/index.html
 ## docs/site_libs/font-awesome-5.1.0/
 ## docs/site_libs/jqueryui-1.11.4/
 ## docs/site_libs/tocify-1.9.1/</code></pre>
-<p>Lastly, push the changes to GitHub or GitLab with <code>wflow_git_push()</code><a href="#fn10" class="footnoteRef" id="fnref10"><sup>10</sup></a> to deploy these latest changes to the website.</p>
+<p>Lastly, push the changes to GitHub or GitLab with <code>wflow_git_push()</code><a href="#fn10" class="footnote-ref" id="fnref10"><sup>10</sup></a> to deploy these latest changes to the website.</p>
 </div>
 <div id="the-workflow" class="section level2">
 <h2>The workflow</h2>
-<p>This is the general workflow:<a href="#fn11" class="footnoteRef" id="fnref11"><sup>11</sup></a></p>
+<p>This is the general workflow:<a href="#fn11" class="footnote-ref" id="fnref11"><sup>11</sup></a></p>
 <ol style="list-style-type: decimal">
 <li><p>Open a new or existing R Markdown file in <code>analysis/</code> (optionally using <code>wflow_open()</code>)</p></li>
 <li><p>Perform your analysis in the R Markdown file (For RStudio users: to quickly develop the code I recommend executing the code in the R console via Ctrl-Enter to send one line or Ctrl-Alt-C to execute the entire code chunk)</p></li>
@@ -452,41 +502,41 @@ Create a new repository on GitHub.
 </ol>
 <p>This ensures that the code version recorded at the top of an HTML file corresponds to the state of the Git repository at the time it was built.</p>
 <p>The only exception to this workflow is if you are updating the aesthetics of your website (e.g. anytime you make edits to <code>analysis/_site.yml</code>). In this case you’ll want to update all the published HTML files, regardless of whether or not their corresponding R Markdown files have been updated. To republish every HTML page, run <code>wflow_publish()</code> with <code>republish = TRUE</code>. This behavior is only previewed below by specifying <code>dry_run = TRUE</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wflow_publish</span>(<span class="st">&quot;analysis/_site.yml&quot;</span>, <span class="dt">republish =</span> <span class="ot">TRUE</span>, <span class="dt">dry_run =</span> <span class="ot">TRUE</span>)
-## Summary from wflow_publish
-## 
-## **Step 1: Commit analysis files**
-## 
-## Summary from wflow_git_commit
-## 
-## The following would be attempted: 
-## 
-##   $ git add analysis/_site.yml 
-##   $ git commit -m &quot;wflow_publish(\&quot;analysis/_site.yml\&quot;, republish = TRUE, dry_run = TRUE)&quot; 
-## 
-## **Step 2: Build HTML files**
-## 
-## Summary from wflow_build
-## 
-## Settings:
-##  republish: TRUE clean_fig_files: TRUE dry_run: TRUE
-## 
-## The following would be built externally each in their own fresh R
-## session: 
-## 
-## docs/about.html
-## docs/first-analysis.html
-## docs/index.html
-## docs/license.html
-## 
-## **Step 3: Commit HTML files**
-## 
-## Summary from wflow_git_commit
-## 
-## The following would be attempted: 
-## 
-##   $ git add docs/about.html docs/first-analysis.html docs/index.html docs/license.html docs/figure/about.Rmd docs/figure/first-analysis.Rmd docs/figure/index.Rmd docs/figure/license.Rmd docs/site_libs docs/.nojekyll 
-##   $ git commit -m &quot;Build site.&quot;</code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wflow_publish</span>(<span class="st">&quot;analysis/_site.yml&quot;</span>, <span class="at">republish =</span> <span class="cn">TRUE</span>, <span class="at">dry_run =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="do">## Summary from wflow_publish</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="do">## **Step 1: Commit analysis files**</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Summary from wflow_git_commit</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="do">## The following would be attempted: </span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="do">##   $ git add analysis/_site.yml </span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="do">##   $ git commit -m &quot;wflow_publish(\&quot;analysis/_site.yml\&quot;, republish = TRUE, dry_run = TRUE)&quot; </span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="do">## **Step 2: Build HTML files**</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a><span class="do">## Summary from wflow_build</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a><span class="do">## Settings:</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a><span class="do">##  republish: TRUE combine: &quot;or&quot; clean_fig_files: TRUE dry_run: TRUE</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a><span class="do">## The following would be built externally each in their own fresh R</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a><span class="do">## session: </span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a><span class="do">## docs/about.html</span></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a><span class="do">## docs/first-analysis.html</span></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a><span class="do">## docs/index.html</span></span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a><span class="do">## docs/license.html</span></span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a><span class="do">## **Step 3: Commit HTML files**</span></span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a><span class="do">## Summary from wflow_git_commit</span></span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a><span class="do">## The following would be attempted: </span></span>
+<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a><span class="do">##   $ git add docs/about.html docs/first-analysis.html docs/index.html docs/license.html docs/figure/about.Rmd docs/figure/first-analysis.Rmd docs/figure/index.Rmd docs/figure/license.Rmd docs/site_libs docs/.nojekyll </span></span>
+<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a><span class="do">##   $ git commit -m &quot;Build site.&quot;</span></span></code></pre></div>
 </div>
 <div id="next-steps" class="section level2">
 <h2>Next steps</h2>
@@ -499,28 +549,30 @@ Create a new repository on GitHub.
 <li><a href="wflow-06-gitlab.html">Hosting workflowr websites using GitLab</a></li>
 <li><a href="wflow-07-common-code.html">Sharing common code across analyses</a></li>
 <li><a href="wflow-08-deploy.html">Alternative strategies for deploying workflowr websites</a></li>
+<li><a href="wflow-09-workshop.html">Reproducible research with workflowr (workshop)</a></li>
+<li><a href="wflow-10-data.html">Using large data files with workflowr</a></li>
 </ul>
 </div>
 <div id="further-reading" class="section level2">
 <h2>Further reading</h2>
 <ul>
-<li>For advice on using R Markdown files to organize your analysis, read the chapter <a href="http://r4ds.had.co.nz/r-markdown-workflow.html">R Markdown workflow</a> in the book <a href="http://r4ds.had.co.nz/">R for Data Science</a> by Garrett Grolemund and Hadley Wickham</li>
+<li>For advice on using R Markdown files to organize your analysis, read the chapter <a href="https://r4ds.had.co.nz/r-markdown-workflow.html">R Markdown workflow</a> in the book <a href="https://r4ds.had.co.nz/">R for Data Science</a> by Garrett Grolemund and Hadley Wickham</li>
 </ul>
 </div>
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>There are many ways to use Git: in the Terminal, in the RStudio Git pane, or another Git graphical user interface (GUI) (see <a href="https://git-scm.com/download/gui/linux">here</a> for GUI options).<a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p>If you’re using RStudio, you can alternatively create a new workflowr project using the RStudio project template. Go to <code>File</code> -&gt; <code>New Project...</code> and select <code>workflowr project</code> from the list of project types. In the future you can return to your project by choosing <code>Open Project...</code> and selecting the file <code>myproject.Rproj</code>. This will set the correct working directory in the R console, switch the file navigator to the project, and configure the Git pane.<a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p>Because of this requirement, you can’t customize the knitr option <code>fig.path</code> (which controls where figure files are saved) in any R Markdown file that is part of a workflowr project. If you do set it, it will be ignored and workflowr will insert a warning into the HTML file to alert you.<a href="#fnref3">↩</a></p></li>
-<li id="fn4"><p>Instead of listing each file individually, you can also pass <a href="https://en.wikipedia.org/wiki/Glob_(programming)">file globs</a> as input to any workflowr function, e.g. <code>wflow_publish(&quot;analysis/*Rmd&quot;, &quot;Publish the initial files for myproject&quot;)</code>.<a href="#fnref4">↩</a></p></li>
-<li id="fn5"><p>The default is to name the GitHub repository using the same name as the directory that contains the workflowr project. This is likely what you used with <code>wflow_start()</code>, which in this case was <code>&quot;myproject&quot;</code>. If you’d prefer the GitHub repository to have a different name, or if you’ve already created a GitHub repo with a different name, you can pass the argument <code>repository = &quot;other-name&quot;</code>.<a href="#fnref5">↩</a></p></li>
-<li id="fn6"><p>This sounds scarier than it actually is. The “workflowr-oauth-app” is simply a formality for GitHub to grant authorization. The “app” itself is the R code running on your local machine. Once <code>wflow_use_github()</code> finishes, the authorization is deleted, and nothing (and no one) can access your account<a href="#fnref6">↩</a></p></li>
-<li id="fn7"><p>Unfortunately this can fail for many different reasons. If you already regularly use <code>git push</code> in the Terminal, you will probably want to continue using this. If you don’t have Git installed on your computer and thus must use <code>wflow_git_push()</code>, you can search the <a href="https://github.com/ropensci/git2r/issues">git2r Issues</a> for troubleshooting ideas.<a href="#fnref7">↩</a></p></li>
-<li id="fn8"><p>If you’d prefer to use SSH keys for authentication, please see the section <a href="wflow-02-customization.html#setup-ssh-keys">Setup SSH keys</a>.<a href="#fnref8">↩</a></p></li>
-<li id="fn9"><p>It may take a few minutes for the site to be rendered.<a href="#fnref9">↩</a></p></li>
-<li id="fn10"><p>Alternatively you can run <code>git push</code> in the Terminal or use the RStudio Git Pane.<a href="#fnref10">↩</a></p></li>
-<li id="fn11"><p>Note that some workflowr functions are also available as <a href="https://rstudio.github.io/rstudioaddins/">RStudio Addins</a>. You may prefer these compared to running the commands in the R console, especially since you can <a href="https://rstudio.github.io/rstudioaddins/#keyboard-shorcuts">bind the addins to keyboard shortcuts</a>.<a href="#fnref11">↩</a></p></li>
+<li id="fn1"><p>There are many ways to use Git: in the Terminal, in the RStudio Git pane, or another Git graphical user interface (GUI) (see <a href="https://git-scm.com/download/gui/linux">here</a> for GUI options).<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>If you’re using RStudio, you can alternatively create a new workflowr project using the RStudio project template. Go to <code>File</code> -&gt; <code>New Project...</code> and select <code>workflowr project</code> from the list of project types. In the future you can return to your project by choosing <code>Open Project...</code> and selecting the file <code>myproject.Rproj</code>. This will set the correct working directory in the R console, switch the file navigator to the project, and configure the Git pane.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>Because of this requirement, you can’t customize the knitr option <code>fig.path</code> (which controls where figure files are saved) in any R Markdown file that is part of a workflowr project. If you do set it, it will be ignored and workflowr will insert a warning into the HTML file to alert you.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+<li id="fn4"><p>Instead of listing each file individually, you can also pass <a href="https://en.wikipedia.org/wiki/Glob_(programming)">file globs</a> as input to any workflowr function, e.g. <code>wflow_publish(&quot;analysis/*Rmd&quot;, &quot;Publish the initial files for myproject&quot;)</code>.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p>The default is to name the GitHub repository using the same name as the directory that contains the workflowr project. This is likely what you used with <code>wflow_start()</code>, which in this case was <code>&quot;myproject&quot;</code>. If you’d prefer the GitHub repository to have a different name, or if you’ve already created a GitHub repo with a different name, you can pass the argument <code>repository = &quot;other-name&quot;</code>.<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
+<li id="fn6"><p>This sounds scarier than it actually is. The “workflowr-oauth-app” is simply a formality for GitHub to grant authorization. The “app” itself is the R code running on your local machine. Once <code>wflow_use_github()</code> finishes, the authorization is deleted, and nothing (and no one) can access your account<a href="#fnref6" class="footnote-back">↩︎</a></p></li>
+<li id="fn7"><p>Unfortunately this can fail for many different reasons. If you already regularly use <code>git push</code> in the Terminal, you will probably want to continue using this. If you don’t have Git installed on your computer and thus must use <code>wflow_git_push()</code>, you can search the <a href="https://github.com/ropensci/git2r/issues">git2r Issues</a> for troubleshooting ideas.<a href="#fnref7" class="footnote-back">↩︎</a></p></li>
+<li id="fn8"><p>If you’d prefer to use SSH keys for authentication, please see the section <a href="wflow-02-customization.html#setup-ssh-keys">Setup SSH keys</a>.<a href="#fnref8" class="footnote-back">↩︎</a></p></li>
+<li id="fn9"><p>It may take a few minutes for the site to be rendered.<a href="#fnref9" class="footnote-back">↩︎</a></p></li>
+<li id="fn10"><p>Alternatively you can run <code>git push</code> in the Terminal or use the RStudio Git Pane.<a href="#fnref10" class="footnote-back">↩︎</a></p></li>
+<li id="fn11"><p>Note that some workflowr functions are also available as <a href="https://rstudio.github.io/rstudioaddins/">RStudio Addins</a>. You may prefer these compared to running the commands in the R console, especially since you can <a href="https://rstudio.github.io/rstudioaddins/#keyboard-shorcuts">bind the addins to keyboard shortcuts</a>.<a href="#fnref11" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
 

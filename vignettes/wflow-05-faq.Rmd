@@ -24,7 +24,7 @@ following message:
 >
 > For information on troubleshooting Jekyll see:
 >
->   https://help.github.com/articles/troubleshooting-jekyll-builds
+>   https://docs.github.com/articles/troubleshooting-jekyll-builds
 >
 > If you have any questions you can contact us by replying to this email.
 
@@ -103,13 +103,12 @@ from `docs/` (because this is where the HTML files are located), e.g.:
     knitr::include_graphics("assets/external.png", error = FALSE)
     ```
     Note that the image will not be previewed in the R Markdown file inside of
-    RStudio because it is in a different directory than the R Markdown file.
-    Also note that the default behavior of `knitr::include_graphics()` has
-    changed over time. Starting in version 1.28, the function throws an error if
-    it can't find the file. This breaks the workflowr setup, since the file path
-    only exists once the HTML file is moved to `docs/`. Thus you have to set
-    `error = FALSE`. Starting in 1.29, there is a knitr package option that you
-    can set, e.g. in your `.Rprofile`, to disable this behavior globally:
+    RStudio because it is in a different directory than the R Markdown file. You
+    have to set `error = FALSE` because the function throws an error if it can't
+    find the file. This breaks the workflowr setup, since the file path only
+    exists once the HTML file is moved to `docs/`. If you'd like to disable
+    knitr from throwing this error for all the code in your project, add the
+    following line to the `.Rprofile` in your project:
     `options(knitr.graphics.error = FALSE)`
 1. Run `wflow_build()` to confirm the external image file(s) are properly
 displayed
@@ -153,7 +152,7 @@ p
 
 To apply this to every figure file in a particular document, you can create a
 "setup" chunk at the beginning of the document that sets the [knitr chunk
-option](https://yihui.name/knitr/options/) globally:
+option](https://yihui.org/knitr/options/) globally:
 
 ````
 ```{r setup, dev='svg'}`r ''`
@@ -232,7 +231,7 @@ Rmd-based website.
 
 However, there is still a good option for embedding the Shiny app directly into
 the web page. You can upload your Shiny app to
-[shinyapps.io](http://www.shinyapps.io/), and then embed it directly into your
+[shinyapps.io](https://www.shinyapps.io/), and then embed it directly into your
 document by calling `knitr::include_app()` inside a code chunk, as shown below:
 
 ````markdown
@@ -454,7 +453,7 @@ to manually include the URL to the project in `_workflowr.yml` (for historical
 reasons, this variable is named `github`)
 
     ```
-    github: http://custom-site.com/<username>/<reponame>
+    github: https://custom-site.com/<username>/<reponame>
     ```
 
 **Username/Password**
@@ -463,12 +462,12 @@ reasons, this variable is named `github`)
     a. `git2r::remote_add()` in R:
 
         ```
-        git2r::remote_add(name = "origin", url = "http://custom-site/<username>/<reponame>.git")
+        git2r::remote_add(name = "origin", url = "https://custom-site/<username>/<reponame>.git")
         ```
     a. `git remote add origin` in the terminal:
 
         ```
-        git remote add origin http://custom-site/<username>/<reponame>.git
+        git remote add origin https://custom-site/<username>/<reponame>.git
         ```
 1. You cannot use `wflow_git_push()` and `wflow_git_pull()`. Instead run
 `git push` and `git pull` in the terminal
@@ -492,15 +491,15 @@ the lowercase workflowr should be the preferred option.
 
 [aws]: https://aws.amazon.com/s3/
 [beaker]: https://beakerbrowser.com/
-[Bootstrap]: http://getbootstrap.com/
+[Bootstrap]: https://getbootstrap.com/
 [deploy-aws]: wflow-08-deploy.html#amazon-s3-password-protected
 [deploy-beaker]: wflow-08-deploy.html#beaker-browser-secure-sharing
 [gh-pages]: https://pages.github.com/
 [gh-status]: https://twitter.com/githubstatus
-[gh-troubleshooting]: https://help.github.com/articles/troubleshooting-github-pages-builds/
+[gh-troubleshooting]: https://docs.github.com/articles/troubleshooting-github-pages-builds
 [gl-pages]: https://docs.gitlab.com/ce/user/project/pages/index.html
-[issues]: https://github.com/jdblischak/workflowr/issues
-[rmarkdown]: http://rmarkdown.rstudio.com/
+[issues]: https://github.com/workflowr/workflowr/issues
+[rmarkdown]: https://rmarkdown.rstudio.com/
 [vig-data]: wflow-10-data.html
 [vig-deploy]: wflow-08-deploy.html
 [vig-getting-started]: wflow-01-getting-started.html

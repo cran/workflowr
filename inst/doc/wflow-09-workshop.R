@@ -17,18 +17,19 @@ knitr::include_graphics("img/rstudio-project-type.png")
 ## ----rstudio-workflowr-template, eval=TRUE, echo=FALSE, out.width = "50%"-----
 knitr::include_graphics("img/rstudio-workflowr-template.png")
 
-## ----absolute-path------------------------------------------------------------
-#  d <- read.csv("C:/Users/GraceHopper/myproject/data/raw.csv")
-
-## ----relative-path------------------------------------------------------------
-#  d <- read.csv("data/raw.csv")
-
 ## ----teeth, eval=TRUE---------------------------------------------------------
 data("ToothGrowth")
+head(ToothGrowth)
 summary(ToothGrowth)
 str(ToothGrowth)
 
 ## ----teeth-write--------------------------------------------------------------
+#  write.csv(ToothGrowth, file = "data/teeth.csv")
+
+## -----------------------------------------------------------------------------
+#  write.csv(ToothGrowth, file = "C:/Users/GraceHopper/Documents/myproject/data/teeth.csv")
+
+## -----------------------------------------------------------------------------
 #  write.csv(ToothGrowth, file = "data/teeth.csv")
 
 ## ----open-teeth---------------------------------------------------------------
@@ -52,17 +53,14 @@ mean(teeth$len[supp_perm == "OJ"]) - mean(teeth$len[supp_perm == "VC"])
 ## ----workflowr-report-checks, eval=TRUE, echo=FALSE, out.width = "75%"--------
 knitr::include_graphics("img/workflowr-report-checks.png")
 
-## ----open-index---------------------------------------------------------------
-#  wflow_open("analysis/index.Rmd")
-
-## ----fig-status, eval=TRUE, echo=FALSE, out.width = "50%"---------------------
-knitr::include_graphics("img/status.png")
-
 ## ----publish-teeth-growth-----------------------------------------------------
-#  wflow_publish(c("analysis/*Rmd", "data/teeth.csv"), message = "Analyze teeth growth")
+#  wflow_publish("analysis/teeth.Rmd", message = "Analyze teeth growth")
 
 ## ----workflowr-past-versions-1, eval=TRUE, echo=FALSE, out.width = "75%"------
 knitr::include_graphics("img/workflowr-past-versions-1.png")
+
+## ----publish-other-files------------------------------------------------------
+#  wflow_publish(c("analysis/*Rmd", "data/teeth.csv"), message = "Publish data and other files")
 
 ## ----wflow-use-github---------------------------------------------------------
 #  wflow_use_github("your-github-username")

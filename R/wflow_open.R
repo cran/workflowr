@@ -110,9 +110,9 @@ wflow_open <- function(files,
 
     # Send a warning if user has a beta workflowr project and tries to create a
     # new file
-    yml <- yaml::read_yaml(file.path(p$analysis, "_site.yml"))
-    if (names(yml$output) != "workflowr::wflow_html" &&
-        length(files_new) > 0) {
+    yml_index <- rmarkdown::yaml_front_matter(file.path(p$analysis, "index.Rmd"))
+    usingBeta <- is.null(yml_index[["site"]]) || yml_index[["site"]] != "workflowr::wflow_site"
+    if (usingBeta && length(files_new) > 0) {
       warning(call. = FALSE, wrap(
         "It appears that your site was created using a beta release of
         workflowr, thus you likely don't want to use the R Markdown file
@@ -125,7 +125,8 @@ wflow_open <- function(files,
       "devtools::install_github(\"jdblischak/workflowrBeta\")\n\n",
       "To update to a workflowr 1.0+ site, you can:\n\n",
       "1. Run wflow_update() to preview the files that would be affected\n\n",
-      "2. Follow the instructions in ?wflow_update to make the transition")
+      "2. Follow the instructions in ?wflow_update to make the transition\n\n",
+      "(Note that wflow_update() is only available in workflowr <= 1.6.2)")
     }
 
     # Throw error if Rmd files not saved in R Markdown directory

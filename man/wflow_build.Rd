@@ -9,6 +9,7 @@ wflow_build(
   make = is.null(files),
   update = FALSE,
   republish = FALSE,
+  combine = "or",
   view = getOption("workflowr.view"),
   clean_fig_files = FALSE,
   delete_cache = FALSE,
@@ -44,6 +45,13 @@ file that was used to produce it.}
 files (that do not have any unstaged or staged changes). Useful for
 site-wide changes like updating the theme, navigation bar, or any other
 setting in \code{_site.yml}.}
+
+\item{combine}{character (default: \code{"or"}). Determine how to combine the
+files from the arguments \code{files}, \code{make} (\code{wflow_build()}
+only), \code{update}, and \code{republish}. When \code{combine} is
+\code{"or"}, any file specified by at least one of these arguments will be
+built. When \code{combine} is \code{"and"}, only files specified by all of
+these arguments will be built.}
 
 \item{view}{logical (default: \code{getOption("workflowr.view")}). View the
 website with \code{\link{wflow_view}} after building files. If only one
@@ -81,7 +89,8 @@ long-running code chunks.}
 \item{local}{logical (default: FALSE). Build files locally in the R console.
 This should only be used for debugging purposes. The default is to build
 each file in its own separate fresh R process to ensure each file is
-reproducible in isolation.}
+reproducible in isolation. This is done using
+\code{\link[callr:r]{callr::r_safe}}.}
 
 \item{dry_run}{logical (default: FALSE). List the files to be built, without
 building them.}
@@ -134,34 +143,86 @@ the changes. When you are ready to commit the files, use
 }
 \details{
 \code{wflow_build} has multiple, non-mutually exclusive options for deciding
-which files to build. In other words, if multiple options are set to
-\code{TRUE}, the union of all files will be built. The argument \code{make}
-is the most useful for interactively performing your analysis. The other
-options are more useful when you are ready to publish specific files with
+which files to build. If multiple options are used, then the argument
+\code{combine} determines which files will be built. If \code{combine ==
+"or"} (the default), then any file specified by at least one of the arguments
+will be built. In contrast, if \code{combine == "and"}, then only files
+specified by all of the arguments will be built. The argument \code{make} is
+the most useful for interactively performing your analysis. The other options
+are more useful when you are ready to publish specific files with
 \code{\link{wflow_publish}} (which passes these arguments to
-\code{wflow_build}).
+\code{wflow_build}). Here are the options for specifying files to be built:
 
 \itemize{
 
-\item Files specified via the argument \code{files} are always built.
+\item Files specified via the argument \code{files}
 
-\item If \code{make = TRUE}, all files which have been modified more recently
-than their corresponding HTML files will be built.
+\item \code{make = TRUE} - Files which have been modified more recently
+than their corresponding HTML files
 
-\item If \code{update = TRUE}, all previously published files which have been
-committed more recently than their corresponding HTML files will be built.
-However, files which currently have staged or unstaged changes will be
-ignored.
+\item \code{update = TRUE} - Previously published files which have been
+committed more recently than their corresponding HTML files.
+However, files which currently have staged or unstaged changes are not
+included.
 
-\item If \code{republish = TRUE}, all published files will be rebuilt.
-However, files which currently have staged or unstaged changes will be
-ignored.
+\item \code{republish = TRUE} - All published files.
+However, files which currently have staged or unstaged changes are not
+included.
 
 }
 
 Under the hood, \code{wflow_build} is a wrapper for
-\code{\link[rmarkdown]{render_site}} from the package \link{rmarkdown}.
+\code{\link[rmarkdown]{render_site}} from the package \link{rmarkdown}. By
+default (\code{local = FALSE}), the code is executed in an isolated R
+session. This is done using \code{\link[callr:r]{callr::r_safe}}.
 }
+\section{Comparison to RStudio Knit button}{
+
+
+\code{wflow_build} is intentionally designed to be similar to clicking on the
+Knit button in RStudio. Both isolate the code execution in a separate R
+process, thus ensuring the results are not dependent on the state of the
+current R session. However, they do differ in a few ways:
+
+\describe{
+
+  \item{Number of files}{The RStudio Knit button only builds the current Rmd
+  file open in the editor. In contrast, \code{wflow_build} can build any
+  number of Rmd files (each in their own separate R process) with a single
+  invocation, including accepting file globs.}
+
+  \item{System and user profiles}{The two methods diverge the most in
+  their use of \code{.Rprofile} files. \code{wflow_build} ignores any system
+  or user profiles (i.e. \code{~/.Rprofile} on Linux/macOS or
+  \code{~/Documents/.Rprofile} on Windows). This is the default behavior of
+  \code{\link[callr:r]{callr::r_safe}}, which it calls to run the separate R
+  process. This is ideal for reproducibility. Otherwise the results could be
+  affected by custom settings made only on the user's machine. In contrast,
+  the RStudio Knit button loads any system or user level profiles, consistent
+  with its role as a development tool.}
+
+  \item{Project-specific profiles}{A project-specific \code{.Rprofile} is
+  treated differently than system or user profiles. \code{wflow_build} only
+  loads a project-specific \code{.Rprofile} if it is located in the current
+  working directory in which \code{wflow_build} is invoked. This may be
+  confusing if this differs from the directory in which the code in the Rmd
+  is actually executed (the option \code{knit_root_dir} defined in
+  \code{_workflowr.yml}). The RStudio Knit button only loads a
+  project-specific \code{.Rprofile} if it is located in the same directory as
+  its setting "Knit Directory" is configured. For example, if "Knit Directory"
+  is set to "Document Directory", it will ignore any \code{.Rprofile} in the
+  root of the project. But it would load the \code{.Rprofile} if "Knit
+  Directory" was changed to "Project Directory".}
+}
+
+The main takeaway from the above is that you should try to limit settings and
+options defined in \code{.Rprofile} to affect the interactive R experience
+and superficial behavior, e.g. the option \code{max.print} to limit the
+number of lines that can be printed to the console. Any critical settings
+that affect the results of the analysis should be explicitly set in the Rmd
+file.
+}
+
 \examples{
 \dontrun{
 

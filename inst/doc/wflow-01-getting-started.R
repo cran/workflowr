@@ -10,7 +10,7 @@ if (git2r::in_repository(tempdir())) {
     "Because you have a Git repository upstream of R's temporary directory,
     none of the code below was executed. Please refer to the online
     documentation to see the output:
-    https://jdblischak.github.io/workflowr/articles/wflow-01-getting-started.html
+    https://workflowr.github.io/workflowr/articles/wflow-01-getting-started.html
     \n\nYou should consider removing the directory since it was likely created
     in error: ",
     workflowr:::git2r_slot(git2r::repository(tempdir(), discover = TRUE), "path")))

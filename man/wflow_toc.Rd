@@ -4,7 +4,12 @@
 \alias{wflow_toc}
 \title{Create table of contents}
 \usage{
-wflow_toc(ignore_nav_bar = TRUE, clipboard = TRUE, project = ".")
+wflow_toc(
+  ignore_nav_bar = TRUE,
+  clipboard = TRUE,
+  only_published = TRUE,
+  project = "."
+)
 }
 \arguments{
 \item{ignore_nav_bar}{logical (default: TRUE). Ignore any HTML files included
@@ -15,6 +20,8 @@ clipboard. Only relevant if
 \href{https://cran.r-project.org/package=clipr}{clipr} package is installed
 and the system keyboard is available.}
 
+\item{only_published}{logical (default: TRUE) Include only published contents.}
+
 \item{project}{character (default: ".") By default the function assumes the
 current working directory is within the project. If this is not true,
 you'll need to provide the path to the project directory.}
@@ -23,7 +30,7 @@ you'll need to provide the path to the project directory.}
 Invisibly returns the table of contents as a character vector.
 }
 \description{
-\code{wfow_toc} creates a table of contents of the published R Markdown
+\code{wflow_toc} creates a table of contents of the published R Markdown
 files. The output is in markdown format, so you can paste it into a document
 such as \code{index.Rmd}. If the R package
 \href{https://cran.r-project.org/package=clipr}{clipr} is installed, the
@@ -41,9 +48,9 @@ for you, you can try the following:
 \code{install.packages("clipr")}
 
 \item Check that the system keyboard is writable. Run
-\code{\link[clipr]{clipr_available}} and \code{\link[clipr]{dr_clipr}}.
+\code{\link[clipr]{clipr_available}} and \code{\link[clipr:clipr_available]{dr_clipr}}.
 
-\item If it's still not working, set \code{keyboard = FALSE} to send the
+\item If it's still not working, set \code{clipboard = FALSE} to send the
 table of contents to the R console to manually copy-paste.
 
 }

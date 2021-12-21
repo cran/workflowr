@@ -29,7 +29,7 @@ obtain_existing_path <- function(path) {
 }
 
 # Wrap long messages
-# https://github.com/jdblischak/workflowr/issues/29
+# https://github.com/workflowr/workflowr/issues/29
 wrap <- function(...) {
   input <- list(...)
   if (!all(sapply(input, is.character)))
@@ -229,9 +229,9 @@ glob <- function(paths) {
 # doesn't exist, return NA.
 #
 # GitHub:
-# HTTPS: https://github.com/jdblischak/workflowr.git
-# SSH: git@github.com:jdblischak/workflowr.git
-# Return value:  https://github.com/jdblischak/workflowr
+# HTTPS: https://github.com/workflowr/workflowr.git
+# SSH: git@github.com:workflowr/workflowr.git
+# Return value:  https://github.com/workflowr/workflowr
 #
 # GitLab:
 # HTTPS: https://gitlab.com/jdblischak/wflow-gitlab.git
@@ -447,4 +447,26 @@ check_wd_exists <- function() {
     stop("The current working directory doesn't exist.",
          " Use setwd() to change to an existing directory.",
          call. = FALSE)
+}
+
+# Creates two newlines in between texts
+create_newlines <- function(m) {
+  m <- lapply(m, wrap)
+  m <- unlist(m)
+  m <- paste(m, collapse = "\n\n")
+  return(m)
+}
+
+# Get Font Awesome icon for a brand
+#
+# Decide between Font Awesome 4 and 5
+# https://github.com/rstudio/rmarkdown/issues/1991
+get_fa_brand_icon <- function(brand) {
+  if (utils::packageVersion("rmarkdown") < "2.6") {
+    # Font Awesome 4: rmarkdown adds preceding "fa"
+    return(sprintf("fa-%s", brand))
+  }
+
+  # Font Awesome 5
+  return(sprintf("fab fa-%s", brand))
 }

@@ -113,7 +113,7 @@ Git repo that contains the license text.
 What license are you using for the written content on your site? It is
 traditional to choose a [Creative Commons][cc] license for this type of content.
 
-[choose]: http://choosealicense.com/
+[choose]: https://choosealicense.com/
 [cc]: https://creativecommons.org/choose/
 
 How should others cite your work? It\'s a convention to save a file `CITATION`
@@ -143,7 +143,7 @@ Save processed data files here.
 
 A [workflowr][] project.
 
-[workflowr]: https://github.com/jdblischak/workflowr
+[workflowr]: https://github.com/workflowr/workflowr
 
 ',
   "Rproj" = '
@@ -174,7 +174,7 @@ StripTrailingWhitespace: Yes
 
 includes <- list(
   header = '
-<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
 <!-- Add a small amount of space between sections. -->
 <style type="text/css">
 div.section {
@@ -186,7 +186,7 @@ div.section {
 footer = '
 <!-- Adjust MathJax settings so that all math formulae are shown using
 TeX fonts only; see
-http://docs.mathjax.org/en/latest/configuration.html.  This will make
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
 the presentation more consistent at the cost of the webpage sometimes
 taking slightly longer to load. Note that this only works because the
 footer is added to webpages before the MathJax javascript. -->

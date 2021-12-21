@@ -293,6 +293,28 @@ test_that("wflow_publish can display build log directly in R console with verbos
   expect_true(length(x) > 0)
 })
 
+test_that("wflow_build can combine files to build using the intersection of the provided args", {
+
+  skip_on_cran()
+
+  status <- wflow_status(project = site_dir)
+  rmd_published <- rownames(status$status)[status$status$published]
+
+  # With combine = "or" (default), build `files` and `republish`
+  expect_identical(
+    wflow_publish(rmd_decoy, republish = TRUE, dry_run = TRUE, project = site_dir)$step2$built,
+    c(rmd_decoy, rmd_published)
+  )
+  # With combine = "and", only build intersection of `files` and `republish`
+  expect_null(
+    wflow_publish(rmd_decoy, republish = TRUE, combine = "and", dry_run = TRUE, project = site_dir)$step2$built
+  )
+  expect_identical(
+    wflow_publish(rmd_published[2], republish = TRUE, combine = "and", dry_run = TRUE, project = site_dir)$step2$built,
+    rmd_published[2]
+  )
+})
+
 # Test error handling ----------------------------------------------------------
 
 test_that("wflow_publish resets Git repo to previous commit if build fails", {
@@ -320,14 +342,15 @@ test_that("wflow_publish restores previous docs/ if build fails", {
   md5sum_post <- tools::md5sum(html)
   mtime_post <- file.mtime(html)
   expect_identical(md5sum_post, md5sum_pre)
-  # expect_identical(mtime_post, mtime_pre)
-  # The test above failed R CMD check when testing with R 3.2.5. They aren't
-  # identical due too crazy small rounding errors:
-  # > mtime_post - mtime_pre
-  # Time differences in secs
-  # [1] -1.907349e-06 -9.536743e-07 -9.536743e-07
-  # So instead I check with all.equal() and reduntantly with my own similiar
-  # test of the time difference (much less than the time it slept above).
+  if (getRversion() >= "3.5.3") {
+    # This test fails with R 3.2.5 and 3.3.0 due to rounding errors, and it
+    # passes with R 3.5.3. This level of time accuracy isn't actually important
+    # to workflowr. It was just part of the tests to confirm that the file was
+    # unchanged.
+    expect_identical(mtime_post, mtime_pre)
+  }
+  # In case the above test fails due to rounding errors, the following tests
+  # ensure that the modification times are essentially identical.
   expect_equal(mtime_post, mtime_pre)
   expect_true(all(mtime_post - mtime_pre < 0.1))
 })
@@ -348,7 +371,6 @@ test_that("wflow_publish does *not* backup docs/ if it doesn't exist", {
   unlink(docs, recursive = TRUE, force = TRUE)
 })
 
-
 test_that("wflow_publish throws an error if user.name and user.email are not set", {
 
   skip_on_cran()
@@ -368,4 +390,23 @@ test_that("wflow_publish throws an error if user.name and user.email are not set
                "You must set your user.name and user.email for Git first")
   expect_error(wflow_publish(project = site_dir),
                "wflow_publish")
+})
+
+test_that("wflow_publish throws an error if there are no files to publish", {
+
+  skip_on_cran()
+
+  # Note: Have to escape the parentheses for the regex to match
+  expect_error(wflow_publish(project = site_dir),
+               "You did not tell wflow_publish\\(\\) what to publish.")
+})
+
+test_that("wflow_publish throws error if combine=and but no files specified", {
+
+  expect_error(wflow_publish(combine = "and", dry_run = TRUE, project = site_dir),
+               "can only be used when explicitly specifying Rmd files")
+
+  expect_error(wflow_publish(republish = TRUE, combine = "and", dry_run = TRUE,
+                             project = site_dir),
+               "can only be used when explicitly specifying Rmd files")
 })
