@@ -1,7 +1,7 @@
 Package: workflowr
 Type: Package
 Title: A Framework for Reproducible and Collaborative Data Science
-Version: 1.7.0
+Version: 1.7.1
 Authors@R: c(
     person("John", "Blischak", role = c("aut", "cre"),
            email = "jdblischak@gmail.com",
@@ -27,7 +27,15 @@ Authors@R: c(
     person("Sydney", "Purdue", role = c("ctb"),
            comment = "Improved wflow_start() error handling"),
     person("Giorgio", "Comai", role = c("ctb"),
-           comment = "Added argument only_published to wflow_toc()"))
+           comment = "Added argument only_published to wflow_toc()"),
+    person("Zaynaib", "Giwa", role = c("ctb"),
+           comment = "Multiple enhancements"),
+    person("Xiongbing", "Jin", role = c("ctb"),
+           comment = "Fixed bug in versions table for figures"),
+    person("Yihui", "Xie", role = c("ctb"),
+           comment = c(ORCID = "0000-0003-0645-5666",
+                       "Design advice; maintenance"))
+    )
 Description: Provides a workflow for your analysis projects by combining
   literate programming ('knitr' and 'rmarkdown') and version control
   ('Git', via 'git2r') to generate a website containing time-stamped,
@@ -40,16 +48,16 @@ Encoding: UTF-8
 Imports: callr (>= 3.7.0), fs (>= 1.2.7), getPass, git2r (>= 0.26.0),
         glue, httpuv (>= 1.2.2), httr, knitr (>= 1.29), rmarkdown (>=
         1.18), rprojroot (>= 1.2), rstudioapi (>= 0.6), stringr (>=
-        1.3.0), tools, utils, whisker (>= 0.3-2), xfun, yaml
-RoxygenNote: 7.1.2
-Suggests: clipr (>= 0.7.0), covr, devtools, miniUI (>= 0.1.1),
-        reticulate (>= 1.15), shiny (>= 0.14), spelling (>= 2.0),
-        testthat (>= 2.0.0), withr (>= 2.0.0)
+        1.3.0), tools, utils, whisker (>= 0.3-2), yaml
+RoxygenNote: 7.2.3
+Suggests: clipr (>= 0.7.0), miniUI (>= 0.1.1), reticulate (>= 1.15),
+        sessioninfo, shiny (>= 0.14), testthat (>= 2.0.0), withr (>=
+        2.0.0)
 VignetteBuilder: knitr
 SystemRequirements: pandoc (>= 1.14) - https://pandoc.org
 Language: en-US
 NeedsCompilation: no
-Packaged: 2021-12-21 02:33:18 UTC; john
+Packaged: 2023-08-22 20:41:04 UTC; jdblischak
 Author: John Blischak [aut, cre] (<https://orcid.org/0000-0003-2634-9879>),
   Peter Carbonetto [aut] (<https://orcid.org/0000-0003-1144-6780>),
   Matthew Stephens [aut] (<https://orcid.org/0000-0001-5397-9257>),
@@ -61,7 +69,11 @@ Author: John Blischak [aut, cre] (<https://orcid.org/0000-0003-2634-9879>),
     suppress_report),
   Anh Tran [ctb] (Updated RStudio Project Template),
   Sydney Purdue [ctb] (Improved wflow_start() error handling),
-  Giorgio Comai [ctb] (Added argument only_published to wflow_toc())
+  Giorgio Comai [ctb] (Added argument only_published to wflow_toc()),
+  Zaynaib Giwa [ctb] (Multiple enhancements),
+  Xiongbing Jin [ctb] (Fixed bug in versions table for figures),
+  Yihui Xie [ctb] (<https://orcid.org/0000-0003-0645-5666>, Design
+    advice; maintenance)
 Maintainer: John Blischak <jdblischak@gmail.com>
 Repository: CRAN
-Date/Publication: 2021-12-21 07:00:02 UTC
+Date/Publication: 2023-08-23 00:00:02 UTC

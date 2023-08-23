@@ -117,8 +117,8 @@
 #' knit_root_dir: "."
 #' # Set a custom seed
 #' seed: 4815162342
-#' # Use devtools to generate the session information.
-#' sessioninfo: "devtools::session_info()"
+#' # Use sessioninfo package to generate the session information.
+#' sessioninfo: "sessioninfo::session_info()"
 #' # Use this URL when inserting links to past results.
 #' github: https://github.com/repoowner/mainrepo
 #' }
@@ -135,7 +135,7 @@
 #' workflowr:
 #'   knit_root_dir: ".."
 #'   seed: 4815162342
-#'   sessioninfo: "devtools::session_info()"
+#'   sessioninfo: "sessioninfo::session_info()"
 #'   github: https://github.com/repoowner/mainrepo
 #' ---
 #' }
@@ -249,15 +249,6 @@ wflow_hook_plot_md <- function(x, options) {
                          "<strong>Warning!</strong> The custom <code>fig.path</code> you set was ignored by workflowr.")
   }
 
-  # Check for outdated reticulate
-  if (identical(options$engine, "python") &&
-      !xfun::isFALSE(options$python.reticulate) &&
-      requireNamespace("reticulate", quietly = TRUE) &&
-      utils::packageVersion("reticulate") < "1.14.9000") {
-    warnings_to_add <- c(warnings_to_add,
-                         "<strong>Warning!</strong> Please update the R package <a href=\"https://cran.r-project.org/package=reticulate\">reticulate</a> to use Python plots with workflowr")
-  }
-
   if (length(warnings_to_add) == 0) {
     return(knitr::hook_plot_md(x, options))
   }
@@ -338,6 +329,7 @@ get_cache_hook <- function() {
 #'          \code{\link{wflow_pre_processor}}
 #'
 #' @export
+#' @keywords internal
 wflow_pre_knit <- function(input, ...) {
   # This function copies the R Markdown file to a temporary directory and then
   # modifies it.
@@ -477,6 +469,7 @@ add_bibliography <- function(sessioninfo, lines) {
 #'          \code{\link{wflow_pre_processor}}
 #'
 #' @export
+#' @keywords internal
 wflow_post_knit <- function(metadata, input_file, runtime, encoding, ...) {
   # This function adds the navigation bar for websites defined in either
   # _navbar.html or _site.yml. Below I just fix the path to the input file that
@@ -518,6 +511,7 @@ wflow_post_knit <- function(metadata, input_file, runtime, encoding, ...) {
 #'          \code{\link{wflow_post_knit}}
 #'
 #' @export
+#' @keywords internal
 wflow_pre_processor <- function(metadata, input_file, runtime, knit_meta,
                                 files_dir, output_dir) {
   # Pass additional arguments to Pandoc. I use this to add a custom header
