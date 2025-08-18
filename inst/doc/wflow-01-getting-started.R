@@ -38,11 +38,11 @@ opts_chunk$set(collapse = TRUE)
 library("workflowr")
 
 ## ----wflow-git-config, eval=FALSE---------------------------------------------
-#  # Replace the example text with your information
-#  wflow_git_config(user.name = "Your Name", user.email = "email@domain")
+# # Replace the example text with your information
+# wflow_git_config(user.name = "Your Name", user.email = "email@domain")
 
 ## ----wflow-start, eval=FALSE--------------------------------------------------
-#  wflow_start("myproject")
+# wflow_start("myproject")
 
 ## ----wflow-start-hidden, echo=FALSE-------------------------------------------
 setwd(.tmp)
@@ -50,7 +50,7 @@ unlink(.project, recursive = TRUE)
 wflow_start("myproject", user.name = "Your Name", user.email = "email@domain")
 
 ## ----wflow-build, eval=FALSE--------------------------------------------------
-#  wflow_build()
+# wflow_build()
 
 ## ----wflow-build-hidden, echo=FALSE-------------------------------------------
 # Don't want to actually open the website when building the vignette
@@ -60,7 +60,7 @@ wflow_build(view = FALSE)
 wflow_build()
 
 ## ----wflow-view, eval=FALSE---------------------------------------------------
-#  wflow_view()
+# wflow_view()
 
 ## ----edit-files, include=FALSE------------------------------------------------
 for (f in file.path("analysis", c("index.Rmd", "about.Rmd", "license.Rmd"))) {
@@ -71,8 +71,8 @@ for (f in file.path("analysis", c("index.Rmd", "about.Rmd", "license.Rmd"))) {
 wflow_status()
 
 ## ----wflow-publish, eval=FALSE------------------------------------------------
-#  wflow_publish(c("analysis/index.Rmd", "analysis/about.Rmd", "analysis/license.Rmd"),
-#                "Publish the initial files for myproject")
+# wflow_publish(c("analysis/index.Rmd", "analysis/about.Rmd", "analysis/license.Rmd"),
+#               "Publish the initial files for myproject")
 
 ## ----wflow-publish-hidden, echo=FALSE-----------------------------------------
 # Don't want to actually open the website when building the vignette
@@ -84,7 +84,7 @@ wflow_publish(c("analysis/index.Rmd", "analysis/about.Rmd", "analysis/license.Rm
 wflow_status()
 
 ## ----wflow-use-github, eval=FALSE---------------------------------------------
-#  wflow_use_github("myname")
+# wflow_use_github("myname")
 
 ## ----wflow-use-github-hidden, echo=FALSE--------------------------------------
 # Don't want to try to authenticate on GitHub
@@ -94,7 +94,7 @@ wflow_use_github("myname", create_on_github = FALSE)
 wflow_git_push(dry_run = TRUE)
 
 ## ----create-file, eval=FALSE--------------------------------------------------
-#  wflow_open("analysis/first-analysis.Rmd")
+# wflow_open("analysis/first-analysis.Rmd")
 
 ## ----create-file-hidden, echo=FALSE-------------------------------------------
 # Don't want to actually open the file when building the vignette in RStudio
@@ -108,8 +108,8 @@ cat("\nClick on this [link](first-analysis.html) to see my results.\n",
 wflow_status()
 
 ## ----wflow-publish-newfile, eval=FALSE----------------------------------------
-#  wflow_publish(c("analysis/index.Rmd", "analysis/first-analysis.Rmd"),
-#                "Add my first analysis")
+# wflow_publish(c("analysis/index.Rmd", "analysis/first-analysis.Rmd"),
+#               "Add my first analysis")
 
 ## ----wflow-publish-newfile-hidden, echo=FALSE---------------------------------
 # Don't want to actually open the website when building the vignette

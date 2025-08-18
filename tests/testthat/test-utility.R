@@ -1,5 +1,3 @@
-context("utility")
-
 # Setup ------------------------------------------------------------------------
 
 source("setup.R")
@@ -563,6 +561,7 @@ test_that("file_executable returns TRUE for executable file", {
 test_that("wflow_dependson returns labels of cached chunks", {
 
   skip_on_cran()
+  skip_if_not_installed("codetools")
 
   tmp_dir <- tempfile()
   fs::dir_create(tmp_dir)

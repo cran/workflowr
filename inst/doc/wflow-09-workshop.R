@@ -2,11 +2,11 @@
 knitr::opts_chunk$set(eval = FALSE, fig.align = "center")
 
 ## ----update-packages, eval=FALSE----------------------------------------------
-#  update.packages()
+# update.packages()
 
 ## ----config-------------------------------------------------------------------
-#  library(workflowr)
-#  wflow_git_config(user.name = "First Last", user.email = "email@domain.com")
+# library(workflowr)
+# wflow_git_config(user.name = "First Last", user.email = "email@domain.com")
 
 ## ----rstudio-create-project, eval=TRUE, echo=FALSE, out.width = "50%"---------
 knitr::include_graphics("img/rstudio-create-project.png")
@@ -24,16 +24,16 @@ summary(ToothGrowth)
 str(ToothGrowth)
 
 ## ----teeth-write--------------------------------------------------------------
-#  write.csv(ToothGrowth, file = "data/teeth.csv")
+# write.csv(ToothGrowth, file = "data/teeth.csv")
 
 ## -----------------------------------------------------------------------------
-#  write.csv(ToothGrowth, file = "C:/Users/GraceHopper/Documents/myproject/data/teeth.csv")
+# write.csv(ToothGrowth, file = "C:/Users/GraceHopper/Documents/myproject/data/teeth.csv")
 
 ## -----------------------------------------------------------------------------
-#  write.csv(ToothGrowth, file = "data/teeth.csv")
+# write.csv(ToothGrowth, file = "data/teeth.csv")
 
 ## ----open-teeth---------------------------------------------------------------
-#  wflow_open("analysis/teeth.Rmd")
+# wflow_open("analysis/teeth.Rmd")
 
 ## ----test-boxplots, eval=TRUE, include=FALSE----------------------------------
 data("ToothGrowth")
@@ -54,22 +54,22 @@ mean(teeth$len[supp_perm == "OJ"]) - mean(teeth$len[supp_perm == "VC"])
 knitr::include_graphics("img/workflowr-report-checks.png")
 
 ## ----publish-teeth-growth-----------------------------------------------------
-#  wflow_publish("analysis/teeth.Rmd", message = "Analyze teeth growth")
+# wflow_publish("analysis/teeth.Rmd", message = "Analyze teeth growth")
 
 ## ----workflowr-past-versions-1, eval=TRUE, echo=FALSE, out.width = "75%"------
 knitr::include_graphics("img/workflowr-past-versions-1.png")
 
 ## ----publish-other-files------------------------------------------------------
-#  wflow_publish(c("analysis/*Rmd", "data/teeth.csv"), message = "Publish data and other files")
+# wflow_publish(c("analysis/*Rmd", "data/teeth.csv"), message = "Publish data and other files")
 
 ## ----wflow-use-github---------------------------------------------------------
-#  wflow_use_github("your-github-username")
+# wflow_use_github("your-github-username")
 
 ## ----republish----------------------------------------------------------------
-#  wflow_publish(republish = TRUE)
+# wflow_publish(republish = TRUE)
 
 ## ----wflow-git-push-----------------------------------------------------------
-#  wflow_git_push()
+# wflow_git_push()
 
 ## ----github-pages-settings, eval=TRUE, echo=FALSE, out.width = "75%"----------
 knitr::include_graphics("img/github-pages-settings.png")

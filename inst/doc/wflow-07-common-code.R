@@ -3,5 +3,5 @@ library("knitr")
 opts_chunk$set(eval = FALSE)
 
 ## ----knit-expand-vignette-----------------------------------------------------
-#  vignette("knit_expand", package = "knitr")
+# vignette("knit_expand", package = "knitr")
 

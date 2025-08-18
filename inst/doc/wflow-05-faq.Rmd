@@ -36,8 +36,8 @@ down. Overall for a free service, it is very reliable. If you wait 5 minutes (or
 30 minutes at most), your website will likely be back to normal.
 
 If you are anxious to know if there is a problem and when it will be resolved,
-you can check the status of the Twitter account [GitHub Status][gh-status] for
-the most up-to-date reports from GitHub. If you suspect that the problem may
+you can check the website [githubstatus.com][gh-status] for
+the most up-to-date reports directly from GitHub. If you suspect that the problem may
 have been caused by your recent changes to your website (again, this is
 unlikely), you can view the GitHub help page [Troubleshooting GitHub Pages
 builds][gh-troubleshooting].
@@ -54,9 +54,6 @@ least to most amount of technical setup required:
 collaborators. All they need is a GitLab.com account (and they can use a social
 account, e.g. Twitter, to login to GitLab.com) - [Deploy your site with GitLab
 Pages][vig-gitlab]
-* You can use [Beaker Browser][beaker] to securely self-host your site and share
-the link with collaborators - [Deploy your site with Beaker
-Browser][deploy-beaker]
 * You can deploy a password-protected site using [Amazon Web Services][aws]
 (requires familiarity with cloud technologies) - [Deploy your site with
 AWS][deploy-aws]
@@ -582,14 +579,12 @@ Workflowr should be capitalized at the beginning of a sentence, but otherwise
 the lowercase workflowr should be the preferred option.
 
 [aws]: https://aws.amazon.com/s3/
-[beaker]: https://beakerbrowser.com/
 [Bootstrap]: https://getbootstrap.com/
 [deploy-aws]: wflow-08-deploy.html#amazon-s3-password-protected
-[deploy-beaker]: wflow-08-deploy.html#beaker-browser-secure-sharing
 [gh-pages]: https://pages.github.com/
-[gh-status]: https://twitter.com/githubstatus
+[gh-status]: https://www.githubstatus.com/
 [gh-troubleshooting]: https://docs.github.com/articles/troubleshooting-github-pages-builds
-[gl-pages]: https://docs.gitlab.com/ce/user/project/pages/index.html
+[gl-pages]: https://docs.gitlab.com/user/project/pages/index.html
 [issues]: https://github.com/workflowr/workflowr/issues
 [rmarkdown]: https://rmarkdown.rstudio.com/
 [vig-data]: wflow-10-data.html

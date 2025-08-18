@@ -1,10 +1,12 @@
-context("wflow_remove")
-
 # Setup ------------------------------------------------------------------------
 
 source("setup.R")
 
 skip_on_cran_windows()
+# Can't use requireNamespace() without adding package to Suggests
+if (!"codetools" %in% rownames(installed.packages())) {
+  skip("{codetools} is not installed")
+}
 
 library("git2r")
 

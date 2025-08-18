@@ -12,7 +12,7 @@
 
 <meta name="author" content="John Blischak" />
 
-<meta name="date" content="2023-08-22" />
+<meta name="date" content="2025-08-18" />
 
 <title>Migrating an existing project to use workflowr</title>
 
@@ -29,46 +29,31 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
-  }
-});
-</script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
 
 <style type="text/css">
-  code {
-    white-space: pre;
-  }
-  .sourceCode {
-    overflow: visible;
-  }
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -77,58 +62,57 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-  { counter-reset: source-line 0; }
+{ counter-reset: source-line 0; }
 pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
+{ position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
 div.sourceCode
-  {   }
+{ }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -354,68 +338,142 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Migrating an existing project to use workflowr</h1>
-<h3 class="subtitle">workflowr version 1.7.1</h3>
+<h1 class="title toc-ignore">Migrating an existing project to use
+workflowr</h1>
+<h3 class="subtitle">workflowr version 1.7.2</h3>
 <h4 class="author">John Blischak</h4>
-<h4 class="date">2023-08-22</h4>
+<h4 class="date">2025-08-18</h4>
 
 
 <div id="TOC">
 <ul>
-<li><a href="#introduction">Introduction</a></li>
-<li><a href="#scenario-i-have-a-collection-of-r-markdown-files">Scenario: I have a collection of R Markdown files</a></li>
-<li><a href="#scenario-i-have-a-collection-of-r-markdown-files-and-other-project-infrastructure">Scenario: I have a collection of R Markdown files and other project infrastructure</a></li>
-<li><a href="#scenario-i-have-an-r-package">Scenario: I have an R package</a></li>
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#scenario-i-have-a-collection-of-r-markdown-files" id="toc-scenario-i-have-a-collection-of-r-markdown-files">Scenario: I
+have a collection of R Markdown files</a></li>
+<li><a href="#scenario-i-have-a-collection-of-r-markdown-files-and-other-project-infrastructure" id="toc-scenario-i-have-a-collection-of-r-markdown-files-and-other-project-infrastructure">Scenario:
+I have a collection of R Markdown files and other project
+infrastructure</a></li>
+<li><a href="#scenario-i-have-an-r-package" id="toc-scenario-i-have-an-r-package">Scenario: I have an R
+package</a></li>
 </ul>
 </div>
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>This vignette is for those users that already have an existing project and wish to incorporate workflowr to create a research website. Migrating an existing project to use workflowr varies from straightforward to difficult depending on the scenario and your comfort level with Git. This vignette assumes that you have the background knowledge of workflowr explained in the <a href="wflow-01-getting-started.html">Getting started</a> vignette. Even if you have no need for a new workflowr project, please run through that vignette first as an exercise to familiarize yourself with the workflowr philosophy and functions.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">vignette</span>(<span class="st">&quot;wflow-01-getting-started&quot;</span>, <span class="st">&quot;workflowr&quot;</span>)</span></code></pre></div>
+<p>This vignette is for those users that already have an existing
+project and wish to incorporate workflowr to create a research website.
+Migrating an existing project to use workflowr varies from
+straightforward to difficult depending on the scenario and your comfort
+level with Git. This vignette assumes that you have the background
+knowledge of workflowr explained in the <a href="wflow-01-getting-started.html">Getting started</a> vignette. Even
+if you have no need for a new workflowr project, please run through that
+vignette first as an exercise to familiarize yourself with the workflowr
+philosophy and functions.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">vignette</span>(<span class="st">&quot;wflow-01-getting-started&quot;</span>, <span class="st">&quot;workflowr&quot;</span>)</span></code></pre></div>
 </div>
 <div id="scenario-i-have-a-collection-of-r-markdown-files" class="section level2">
 <h2>Scenario: I have a collection of R Markdown files</h2>
-<p>If you have a collection of R Markdown files, but no version control or other files, the quickest solution is to use the function <code>wflow_quickstart()</code>. The code below 1) starts a new workflowr project in <code>~/projects/new-project/</code>, 2) copies the existing Rmd files in <code>~/projects/misc/</code> to the <code>analysis/</code> subdirectory of the new project, 3) builds and commits the website, and 4) configures the project to use GitHub (which is why the GitHub username is required).</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">library</span>(<span class="st">&quot;workflowr&quot;</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="kw">wflow_quickstart</span>(<span class="st">&quot;~/projects/misc/*Rmd&quot;</span>, <span class="dt">username =</span> <span class="st">&quot;&lt;github-username&gt;&quot;</span>,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>                 <span class="dt">directory =</span> <span class="st">&quot;~/projects/new-project/&quot;</span>)</span></code></pre></div>
-<p>Alternatively, you can manually perform each step to migrate your existing analysis by starting a workflowr project in a new directory and then moving the R Markdown files to the <code>analysis/</code> subdirectory. In the hypothetical example below, the original R Markdown files are located in the directory <code>~/projects/misc/</code> and the workflowr project will be created in the new directory <code>~/projects/new-project/</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="kw">library</span>(<span class="st">&quot;workflowr&quot;</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a><span class="co"># Create project directory and change working directory to this location</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a><span class="kw">wflow_start</span>(<span class="st">&quot;~/projects/new-project&quot;</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a><span class="co"># Copy the files to the analysis subdirectory of the workflowr project</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a><span class="kw">file.copy</span>(<span class="dt">from =</span> <span class="kw">Sys.glob</span>(<span class="st">&quot;~/projects/misc/*Rmd&quot;</span>), <span class="dt">to =</span> <span class="st">&quot;analysis&quot;</span>)</span></code></pre></div>
-<p>Next run <code>wflow_build()</code> to see if your files run without error. Lastly, build and commit the website using <code>wflow_publish()</code>:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">wflow_publish</span>(<span class="st">&quot;analysis/*Rmd&quot;</span>, <span class="st">&quot;Publish analysis files&quot;</span>)</span></code></pre></div>
-<p>When you are ready to share the results online, you can run <code>wflow_use_github()</code> or <code>wflow_use_gitlab()</code>.</p>
+<p>If you have a collection of R Markdown files, but no version control
+or other files, the quickest solution is to use the function
+<code>wflow_quickstart()</code>. The code below 1) starts a new
+workflowr project in <code>~/projects/new-project/</code>, 2) copies the
+existing Rmd files in <code>~/projects/misc/</code> to the
+<code>analysis/</code> subdirectory of the new project, 3) builds and
+commits the website, and 4) configures the project to use GitHub (which
+is why the GitHub username is required).</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;workflowr&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">wflow_quickstart</span>(<span class="st">&quot;~/projects/misc/*Rmd&quot;</span>, <span class="at">username =</span> <span class="st">&quot;&lt;github-username&gt;&quot;</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>                 <span class="at">directory =</span> <span class="st">&quot;~/projects/new-project/&quot;</span>)</span></code></pre></div>
+<p>Alternatively, you can manually perform each step to migrate your
+existing analysis by starting a workflowr project in a new directory and
+then moving the R Markdown files to the <code>analysis/</code>
+subdirectory. In the hypothetical example below, the original R Markdown
+files are located in the directory <code>~/projects/misc/</code> and the
+workflowr project will be created in the new directory
+<code>~/projects/new-project/</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;workflowr&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co"># Create project directory and change working directory to this location</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">wflow_start</span>(<span class="st">&quot;~/projects/new-project&quot;</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># Copy the files to the analysis subdirectory of the workflowr project</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="fu">file.copy</span>(<span class="at">from =</span> <span class="fu">Sys.glob</span>(<span class="st">&quot;~/projects/misc/*Rmd&quot;</span>), <span class="at">to =</span> <span class="st">&quot;analysis&quot;</span>)</span></code></pre></div>
+<p>Next run <code>wflow_build()</code> to see if your files run without
+error. Lastly, build and commit the website using
+<code>wflow_publish()</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">wflow_publish</span>(<span class="st">&quot;analysis/*Rmd&quot;</span>, <span class="st">&quot;Publish analysis files&quot;</span>)</span></code></pre></div>
+<p>When you are ready to share the results online, you can run
+<code>wflow_use_github()</code> or <code>wflow_use_gitlab()</code>.</p>
 </div>
 <div id="scenario-i-have-a-collection-of-r-markdown-files-and-other-project-infrastructure" class="section level2">
-<h2>Scenario: I have a collection of R Markdown files and other project infrastructure</h2>
-<p>If your project already has lots of infrastructure, it is most convenient to add the workflowr files directory to your already existing directory. This is controlled with the argument <code>existing</code>. In the hypothetical example below, the existing project is located at <code>~/projects/mature-project/</code>.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">library</span>(<span class="st">&quot;workflowr&quot;</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="kw">wflow_start</span>(<span class="st">&quot;~/projects/mature-project&quot;</span>, <span class="dt">existing =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
-<p>The above command will add the workflowr files to your existing project and also commit them to version control (it will initialize a Git repo if it doesn’t already exist). If you’d prefer to not use version control for your project or you’d prefer to commit the workflowr files yourself manually, you can set <code>git = FALSE</code> (this is also useful if you want to first test to see what would happen without committing the results).</p>
-<p>By default <code>wflow_start()</code> will not overwrite your existing files (e.g. if you already have a <code>README.md</code>). If you’d prefer to overwrite your files with the default workflowr files, set <code>overwrite = TRUE</code>.</p>
-<p>To add your R Markdown files to the research website, you can move them to the subdirectory <code>analysis/</code> (note you can do this before or after running <code>wflow_start()</code>).</p>
-<p>Next run <code>wflow_build()</code> to see if your files run without error. Lastly, build and commit the website using <code>wflow_publish()</code>:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">wflow_publish</span>(<span class="st">&quot;analysis/*Rmd&quot;</span>, <span class="st">&quot;Publish analysis files&quot;</span>)</span></code></pre></div>
+<h2>Scenario: I have a collection of R Markdown files and other project
+infrastructure</h2>
+<p>If your project already has lots of infrastructure, it is most
+convenient to add the workflowr files directory to your already existing
+directory. This is controlled with the argument <code>existing</code>.
+In the hypothetical example below, the existing project is located at
+<code>~/projects/mature-project/</code>.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;workflowr&quot;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">wflow_start</span>(<span class="st">&quot;~/projects/mature-project&quot;</span>, <span class="at">existing =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>The above command will add the workflowr files to your existing
+project and also commit them to version control (it will initialize a
+Git repo if it doesn’t already exist). If you’d prefer to not use
+version control for your project or you’d prefer to commit the workflowr
+files yourself manually, you can set <code>git = FALSE</code> (this is
+also useful if you want to first test to see what would happen without
+committing the results).</p>
+<p>By default <code>wflow_start()</code> will not overwrite your
+existing files (e.g. if you already have a <code>README.md</code>). If
+you’d prefer to overwrite your files with the default workflowr files,
+set <code>overwrite = TRUE</code>.</p>
+<p>To add your R Markdown files to the research website, you can move
+them to the subdirectory <code>analysis/</code> (note you can do this
+before or after running <code>wflow_start()</code>).</p>
+<p>Next run <code>wflow_build()</code> to see if your files run without
+error. Lastly, build and commit the website using
+<code>wflow_publish()</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">wflow_publish</span>(<span class="st">&quot;analysis/*Rmd&quot;</span>, <span class="st">&quot;Publish analysis files&quot;</span>)</span></code></pre></div>
 </div>
 <div id="scenario-i-have-an-r-package" class="section level2">
 <h2>Scenario: I have an R package</h2>
-<p>If your project is organized as an R package, you can still add a website using workflowr. In the hypothetical example below, the existing package is located at <code>~/projects/my-package/</code>.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">library</span>(<span class="st">&quot;workflowr&quot;</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="kw">wflow_start</span>(<span class="st">&quot;~/projects/my-package&quot;</span>, <span class="dt">existing =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
-<p>The above command will add the workflowr files to your existing project and also commit them to version control (it will initialize a Git repo if it doesn’t already exist). If you’d prefer to not use version control for your project or you’d prefer to commit the workflowr files yourself manually, you can set <code>git = FALSE</code> (this is also useful if you want to first test to see what would happen without committing the results).</p>
-<p>You’ll want R to ignore the workflowr directories when building the R package. Thus add the following to the <code>.Rbuildignore</code> file:</p>
+<p>If your project is organized as an R package, you can still add a
+website using workflowr. In the hypothetical example below, the existing
+package is located at <code>~/projects/my-package/</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;workflowr&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">wflow_start</span>(<span class="st">&quot;~/projects/my-package&quot;</span>, <span class="at">existing =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>The above command will add the workflowr files to your existing
+project and also commit them to version control (it will initialize a
+Git repo if it doesn’t already exist). If you’d prefer to not use
+version control for your project or you’d prefer to commit the workflowr
+files yourself manually, you can set <code>git = FALSE</code> (this is
+also useful if you want to first test to see what would happen without
+committing the results).</p>
+<p>You’ll want R to ignore the workflowr directories when building the R
+package. Thus add the following to the <code>.Rbuildignore</code>
+file:</p>
 <pre><code>^analysis$
 ^docs$
 ^data$
 ^code$
 ^output$
 ^_workflowr.yml$</code></pre>
-<p>Furthermore, to prevent R from compressing the files in <code>data/</code> (which is harmless but time-consuming), you can set <code>LazyData: false</code> in the file <code>DESCRIPTION</code>. However, if you do want to distribute data files with your R package, you’ll need to instead rename the workflowr subdirectory and update the R Markdown files to search for files in the updated directory name (and also update <code>.Rbuildignore</code> to ignore this new directory and not <code>data/</code>). Then you can save the data files to distribute with the package in <code>data/</code>. For more details, see the relevant sections in the CRAN manual <a href="https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Data-in-packages">Writing R Extensions</a> and Hadley’s <a href="https://r-pkgs.org/data.html">R Packages</a>.</p>
-<p>If your primary purpose for creating a website to accompany your package is to share the package documentation, please check out the package <a href="https://github.com/r-lib/pkgdown">pkgdown</a>. It creates a website from the vignettes and function documentation files (i.e. the Rd files in <code>man/</code>). In contrast, if the purpose of the website is to demonstrate results you obtained using the package, use workflowr.</p>
+<p>Furthermore, to prevent R from compressing the files in
+<code>data/</code> (which is harmless but time-consuming), you can set
+<code>LazyData: false</code> in the file <code>DESCRIPTION</code>.
+However, if you do want to distribute data files with your R package,
+you’ll need to instead rename the workflowr subdirectory and update the
+R Markdown files to search for files in the updated directory name (and
+also update <code>.Rbuildignore</code> to ignore this new directory and
+not <code>data/</code>). Then you can save the data files to distribute
+with the package in <code>data/</code>. For more details, see the
+relevant sections in the CRAN manual <a href="https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Data-in-packages">Writing
+R Extensions</a> and Hadley’s <a href="https://r-pkgs.org/data.html">R
+Packages</a>.</p>
+<p>If your primary purpose for creating a website to accompany your
+package is to share the package documentation, please check out the
+package <a href="https://github.com/r-lib/pkgdown">pkgdown</a>. It
+creates a website from the vignettes and function documentation files
+(i.e. the Rd files in <code>man/</code>). In contrast, if the purpose of
+the website is to demonstrate results you obtained using the package,
+use workflowr.</p>
 </div>
 
 

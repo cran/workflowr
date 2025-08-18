@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tim Trice, John Blischak" />
 
-<meta name="date" content="2023-08-22" />
+<meta name="date" content="2025-08-18" />
 
 <title>Sharing common code across analyses</title>
 
@@ -29,46 +29,31 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
-  }
-});
-</script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
 
 <style type="text/css">
-  code {
-    white-space: pre;
-  }
-  .sourceCode {
-    overflow: visible;
-  }
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -77,58 +62,57 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-  { counter-reset: source-line 0; }
+{ counter-reset: source-line 0; }
 pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
+{ position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
 div.sourceCode
-  {   }
+{ }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -355,52 +339,96 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 <h1 class="title toc-ignore">Sharing common code across analyses</h1>
-<h3 class="subtitle">workflowr version 1.7.1</h3>
+<h3 class="subtitle">workflowr version 1.7.2</h3>
 <h4 class="author">Tim Trice, John Blischak</h4>
-<h4 class="date">2023-08-22</h4>
+<h4 class="date">2025-08-18</h4>
 
 
 <div id="TOC">
 <ul>
-<li><a href="#overview-of-directories">Overview of directories</a></li>
-<li><a href="#share-r-code-with-source">Share R code with source()</a></li>
-<li><a href="#share-child-documents-with-chunk-option">Share child documents with chunk option</a></li>
-<li><a href="#share-templates-with-knit_expand">Share templates with knit_expand()</a></li>
+<li><a href="#overview-of-directories" id="toc-overview-of-directories">Overview of directories</a></li>
+<li><a href="#share-r-code-with-source" id="toc-share-r-code-with-source">Share R code with source()</a></li>
+<li><a href="#share-child-documents-with-chunk-option" id="toc-share-child-documents-with-chunk-option">Share child documents
+with chunk option</a></li>
+<li><a href="#share-templates-with-knit_expand" id="toc-share-templates-with-knit_expand">Share templates with
+knit_expand()</a></li>
 </ul>
 </div>
 
-<p>During the course of a project, you may want to repeat a similar analysis across multiple R Markdown files. To avoid duplicated code across your files (which is difficult to update), there are multiple strategies you can use to share common code:</p>
+<p>During the course of a project, you may want to repeat a similar
+analysis across multiple R Markdown files. To avoid duplicated code
+across your files (which is difficult to update), there are multiple
+strategies you can use to share common code:</p>
 <ol style="list-style-type: decimal">
-<li><p>To share R code like function definitions, you can put this code in an R script and import it in each file with the function <code>source()</code></p></li>
+<li><p>To share R code like function definitions, you can put this code
+in an R script and import it in each file with the function
+<code>source()</code></p></li>
 <li><p>To share common R Markdown text and code chunks, you can use <a href="https://yihui.org/knitr/demo/child/">child documents</a></p></li>
-<li><p>To share common templates, you can use the function <code>knitr::knit_expand()</code></p></li>
+<li><p>To share common templates, you can use the function
+<code>knitr::knit_expand()</code></p></li>
 </ol>
-<p>Each of these strategies is detailed below, with a special emphasis on how to use them within the workflowr framework. In order to source scripts or use child documents, it is suggested you use the <a href="https://cran.r-project.org/package=here">here</a> package, which helps to locate the root directory of your project regardless of the directory your script or analysis file is, making sourcing documents cleaner.</p>
+<p>Each of these strategies is detailed below, with a special emphasis
+on how to use them within the workflowr framework. In order to source
+scripts or use child documents, it is suggested you use the <a href="https://cran.r-project.org/package=here">here</a> package, which
+helps to locate the root directory of your project regardless of the
+directory your script or analysis file is, making sourcing documents
+cleaner.</p>
 <div id="overview-of-directories" class="section level2">
 <h2>Overview of directories</h2>
-<p>First, a quick overview of the directories in a workflowr project. This is critical for importing these shared files.</p>
-<p>In a standard R Markdown file, the code is executed in the directory where the R Markdown file is saved. Thus any paths to files in the R Markdown file should be relative to this directory. However, the directory where the code is executed, referred to as the “knit directory” in the workflowr documentation, can be configured. The default for a new workflowr project is to run the code in the root of the workflowr project (this is defined in the file <code>_workflowr.yml</code>; see <code>?wflow_html</code> for configuration details). Thus any filepaths should be relative to the root of the project. As an example, if you have shared R functions defined in the file <code>~/Desktop/myproject/code/common.R</code>, the relative filepath from the root of the project directory would be <code>&quot;code/common.R&quot;</code>.</p>
+<p>First, a quick overview of the directories in a workflowr project.
+This is critical for importing these shared files.</p>
+<p>In a standard R Markdown file, the code is executed in the directory
+where the R Markdown file is saved. Thus any paths to files in the R
+Markdown file should be relative to this directory. However, the
+directory where the code is executed, referred to as the “knit
+directory” in the workflowr documentation, can be configured. The
+default for a new workflowr project is to run the code in the root of
+the workflowr project (this is defined in the file
+<code>_workflowr.yml</code>; see <code>?wflow_html</code> for
+configuration details). Thus any filepaths should be relative to the
+root of the project. As an example, if you have shared R functions
+defined in the file <code>~/Desktop/myproject/code/common.R</code>, the
+relative filepath from the root of the project directory would be
+<code>&quot;code/common.R&quot;</code>.</p>
 </div>
 <div id="share-r-code-with-source" class="section level2">
 <h2>Share R code with source()</h2>
-<p>If you have R code you want to re-use across multiple R Markdown files, the most straightforward option is to save this code in an R script, e.g. <code>code/functions.R</code>.</p>
-<p>Then in each R Markdown file that needs to use the code defined in that file, you can use <code>source()</code> to load it. If the code in your workflowr project is executed in the root of the project directory (which is the default behavior for new workflowr projects), then you would add the following chunk:</p>
+<p>If you have R code you want to re-use across multiple R Markdown
+files, the most straightforward option is to save this code in an R
+script, e.g. <code>code/functions.R</code>.</p>
+<p>Then in each R Markdown file that needs to use the code defined in
+that file, you can use <code>source()</code> to load it. If the code in
+your workflowr project is executed in the root of the project directory
+(which is the default behavior for new workflowr projects), then you
+would add the following chunk:</p>
 <pre><code>```{r shared-code}
 source(&quot;code/functions.R&quot;)
 ```</code></pre>
-<p>On the other hand, if you have changed the value of <code>knit_root_dir</code> in the file <code>_workflowr.yml</code>, you need to ensure that the filepath to the R script is relative to this directory. For example, if you set <code>knit_root_dir: &quot;analysis&quot;</code>, you would use this code chunk:</p>
+<p>On the other hand, if you have changed the value of
+<code>knit_root_dir</code> in the file <code>_workflowr.yml</code>, you
+need to ensure that the filepath to the R script is relative to this
+directory. For example, if you set
+<code>knit_root_dir: &quot;analysis&quot;</code>, you would use this code
+chunk:</p>
 <pre><code>```{r shared-code}
 source(&quot;../code/functions.R&quot;)
 ```</code></pre>
-<p>To avoid having to figure out the correct relative path (or having to update it in the future if you were to change <code>knit_root_dir</code>), you can use <code>here::here()</code> as it is always based off the project root. Additionally, it will help readability when using child documents as discussed below.</p>
+<p>To avoid having to figure out the correct relative path (or having to
+update it in the future if you were to change
+<code>knit_root_dir</code>), you can use <code>here::here()</code> as it
+is always based off the project root. Additionally, it will help
+readability when using child documents as discussed below.</p>
 <pre><code>```{r shared-code}
 source(here::here(&quot;code/functions.R&quot;))
 ```</code></pre>
 </div>
 <div id="share-child-documents-with-chunk-option" class="section level2">
 <h2>Share child documents with chunk option</h2>
-<p>To share text and code chunks across R Markdown files, you can use <a href="https://yihui.org/knitr/demo/child/">child documents</a>, a feature of the <a href="https://cran.r-project.org/package=knitr">knitr</a> package.</p>
-<p>Here is a example of a simple R Markdown file that you can use to test this feature. Note that it contains an H2 header, some regular text, and a code chunk.</p>
+<p>To share text and code chunks across R Markdown files, you can use <a href="https://yihui.org/knitr/demo/child/">child documents</a>, a
+feature of the <a href="https://cran.r-project.org/package=knitr">knitr</a> package.</p>
+<p>Here is a example of a simple R Markdown file that you can use to
+test this feature. Note that it contains an H2 header, some regular
+text, and a code chunk.</p>
 <pre><code>## Header in child document
 
 Text in child document.
@@ -408,16 +436,37 @@ Text in child document.
 ```{r child-code-chunk}
 str(mtcars)
 ```</code></pre>
-<p>You can save this child document anywhere in the workflowr project with one critical exception: it cannot be saved in the R Markdown directory (<code>analysis/</code> by default) with the file extension <code>.Rmd</code> or <code>.rmd</code>. This is because workflowr expects every R Markdown file in this directory to be a standalone analysis that has a 1:1 correspondence with an HTML file in the website directory (<code>docs/</code> by default). We recommend saving child documents in a subdirectory of the R Markdown directory, e.g. <code>analysis/child/ex-child.Rmd</code>.</p>
-<p>To include the content of the child document, you can reference it using <code>here::here()</code> in your chunk options.</p>
+<p>You can save this child document anywhere in the workflowr project
+with one critical exception: it cannot be saved in the R Markdown
+directory (<code>analysis/</code> by default) with the file extension
+<code>.Rmd</code> or <code>.rmd</code>. This is because workflowr
+expects every R Markdown file in this directory to be a standalone
+analysis that has a 1:1 correspondence with an HTML file in the website
+directory (<code>docs/</code> by default). We recommend saving child
+documents in a subdirectory of the R Markdown directory,
+e.g. <code>analysis/child/ex-child.Rmd</code>.</p>
+<p>To include the content of the child document, you can reference it
+using <code>here::here()</code> in your chunk options.</p>
 <pre><code>```{r parent, child = here::here(&quot;analysis/child/ex-child.Rmd&quot;)}
 ```</code></pre>
-<p>However, this fails if you wish to include plots in the code chunks of the child documents. It will not generate an error, but the plot will be missing <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>. In a situation like this, you would want to generate the plot within the parent R Markdown file or use <code>knitr::knit_expand()</code> as described in the next section.</p>
+<p>However, this fails if you wish to include plots in the code chunks
+of the child documents. It will not generate an error, but the plot will
+be missing <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>. In a situation like this, you would want
+to generate the plot within the parent R Markdown file or use
+<code>knitr::knit_expand()</code> as described in the next section.</p>
 </div>
 <div id="share-templates-with-knit_expand" class="section level2">
 <h2>Share templates with knit_expand()</h2>
-<p>If you need to pass parameters to the code in your child document, then you can use <code>knitr::knit_expand()</code>. Also, this strategy has the added benefit that it can handle plots in the child document. However, this requires setting <code>knit_root_dir: &quot;analysis&quot;</code> in the file <code>_workflowr.yml</code> for plots to work properly.</p>
-<p>Below is an example child document with one variable to be expanded: <code>{{title}}</code> refers to a species in the iris data set. The value assigned will be used to filter the iris data set and label the section, chunk, and plot. We will refer to this file as <code>analysis/child/iris.Rmd</code>.</p>
+<p>If you need to pass parameters to the code in your child document,
+then you can use <code>knitr::knit_expand()</code>. Also, this strategy
+has the added benefit that it can handle plots in the child document.
+However, this requires setting <code>knit_root_dir: &quot;analysis&quot;</code> in
+the file <code>_workflowr.yml</code> for plots to work properly.</p>
+<p>Below is an example child document with one variable to be expanded:
+<code>{{title}}</code> refers to a species in the iris data set. The
+value assigned will be used to filter the iris data set and label the
+section, chunk, and plot. We will refer to this file as
+<code>analysis/child/iris.Rmd</code>.</p>
 <pre><code>
 ## {{title}}
 
@@ -429,14 +478,20 @@ iris %&gt;%
   geom_point() +
   labs(title = &quot;{{title}}&quot;)
 ```</code></pre>
-<p>To generate a plot using the species <code>&quot;setosa&quot;</code>, you can expand the child document in a hidden code chunk:</p>
+<p>To generate a plot using the species <code>&quot;setosa&quot;</code>, you can
+expand the child document in a hidden code chunk:</p>
 <pre><code>```{r, include = FALSE}
 src &lt;- knitr::knit_expand(file = here::here(&quot;analysis/child/iris.Rmd&quot;),
                           title = &quot;setosa&quot;)
 ```</code></pre>
 <p>and then later knit it using an inline code expression<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>:</p>
 <p><code>`r knitr::knit(text = unlist(src))`</code></p>
-<p>The convenience of using <code>knitr::knit_expand()</code> gives you the flexibility to generate multiple plots along with custom headers, figure labels, and more. For example, if you want to generate a scatter plot for each Species in the <code>iris</code> datasets, you can call <code>knitr::knit_expand()</code> within a <code>lapply()</code> or <code>purrr::map()</code> call:</p>
+<p>The convenience of using <code>knitr::knit_expand()</code> gives you
+the flexibility to generate multiple plots along with custom headers,
+figure labels, and more. For example, if you want to generate a scatter
+plot for each Species in the <code>iris</code> datasets, you can call
+<code>knitr::knit_expand()</code> within a <code>lapply()</code> or
+<code>purrr::map()</code> call:</p>
 <pre><code>```{r, include = FALSE}
 src &lt;- lapply(
   sort(unique(iris$Species)), 
@@ -448,16 +503,32 @@ src &lt;- lapply(
   }
 )
 ```</code></pre>
-<p>This example code loops through each unique <code>iris$Species</code> and sends it to the template as the variable <code>title</code>. <code>title</code> is inserted into the header, the chunk label, the <code>dplyr::filter()</code>, and the title of the plot. This generates three plots with custom plot titles and labels while keeping your analysis flow clean and simple.</p>
-<p>Remember to insert <code>knitr::knit(text = unlist(src))</code> in an inline R expression as noted above to knit the code in the desired location of your main document.</p>
-<p>Read the <code>knitr::knit_expand()</code> vignette for more information.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="kw">vignette</span>(<span class="st">&quot;knit_expand&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;knitr&quot;</span>)</span></code></pre></div>
+<p>This example code loops through each unique <code>iris$Species</code>
+and sends it to the template as the variable <code>title</code>.
+<code>title</code> is inserted into the header, the chunk label, the
+<code>dplyr::filter()</code>, and the title of the plot. This generates
+three plots with custom plot titles and labels while keeping your
+analysis flow clean and simple.</p>
+<p>Remember to insert <code>knitr::knit(text = unlist(src))</code> in an
+inline R expression as noted above to knit the code in the desired
+location of your main document.</p>
+<p>Read the <code>knitr::knit_expand()</code> vignette for more
+information.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">vignette</span>(<span class="st">&quot;knit_expand&quot;</span>, <span class="at">package =</span> <span class="st">&quot;knitr&quot;</span>)</span></code></pre></div>
 </div>
-<div class="footnotes">
+<div class="footnotes footnotes-end-of-document">
 <hr />
 <ol>
-<li id="fn1"><p>The reason for this is very technical and requires more understanding of how workflowr is implemented than is necessary to use it effectively in the majority of cases. Whenever workflowr builds an R Markdown file, it first copies it to a temporary directory so that it can inject extra code chunks that implement some of its reproducibility features. The figures in the child documents end up being saved there and then lost.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
-<li id="fn2"><p>Before calling <code>knitr::knit()</code>, you’ll need to load the dplyr and ggplot2 packages to run the code in this example child document.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn1"><p>The reason for this is very technical and requires more
+understanding of how workflowr is implemented than is necessary to use
+it effectively in the majority of cases. Whenever workflowr builds an R
+Markdown file, it first copies it to a temporary directory so that it
+can inject extra code chunks that implement some of its reproducibility
+features. The figures in the child documents end up being saved there
+and then lost.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>Before calling <code>knitr::knit()</code>, you’ll need
+to load the dplyr and ggplot2 packages to run the code in this example
+child document.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
 

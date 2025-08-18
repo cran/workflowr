@@ -12,7 +12,7 @@
 
 <meta name="author" content="Luke Zappia, John Blischak" />
 
-<meta name="date" content="2023-08-22" />
+<meta name="date" content="2025-08-18" />
 
 <title>Hosting workflowr websites using GitLab</title>
 
@@ -29,46 +29,31 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
-  }
-});
-</script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
 
 <style type="text/css">
-  code {
-    white-space: pre;
-  }
-  .sourceCode {
-    overflow: visible;
-  }
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -77,58 +62,57 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-  { counter-reset: source-line 0; }
+{ counter-reset: source-line 0; }
 pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
+{ position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
 div.sourceCode
-  {   }
+{ }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -354,70 +338,138 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Hosting workflowr websites using GitLab</h1>
-<h3 class="subtitle">workflowr version 1.7.1</h3>
+<h1 class="title toc-ignore">Hosting workflowr websites using
+GitLab</h1>
+<h3 class="subtitle">workflowr version 1.7.2</h3>
 <h4 class="author">Luke Zappia, John Blischak</h4>
-<h4 class="date">2023-08-22</h4>
+<h4 class="date">2025-08-18</h4>
 
 
 <div id="TOC">
 <ul>
-<li><a href="#what-is-in-this-vignette">What is in this vignette?</a></li>
-<li><a href="#step-0-set-up-a-project">Step 0: Set up a project</a></li>
-<li><a href="#step-1-create-a-remote-repository-on-gitlab">Step 1: Create a remote repository on GitLab</a></li>
-<li><a href="#step-2-configure-your-local-workflowr-project-to-use-gitlab">Step 2: Configure your local workflowr project to use GitLab</a></li>
-<li><a href="#step-3-republish-the-analyses">Step 3: Republish the analyses</a></li>
-<li><a href="#step-4-push-to-gitlab">Step 4: Push to GitLab</a></li>
-<li><a href="#access-control-for-private-sites">Access control for private sites</a></li>
-<li><a href="#compatibility-with-custom-gitlab-instances">Compatibility with custom GitLab instances</a></li>
+<li><a href="#what-is-in-this-vignette" id="toc-what-is-in-this-vignette">What is in this vignette?</a></li>
+<li><a href="#step-0-set-up-a-project" id="toc-step-0-set-up-a-project">Step 0: Set up a project</a></li>
+<li><a href="#step-1-create-a-remote-repository-on-gitlab" id="toc-step-1-create-a-remote-repository-on-gitlab">Step 1: Create a
+remote repository on GitLab</a></li>
+<li><a href="#step-2-configure-your-local-workflowr-project-to-use-gitlab" id="toc-step-2-configure-your-local-workflowr-project-to-use-gitlab">Step
+2: Configure your local workflowr project to use GitLab</a></li>
+<li><a href="#step-3-republish-the-analyses" id="toc-step-3-republish-the-analyses">Step 3: Republish the
+analyses</a></li>
+<li><a href="#step-4-push-to-gitlab" id="toc-step-4-push-to-gitlab">Step
+4: Push to GitLab</a></li>
+<li><a href="#access-control-for-private-sites" id="toc-access-control-for-private-sites">Access control for private
+sites</a></li>
+<li><a href="#compatibility-with-custom-gitlab-instances" id="toc-compatibility-with-custom-gitlab-instances">Compatibility with
+custom GitLab instances</a></li>
 </ul>
 </div>
 
 <div id="what-is-in-this-vignette" class="section level2">
 <h2>What is in this vignette?</h2>
-<p>By default workflowr assumes that the project will be hosted on GitHub, but this is not always the case. Users may prefer to use another service or have a private Git repository hosting instance. This vignette details how to host a workflowr project on GitLab. Unlike GitHub Pages, GitLab Pages offers both public and private sites. For more details, see the documentation for <a href="https://docs.gitlab.com/ee/ci/yaml/README.html#pages">GitLab Pages</a>. Similar steps will be required for other platforms but some of the specifics will be different.</p>
+<p>By default workflowr assumes that the project will be hosted on
+GitHub, but this is not always the case. Users may prefer to use another
+service or have a private Git repository hosting instance. This vignette
+details how to host a workflowr project on GitLab. Unlike GitHub Pages,
+GitLab Pages offers both public and private sites. For more details, see
+the documentation for <a href="https://docs.gitlab.com/user/project/pages/">GitLab Pages</a>.
+Similar steps will be required for other platforms but some of the
+specifics will be different.</p>
 </div>
 <div id="step-0-set-up-a-project" class="section level2">
 <h2>Step 0: Set up a project</h2>
-<p>The first thing we need to do is set up the project we want to host. We can do this by following the first few steps of the instructions in the “Getting started” vignette. When you get to the section <a href="wflow-01-getting-started.html#deploy-the-website">Deploy the website</a>, follow the rest of the steps in this vignette.</p>
+<p>The first thing we need to do is set up the project we want to host.
+We can do this by following the first few steps of the instructions in
+the “Getting started” vignette. When you get to the section <a href="wflow-01-getting-started.html#deploy-the-website">Deploy the
+website</a>, follow the rest of the steps in this vignette.</p>
 </div>
 <div id="step-1-create-a-remote-repository-on-gitlab" class="section level2">
 <h2>Step 1: Create a remote repository on GitLab</h2>
-<p><strong>Note:</strong> You can skip this step if you’d like because GitLab will automatically create the new repository after you push it in Step 4 below. This <a href="https://docs.gitlab.com/ee/user/project/#create-a-new-project-with-git-push">feature</a> was introduced in <a href="https://about.gitlab.com/releases/2018/02/22/gitlab-10-5-released/">GitLab 10.5</a>, released in February 2018.</p>
-<p>Log in to the GitLab instance you want to use and create a repository to host your project. We recommend setting the project to be Public so that others can inspect the code behind your results and extend your work.</p>
+<p><strong>Note:</strong> You can skip this step if you’d like because
+GitLab will automatically create the new repository after you push it in
+Step 4 below. This <a href="https://docs.gitlab.com/ee/user/project/#create-a-new-project-with-git-push">feature</a>
+was introduced in <a href="https://about.gitlab.com/releases/2018/02/22/gitlab-10-5-released/">GitLab
+10.5</a>, released in February 2018.</p>
+<p>Log in to the GitLab instance you want to use and create a repository
+to host your project. We recommend setting the project to be Public so
+that others can inspect the code behind your results and extend your
+work.</p>
 </div>
 <div id="step-2-configure-your-local-workflowr-project-to-use-gitlab" class="section level2">
 <h2>Step 2: Configure your local workflowr project to use GitLab</h2>
-<p>You will need to know your user name and the repository name for the following steps (here we are going to use “myname” and “myproject”) as well as a URL for the hosting instance. The example below assumes you are using GitLab.com. If instead you are using a custom instance of GitLab, you will need to change the value for the argument <code>domain</code> accordingly <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">wflow_use_gitlab</span>(<span class="dt">username =</span> <span class="st">&quot;myname&quot;</span>, <span class="dt">repository =</span> <span class="st">&quot;myproject&quot;</span>)</span></code></pre></div>
-<p>The function <code>wflow_use_gitlab()</code> automates all the local configuration necessary to use GitLab. It changes the website directory from <code>docs/</code> to <code>public/</code>, it creates the GitLab-specific configuration file <code>.gitlab-ci.yml</code> with the necessary settings, and it connects the local Git repository to communicate with the remote repository on GitLab.</p>
+<p>You will need to know your user name and the repository name for the
+following steps (here we are going to use “myname” and “myproject”) as
+well as a URL for the hosting instance. The example below assumes you
+are using GitLab.com. If instead you are using a custom instance of
+GitLab, you will need to change the value for the argument
+<code>domain</code> accordingly <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">wflow_use_gitlab</span>(<span class="at">username =</span> <span class="st">&quot;myname&quot;</span>, <span class="at">repository =</span> <span class="st">&quot;myproject&quot;</span>)</span></code></pre></div>
+<p>The function <code>wflow_use_gitlab()</code> automates all the local
+configuration necessary to use GitLab. It changes the website directory
+from <code>docs/</code> to <code>public/</code>, it creates the
+GitLab-specific configuration file <code>.gitlab-ci.yml</code> with the
+necessary settings, and it connects the local Git repository to
+communicate with the remote repository on GitLab.</p>
 </div>
 <div id="step-3-republish-the-analyses" class="section level2">
 <h2>Step 3: Republish the analyses</h2>
-<p>In order for the correct URLs to past versions to be inserted into the HTML pages, republish the analyses with <code>wflow_publish()</code>.</p>
+<p>In order for the correct URLs to past versions to be inserted into
+the HTML pages, republish the analyses with
+<code>wflow_publish()</code>.</p>
 <pre><code>wflow_publish(republish = TRUE)</code></pre>
 </div>
 <div id="step-4-push-to-gitlab" class="section level2">
 <h2>Step 4: Push to GitLab</h2>
-<p>As a final step, push the workflowr project to GitLab (you will be prompted for your GitLab username and password):</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="kw">wflow_git_push</span>()</span></code></pre></div>
-<p>If this step has worked correctly you should be able to refresh your GitLab page and see all the files in your workflowr project. You can view your site at <code>myname.gitlab.io/myproject/</code>, replacing with your username and project (note it may take a minute for the site to be deployed).</p>
-<p>If you skipped Step 1 above, the new repository created during the initial push will be private by default. Unless you are working with sensitive data, you should consider making the project public so that it is easier to share with other researchers (e.g. collaborators, reviewers). You can change the visibility by going to <code>Settings</code> -&gt; <code>General</code> -&gt; <code>Visibility</code> and changing <code>Project visibility</code> to <code>Public</code>.</p>
+<p>As a final step, push the workflowr project to GitLab (you will be
+prompted for your GitLab username and password):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">wflow_git_push</span>()</span></code></pre></div>
+<p>If this step has worked correctly you should be able to refresh your
+GitLab page and see all the files in your workflowr project. You can
+view your site at <code>myname.gitlab.io/myproject/</code>, replacing
+with your username and project (note it may take a minute for the site
+to be deployed).</p>
+<p>If you skipped Step 1 above, the new repository created during the
+initial push will be private by default. Unless you are working with
+sensitive data, you should consider making the project public so that it
+is easier to share with other researchers (e.g. collaborators,
+reviewers). You can change the visibility by going to
+<code>Settings</code> -&gt; <code>General</code> -&gt;
+<code>Visibility</code> and changing <code>Project visibility</code> to
+<code>Public</code>.</p>
 </div>
 <div id="access-control-for-private-sites" class="section level2">
 <h2>Access control for private sites</h2>
-<p>If you need to keep your project private, you can <a href="https://gitlab.com/help/user/project/pages/pages_access_control.md">grant access</a> to your collaborators by going to <code>Settings</code> -&gt; <code>Members</code>. You can invite them to the project via email, but they’ll need a GitLab login to access the source code and site. They can login to GitLab using common social sites like Google and Twitter.</p>
+<p>If you need to keep your project private, you can <a href="https://gitlab.com/help/user/project/pages/pages_access_control.md">grant
+access</a> to your collaborators by going to <code>Settings</code> -&gt;
+<code>Members</code>. You can invite them to the project via email, but
+they’ll need a GitLab login to access the source code and site. They can
+login to GitLab using common social sites like Google and Twitter.</p>
 </div>
 <div id="compatibility-with-custom-gitlab-instances" class="section level2">
 <h2>Compatibility with custom GitLab instances</h2>
-<p>Currently workflowr works best with the public GitLab instance hosted at gitlab.com. If you are using a custom GitLab instance that is hosted by your institution, it may not work as smoothly.</p>
-<p>If you cannot view your workflowr website, this may be because your administrators have not enabled <a href="https://docs.gitlab.com/ee/ci/yaml/README.html#pages">GitLab Pages</a>. You will need to email them to activate this feature. You can include this link to the <a href="https://git.rcc.uchicago.edu/help/administration/pages/index.md">GitLab Pages administration</a> instructions.</p>
-<p>If GitLab Pages is enabled, the links to past versions of the R Markdown files should work correctly (open an <a href="https://github.com/workflowr/workflowr/issues">Issue</a> if you are having problems). However, there is currently no way to conveniently view the past versions of the HTML files. This is because workflowr uses the free service <a href="https://raw.githack.com/">raw.githack.com</a> to host past HTML files, and it only supports the URLs <code>raw.githubusercontent.com</code>, <code>gist.githubusercontent.com</code>, <code>bitbucket.org</code>, and <code>gitlab.com</code>.</p>
+<p>Currently workflowr works best with the public GitLab instance hosted
+at gitlab.com. If you are using a custom GitLab instance that is hosted
+by your institution, it may not work as smoothly.</p>
+<p>If you cannot view your workflowr website, this may be because your
+administrators have not enabled <a href="https://docs.gitlab.com/user/project/pages/">GitLab Pages</a>. You
+will need to email them to activate this feature. You can include this
+link to the <a href="https://git.rcc.uchicago.edu/help/administration/pages/index.md">GitLab
+Pages administration</a> instructions.</p>
+<p>If GitLab Pages is enabled, the links to past versions of the R
+Markdown files should work correctly (open an <a href="https://github.com/workflowr/workflowr/issues">Issue</a> if you
+are having problems). However, there is currently no way to conveniently
+view the past versions of the HTML files. This is because workflowr uses
+the free service <a href="https://raw.githack.com/">raw.githack.com</a>
+to host past HTML files, and it only supports the URLs
+<code>raw.githubusercontent.com</code>,
+<code>gist.githubusercontent.com</code>, <code>bitbucket.org</code>, and
+<code>gitlab.com</code>.</p>
 </div>
-<div class="footnotes">
+<div class="footnotes footnotes-end-of-document">
 <hr />
 <ol>
-<li id="fn1"><p>For example, the University of Chicago hosts a GitLab instance for its researchers at <a href="https://git.rcc.uchicago.edu/" class="uri">https://git.rcc.uchicago.edu/</a>, which would require setting <code>domain = &quot;git.rcc.uchicago.edu&quot;</code><a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn1"><p>For example, the University of Chicago hosts a GitLab
+instance for its researchers at <a href="https://git.rcc.uchicago.edu/" class="uri">https://git.rcc.uchicago.edu/</a>, which would require
+setting <code>domain = &quot;git.rcc.uchicago.edu&quot;</code><a href="#fnref1" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
 

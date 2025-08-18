@@ -1,3 +1,12 @@
+# workflowr 1.7.2
+
+This patch release includes improvements to the documentation and tests.
+
+## User-facing changes
+
+* Update GitLab Pages to build from "main" branch by default (implemented by
+@eweine in #294)
+
 # workflowr 1.7.1
 
 This patch release includes improved documentation, bug fixes, and a reduction
@@ -104,7 +113,7 @@ package rearrange how they group functions into documentation topics, this will
 break the cross-references and require an update. See this
 [thread][rs-community-rd-warning] for more details
 
-[rs-community-rd-warning]: https://community.rstudio.com/t/file-link-quasiquotation-in-package-rlang-does-not-exist-and-so-has-been-treated-as-a-topic/55774
+[rs-community-rd-warning]: https://forum.posit.co/t/file-link-quasiquotation-in-package-rlang-does-not-exist-and-so-has-been-treated-as-a-topic/55774
 
 * Bug fix: `wflow_use_github()` and `wflow_use_gitlab()` now use Font Awesome 5
 syntax to insert icons into the navigation bar when a recent version of
